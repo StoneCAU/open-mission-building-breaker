@@ -1,4 +1,5 @@
 #pragma once
+#include "GameSession.h"
 #include "../ui/UIRenderer.h"
 
 enum class GameState {
@@ -18,11 +19,12 @@ private:
     void init();
     void handleMenu();
     void startGame();
-    void initPlaying();
+    void runPlayingLoop();
 
     GameState state;
     bool isRunning;
     int highScore;
 
+    GameSession session;
     UIRenderer ui;
 };

@@ -33,13 +33,11 @@ void Game::handleMenu() {
         InputKey key = InputHandler::getInput();
 
         if (key == InputKey::NONE) continue;
-
         if (key == InputKey::ENTER) {
             state = GameState::PLAYING;
             system("cls");
             return;
         }
-
         if (key == InputKey::QUIT) {
             isRunning = false;
             return;
@@ -47,12 +45,32 @@ void Game::handleMenu() {
     }
 }
 
-void Game::initPlaying() {
-    // TODO: 게임 초기 설정
-}
-
-
 void Game::startGame() {
-    // TODO: 게임 플레이 화면
+    session.start();
+    system("cls");
+    ui.renderPlaying(session);
+    runPlayingLoop();
 }
 
+void Game::runPlayingLoop() {
+    while (isRunning && state == GameState::PLAYING) {
+        InputKey key = InputHandler::getInput();
+        if (key == InputKey::NONE) continue;
+
+        if (key == InputKey::QUIT) {
+            isRunning = false;
+            return;
+        }
+
+        session.update();
+
+        system("cls");
+        ui.renderPlaying(session);
+
+        if (session.isGameOver()) {
+            state = GameState::MENU;
+            system("cls");
+            return;
+        }
+    }
+}
