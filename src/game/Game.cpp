@@ -1,7 +1,6 @@
 #include "Game.h"
 #include "../ui/UIRenderer.h"
 #include "../ui/InputHandler.h"
-#include <conio.h>
 #include <cstdlib>
 
 Game::Game(): state(GameState::MENU), isRunning(true), highScore(0) {}
@@ -16,18 +15,18 @@ void Game::run() {
 
     while (isRunning) {
         if (state == GameState::MENU) {
-            runMenu(); continue;
+            handleMenu(); continue;
         }
 
         if (state == GameState::PLAYING) {
-            runPlaying(); continue;
+            startGame(); continue;
         }
 
         isRunning = false;
     }
 }
 
-void Game::runMenu() {
+void Game::handleMenu() {
     ui.renderMenu(highScore);
 
     while (isRunning && state == GameState::MENU) {
@@ -48,7 +47,12 @@ void Game::runMenu() {
     }
 }
 
-void Game::runPlaying() {
+void Game::initPlaying() {
+    // TODO: 게임 초기 설정
+}
+
+
+void Game::startGame() {
     // TODO: 게임 플레이 화면
 }
 

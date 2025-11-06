@@ -16,8 +16,9 @@ public:
 
 private:
     void init();
-    void runMenu();
-    void runPlaying();
+    void handleMenu();
+    void startGame();
+    void initPlaying();
 
     GameState state;
     bool isRunning;
