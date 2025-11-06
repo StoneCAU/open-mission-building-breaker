@@ -1,5 +1,5 @@
 #pragma once
-#include "../ui/InputHandler.h"
+#include "../ui/UIRenderer.h"
 
 enum class GameState {
     MENU,
@@ -16,11 +16,12 @@ public:
 
 private:
     void init();
-    void processInput(InputKey key);
-    void update();
-    void render();
+    void runMenu();
+    void runPlaying();
 
     GameState state;
     bool isRunning;
     int highScore;
+
+    UIRenderer ui;
 };
