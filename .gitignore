@@ -1,0 +1,49 @@
+# CMake 빌드 디렉토리
+cmake-build-*/
+build/
+out/
+
+# CMake 생성 파일
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+_deps/
+.cmake/
+
+# Ninja 빌드 파일
+build.ninja
+.ninja_*
+*.ninja
+
+# 컴파일된 바이너리
+*.exe
+*.out
+*.app
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# 테스트 결과
+Testing/
+test_detail.xml
+*.log
+
+# IDE 설정 (선택적)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 최고 점수 파일 (게임 실행 시 생성)
+highscore.txt
+
+# 기타
+.DS_Store
+Thumbs.db
