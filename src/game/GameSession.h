@@ -1,0 +1,34 @@
+#pragma once
+
+class GameSession {
+public:
+    GameSession();
+
+    void start();
+    void update();
+
+    void addScore(int value);
+    void addCombo();
+    void resetCombo();
+    void decreaseLife();
+
+    bool isGameOver() const;
+
+    int getScore() const;
+    int getCombo() const;
+    int getGauge() const;
+    int getLife() const;
+
+private:
+    void reset();
+
+    int score;
+    int combo;
+    int gauge;
+    int life;
+
+    static constexpr int INITIAL_LIFE = 3;
+    static constexpr int INITIAL_GAUGE = 0;
+    static constexpr int INITIAL_SCORE = 0;
+    static constexpr int INITIAL_COMBO = 0;
+};
