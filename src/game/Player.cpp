@@ -211,7 +211,7 @@ int Player::getX() const {
     return x;
 }
 
-int Player::getY() const {
+float Player::getY() const {
     return y;
 }
 

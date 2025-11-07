@@ -16,7 +16,7 @@ public:
     void update();
 
     int getX() const;
-    int getY() const;
+    float getY() const;
     bool isJumping() const;
     PlayerAction getAction() const;
 
