@@ -83,6 +83,6 @@ void Game::runPlayingLoop() {
             return;
         }
 
-        Sleep(10);
+        Sleep(20);
     }
 }
