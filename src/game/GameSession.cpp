@@ -61,6 +61,7 @@ void GameSession::checkCollisions() {
 
         // ===== [2] 지상 충돌: 캐릭터 생명 깎이고 건물 한 칸 튕김 =====
         if (isOnGround) {
+            player.takeDamage();
             decreaseLife();
             resetCombo();
             b.rebound();
