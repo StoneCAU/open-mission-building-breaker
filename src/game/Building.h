@@ -18,6 +18,7 @@ public:
     bool isDestroyed() const;
     bool isRebounding() const;
     bool isFalling() const;
+    bool collidesWith(int playerX, float playerY) const;
 
     // ====== 좌표 및 렌더 정보 ======
     int getX() const;

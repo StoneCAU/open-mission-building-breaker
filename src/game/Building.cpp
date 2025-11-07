@@ -94,6 +94,17 @@ void Building::updateRebound() {
     }
 }
 
+bool Building::collidesWith(int playerX, float playerY) const {
+    // 플레이어와 수평 위치가 겹치는가?
+    bool xOverlap = (playerX >= x && playerX < x + BUILDING_WIDTH);
+
+    // 플레이어가 빌딩의 높이 범위 안에 있는가?
+    int buildingTop = y - height + 1;
+    bool yOverlap = (playerY <= y && playerY >= buildingTop);
+
+    return xOverlap && yOverlap;
+}
+
 /**
  * 상태 조회
  */
