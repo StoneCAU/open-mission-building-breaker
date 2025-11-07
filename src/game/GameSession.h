@@ -11,7 +11,9 @@ public:
     void handleInput(InputKey key);
 
     const Player& getPlayer() const;
+
     BuildingManager& getBuildingManager();
+    const BuildingManager& getBuildingManager() const;
 
     void addScore(int value);
     void addCombo();

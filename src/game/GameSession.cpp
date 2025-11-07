@@ -53,6 +53,10 @@ BuildingManager& GameSession::getBuildingManager() {
     return buildingManager;
 }
 
+const BuildingManager& GameSession::getBuildingManager() const {
+    return buildingManager;
+}
+
 int GameSession::getScore() const {
     return score;
 }
