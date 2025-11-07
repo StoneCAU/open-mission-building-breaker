@@ -67,6 +67,7 @@ private:
     float jumpFrame;
     int jumpCooldown;
     int damageFrame;
+    int actionCooldown;
 
     PlayerAction action;
     int actionFrame;

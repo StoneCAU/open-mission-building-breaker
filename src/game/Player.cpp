@@ -26,7 +26,8 @@ Player::Player()
       actionFrame(0),
       damaged(false),
       damageFrame(0),
-      hitHead(false) {}
+      hitHead(false),
+      actionCooldown(0){}
 
 /** ===================== 입력 처리 ===================== **/
 
@@ -71,6 +72,9 @@ bool Player::tryAction(InputKey key, bool& canDo, PlayerAction type) {
     if (type == PlayerAction::ATTACK && key != InputKey::ATTACK) return false;
     if (type == PlayerAction::DEFEND && key != InputKey::DEFEND) return false;
 
+    // 🔥 점프 직후 쿨타임 체크
+    if (actionCooldown > 0) return false;
+
     // 방어는 지속형
     if (type == PlayerAction::DEFEND) {
         action = PlayerAction::DEFEND;
@@ -105,6 +109,7 @@ void Player::jump() {
     jumping = true;
     canJump = false;
     jumpFrame = 0;
+    actionCooldown = 15;  // 🔥 점프 후 3프레임 동안 액션 불가 (약 0.06초)
 }
 
 void Player::applyJumpMotion() {
@@ -141,7 +146,8 @@ void Player::finishJump() {
     jumping = false;
     jumpCooldown = GameConfig::PLAYER_JUMP_COOLDOWN_MAX;
 
-    if (action == PlayerAction::ATTACK || action == PlayerAction::DEFEND) {
+    // 🔥 방어는 유지, 공격만 초기화
+    if (action == PlayerAction::ATTACK) {
         action = PlayerAction::IDLE;
         actionFrame = 0;
     }
@@ -172,6 +178,11 @@ void Player::update() {
 
     if (jumpCooldown > 0) {
         --jumpCooldown;
+    }
+
+    // 🔥 액션 쿨타임 감소
+    if (actionCooldown > 0) {
+        --actionCooldown;
     }
 
     if (damageFrame > 0) {
