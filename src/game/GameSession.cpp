@@ -8,6 +8,7 @@ GameSession::GameSession()
 
 void GameSession::start() {
     reset();
+    buildingManager.initBuildings();
 }
 
 void GameSession::reset() {
@@ -23,6 +24,7 @@ void GameSession::handleInput(InputKey key) {
 
 void GameSession::update() {
     player.update();
+    buildingManager.updateAll();
 }
 
 void GameSession::addScore(int value) {
@@ -45,6 +47,10 @@ bool GameSession::isGameOver() const {
 
 const Player& GameSession::getPlayer() const {
     return player;
+}
+
+BuildingManager& GameSession::getBuildingManager() {
+    return buildingManager;
 }
 
 int GameSession::getScore() const {

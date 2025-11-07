@@ -1,4 +1,5 @@
 #pragma once
+#include "BuildingManager.h"
 #include "Player.h"
 
 class GameSession {
@@ -10,7 +11,7 @@ public:
     void handleInput(InputKey key);
 
     const Player& getPlayer() const;
-
+    BuildingManager& getBuildingManager();
 
     void addScore(int value);
     void addCombo();
@@ -28,6 +29,8 @@ private:
     void reset();
 
     Player player;
+    BuildingManager buildingManager;
+
     int score;
     int combo;
     int gauge;
