@@ -1,6 +1,17 @@
 #include "Player.h"
 #include "GameConfig.h"
+#include "../ui/InputHandler.h"
 #include <windows.h>
+
+namespace InputUtils {
+    inline bool isPressed(int key) {
+        return (GetAsyncKeyState(key) & 0x8000) != 0;
+    }
+
+    inline bool isReleased(int key) {
+        return !isPressed(key);
+    }
+}
 
 Player::Player()
     : x(GameConfig::PLAYER_START_X),
@@ -14,49 +25,36 @@ Player::Player()
       action(PlayerAction::IDLE),
       actionFrame(0) {}
 
+/** ===================== 입력 처리 ===================== **/
+
 void Player::handleInput(InputKey key) {
-    // ===== 점프 중 행동 =====
     if (jumping) {
-        if (key == InputKey::ATTACK && canAttack) {
-            action = PlayerAction::ATTACK;
-            actionFrame = GameConfig::PLAYER_ACTION_DURATION;
-            canAttack = false;
-            return;
-        }
-        if (key == InputKey::DEFEND && canDefend) {
-            action = PlayerAction::DEFEND;
-            actionFrame = GameConfig::PLAYER_ACTION_DURATION;
-            canDefend = false;
-            return;
-        }
+        handleAirInput(key);
         return;
     }
-    // ===== 평상시 행동 =====
-    if (key == InputKey::ATTACK && canAttack) {
-        action = PlayerAction::ATTACK;
-        actionFrame = GameConfig::PLAYER_ACTION_DURATION;
-        canAttack = false;
+    handleGroundInput(key);
+}
+
+void Player::handleGroundInput(InputKey key) {
+    if (tryAction(key, canAttack, PlayerAction::ATTACK)) return;
+    if (tryAction(key, canDefend, PlayerAction::DEFEND)) return;
+    if (tryJump(key)) return;
+
+    handleMovement(key);
+    action = PlayerAction::IDLE;
+}
+
+void Player::handleAirInput(InputKey key) {
+    if (tryAction(key, canAttack, PlayerAction::ATTACK)) {
         return;
     }
 
-    if (key == InputKey::DEFEND && canDefend) {
-        action = PlayerAction::DEFEND;
-        actionFrame = GameConfig::PLAYER_ACTION_DURATION;
-        canDefend = false;
+    if (tryAction(key, canDefend, PlayerAction::DEFEND)) {
         return;
     }
+}
 
-    if ((key == InputKey::MOVE_LEFT_JUMP || key == InputKey::MOVE_RIGHT_JUMP) &&
-        canJump && !jumping && jumpCooldown == 0) {
-        jump();
-        return;
-        }
-
-    if (key == InputKey::JUMP && canJump && !jumping && jumpCooldown == 0) {
-        jump();
-        return;
-    }
-
+void Player::handleMovement(InputKey key) {
     if (key == InputKey::LEFT && canMoveLeft()) {
         --x;
     }
@@ -64,17 +62,43 @@ void Player::handleInput(InputKey key) {
     if (key == InputKey::RIGHT && canMoveRight()) {
         ++x;
     }
-
-    action = PlayerAction::IDLE;
 }
 
-bool Player::canMoveLeft() const {
-    return x > GameConfig::MAP_MIN_X;
+/** ===================== 액션 처리 ===================== **/
+
+bool Player::tryAction(InputKey key, bool& canDo, PlayerAction type) {
+    if (type == PlayerAction::ATTACK && key != InputKey::ATTACK) {
+        return false;
+    }
+
+    if (type == PlayerAction::DEFEND && key != InputKey::DEFEND) {
+        return false;
+    }
+
+    if (!canDo) {
+        return false;
+    }
+
+    action = type;
+    actionFrame = GameConfig::PLAYER_ACTION_DURATION;
+    canDo = false;
+    return true;
 }
 
-bool Player::canMoveRight() const {
-    return x < GameConfig::MAP_MAX_X;
+bool Player::tryJump(InputKey key) {
+    const bool jumpKey =
+        (key == InputKey::JUMP ||
+         key == InputKey::MOVE_LEFT_JUMP ||
+         key == InputKey::MOVE_RIGHT_JUMP);
+
+    if (jumpKey && canJump && !jumping && jumpCooldown == 0) {
+        jump();
+        return true;
+    }
+    return false;
 }
+
+/** ===================== 점프 로직 ===================== **/
 
 void Player::jump() {
     jumping = true;
@@ -86,72 +110,98 @@ void Player::applyJumpMotion() {
     const float half = GameConfig::PLAYER_JUMP_DURATION / 2.0f;
 
     if (jumpFrame < half) {
-        const float t = jumpFrame / half;
-        y = GameConfig::MAP_GROUND_Y - (GameConfig::PLAYER_JUMP_HEIGHT * t);
-    }
-
-    if (jumpFrame >= half) {
-        const float t = (jumpFrame - half) / half;
-        y = (GameConfig::MAP_GROUND_Y - GameConfig::PLAYER_JUMP_HEIGHT) + (GameConfig::PLAYER_JUMP_HEIGHT * t);
-    }
-
-    ++jumpFrame;
-
-    if (jumpFrame < GameConfig::PLAYER_JUMP_DURATION) {
+        applyJumpRise(half);
         return;
     }
 
-    // 착지
+    if (jumpFrame < GameConfig::PLAYER_JUMP_DURATION) {
+        applyJumpFall(half);
+        return;
+    }
+
+    finishJump();
+}
+
+void Player::applyJumpRise(float half) {
+    const float t = jumpFrame / half;
+    y = GameConfig::MAP_GROUND_Y - (GameConfig::PLAYER_JUMP_HEIGHT * t);
+    ++jumpFrame;
+}
+
+void Player::applyJumpFall(float half) {
+    const float t = (jumpFrame - half) / half;
+    y = (GameConfig::MAP_GROUND_Y - GameConfig::PLAYER_JUMP_HEIGHT)
+      + (GameConfig::PLAYER_JUMP_HEIGHT * t);
+    ++jumpFrame;
+}
+
+void Player::finishJump() {
     y = GameConfig::MAP_GROUND_Y;
     jumping = false;
     jumpCooldown = GameConfig::PLAYER_JUMP_COOLDOWN_MAX;
 
-    // 착지 시 액션 초기화 (공중 모션 지속 방지)
     if (action == PlayerAction::ATTACK || action == PlayerAction::DEFEND) {
         action = PlayerAction::IDLE;
         actionFrame = 0;
     }
 }
 
+/** ===================== 프레임 업데이트 ===================== **/
+
 void Player::update() {
-    // ===== 액션 프레임 관리 =====
-    if (action == PlayerAction::ATTACK || action == PlayerAction::DEFEND) {
-        if (actionFrame > 0) {
-            --actionFrame;
-        }
+    updateActionFrame();
 
-        if (actionFrame == 0) {
-            action = PlayerAction::IDLE;
-        }
-    }
-
-    // ===== 점프 모션 처리 =====
     if (jumping) {
         applyJumpMotion();
     }
 
-    // ===== 점프 쿨타임 =====
     if (jumpCooldown > 0) {
         --jumpCooldown;
     }
 
-    // ===== 키 릴리즈 감지 =====
-    const bool zPressed = (GetAsyncKeyState('Z') & 0x8000) != 0;
-    const bool downPressed = (GetAsyncKeyState(VK_DOWN) & 0x8000) != 0;
-    const bool upPressed = (GetAsyncKeyState(VK_UP) & 0x8000) != 0;
+    updateKeyRelease();
+}
 
-    if (!zPressed) {
+void Player::updateActionFrame() {
+    if (actionFrame > 0) {
+        --actionFrame;
+    }
+
+    if (actionFrame == 0 &&
+        (action == PlayerAction::ATTACK || action == PlayerAction::DEFEND)) {
+        action = PlayerAction::IDLE;
+    }
+}
+
+/** ===================== 입력 해제 감지 ===================== **/
+
+void Player::updateKeyRelease() {
+    using namespace InputUtils;
+
+    if (isReleased('Z')) {
         canAttack = true;
     }
 
-    if (!downPressed) {
+    if (isReleased(VK_DOWN)) {
         canDefend = true;
     }
 
-    if (!jumping && !upPressed) {
+    if (!jumping && isReleased(VK_UP)) {
         canJump = true;
     }
 }
+
+/** ===================== 유틸 ===================== **/
+
+bool Player::canMoveLeft() const {
+    return x > GameConfig::MAP_MIN_X;
+}
+
+bool Player::canMoveRight() const {
+    return x < GameConfig::MAP_MAX_X;
+}
+
+/** ===================== Getter ===================== **/
 
 bool Player::isJumping() const {
     return jumping;

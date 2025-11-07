@@ -21,21 +21,41 @@ public:
     PlayerAction getAction() const;
 
 private:
+    // ====== 입력 처리 ======
+    void handleGroundInput(InputKey key);
+    void handleAirInput(InputKey key);
+    void handleMovement(InputKey key);
+
+    // ====== 액션 처리 ======
+    bool tryAction(InputKey key, bool& canDo, PlayerAction type);
+    bool tryJump(InputKey key);
+
+    // ====== 점프 처리 ======
     void jump();
     void applyJumpMotion();
+    void applyJumpRise(float half);
+    void applyJumpFall(float half);
+    void finishJump();
 
+    // ====== 프레임 처리 ======
+    void updateActionFrame();
+    void updateKeyRelease();
+
+    // ====== 이동 가능 여부 ======
     bool canMoveLeft() const;
     bool canMoveRight() const;
 
     int x;
-    int y;
+    float y;
+
     bool jumping;
     bool canJump;
     bool canAttack;
     bool canDefend;
-    int jumpFrame;
+
+    float jumpFrame;
     int jumpCooldown;
-    int actionFrame;
 
     PlayerAction action;
+    int actionFrame;
 };
