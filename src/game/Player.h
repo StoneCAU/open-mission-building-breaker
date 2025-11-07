@@ -6,7 +6,6 @@ public:
     Player();
 
     void handleInput(InputKey key);
-    void jump();
     void update();
 
     int getX() const;
@@ -14,11 +13,16 @@ public:
     bool isJumping() const;
 
 private:
+    void jump();
+    void applyJumpMotion();
+
     bool canMoveLeft() const;
     bool canMoveRight() const;
 
     int x;
     int y;
     bool jumping;
+    bool canJump;
     int jumpFrame;
+    int jumpCooldown;
 };
