@@ -30,6 +30,10 @@ Player::Player()
 /** ===================== 입력 처리 ===================== **/
 
 void Player::handleInput(InputKey key) {
+    if (damaged) {
+        return;
+    }
+
     if (jumping) {
         handleAirInput(key);
         return;
@@ -202,9 +206,9 @@ bool Player::canMoveRight() const {
 /** ===================== 피격 처리 ===================== **/
 
 void Player::takeDamage() {
-    if (damageFrame > 0) return; // 무적 시간 중
+    if (damageFrame > 0) return;
     damaged = true;
-    damageFrame = 20; // 약 20프레임 지속
+    damageFrame = 10;
 }
 
 /** ===================== Getter ===================== **/

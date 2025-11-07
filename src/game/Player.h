@@ -18,6 +18,9 @@ public:
     int getX() const;
     float getY() const;
     bool isJumping() const;
+
+    // ====== 피격 여부 ======
+    void takeDamage();
     bool isDamaged() const;
 
     PlayerAction getAction() const;
@@ -46,9 +49,6 @@ private:
     // ====== 이동 가능 여부 ======
     bool canMoveLeft() const;
     bool canMoveRight() const;
-
-    // ====== 피격 여부 ======
-    void takeDamage();
 
     int x;
     float y;
