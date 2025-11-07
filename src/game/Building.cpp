@@ -1,7 +1,7 @@
 #include "Building.h"
-#include "../game/GameConfig.h" // GameConfig::BUILDING_FALL_SPEED 사용
+#include "../game/GameConfig.h"
 
-constexpr const char* BLOCK_UNIT = "▩";
+constexpr const char* BLOCK_UNIT = "#";
 constexpr int BUILDING_WIDTH = 3;
 constexpr int MIN_BUILDING_HEIGHT = 3;
 constexpr int MAX_BUILDING_HEIGHT = 6;
