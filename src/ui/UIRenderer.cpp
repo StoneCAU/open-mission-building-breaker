@@ -27,6 +27,7 @@ namespace {
     constexpr const char *ICON_PLAYER = "@";
     constexpr const char *ICON_ATTACK = "⚔️";
     constexpr const char *ICON_DEFEND = "🛡️";
+    constexpr const char *ICON_DAMAGED = "💥";
 
     // ====== 메뉴 관련 ======
     constexpr const char *MENU_TITLE = "최고 기록: ";
@@ -133,18 +134,17 @@ void UIRenderer::composeBuildings(const GameSession& s, std::vector<std::string>
 
 /** ===================== 플레이어 합성 ===================== **/
 void UIRenderer::composePlayer(const Player& p, std::vector<std::string>& screen) const {
-    const int playerX = p.getX();
-    const int playerY = static_cast<int>(p.getY());
-    if (!isInside(playerX, playerY)) return;
+    const int x = p.getX();
+    const int y = static_cast<int>(p.getY());
+    if (!isInside(x, y)) return;
 
     std::string motion = ICON_PLAYER;
-    if (p.getAction() == PlayerAction::ATTACK) {
-        motion += ICON_ATTACK;
-    } else if (p.getAction() == PlayerAction::DEFEND) {
-        motion += ICON_DEFEND;
-    }
 
-    drawLine(screen, playerX, playerY, motion);
+    if (p.isDamaged()) motion = ICON_DAMAGED;
+    if (!p.isDamaged() && p.getAction() == PlayerAction::ATTACK) motion += ICON_ATTACK;
+    if (!p.isDamaged() && p.getAction() == PlayerAction::DEFEND) motion += ICON_DEFEND;
+
+    drawLine(screen, x, y, motion);
 }
 
 /** ===================== 본문 출력 (빌딩 + 플레이어) ===================== **/
