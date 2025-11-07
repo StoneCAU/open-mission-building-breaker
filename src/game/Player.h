@@ -18,6 +18,8 @@ public:
     int getX() const;
     float getY() const;
     bool isJumping() const;
+    bool isDamaged() const;
+
     PlayerAction getAction() const;
 
 private:
@@ -45,6 +47,9 @@ private:
     bool canMoveLeft() const;
     bool canMoveRight() const;
 
+    // ====== 피격 여부 ======
+    void takeDamage();
+
     int x;
     float y;
 
@@ -52,9 +57,11 @@ private:
     bool canJump;
     bool canAttack;
     bool canDefend;
+    bool damaged;
 
     float jumpFrame;
     int jumpCooldown;
+    int damageFrame;
 
     PlayerAction action;
     int actionFrame;

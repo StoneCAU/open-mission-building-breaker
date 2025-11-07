@@ -23,7 +23,9 @@ Player::Player()
       jumpFrame(0),
       jumpCooldown(0),
       action(PlayerAction::IDLE),
-      actionFrame(0) {}
+      actionFrame(0),
+      damaged(false),
+      damageFrame(0) {}
 
 /** ===================== 입력 처리 ===================== **/
 
@@ -45,20 +47,14 @@ void Player::handleGroundInput(InputKey key) {
 }
 
 void Player::handleAirInput(InputKey key) {
-    if (tryAction(key, canAttack, PlayerAction::ATTACK)) {
-        return;
-    }
-
-    if (tryAction(key, canDefend, PlayerAction::DEFEND)) {
-        return;
-    }
+    if (tryAction(key, canAttack, PlayerAction::ATTACK)) return;
+    if (tryAction(key, canDefend, PlayerAction::DEFEND)) return;
 }
 
 void Player::handleMovement(InputKey key) {
     if (key == InputKey::LEFT && canMoveLeft()) {
         --x;
     }
-
     if (key == InputKey::RIGHT && canMoveRight()) {
         ++x;
     }
@@ -67,24 +63,17 @@ void Player::handleMovement(InputKey key) {
 /** ===================== 액션 처리 ===================== **/
 
 bool Player::tryAction(InputKey key, bool& canDo, PlayerAction type) {
-    if (type == PlayerAction::ATTACK && key != InputKey::ATTACK) {
-        return false;
-    }
+    if (type == PlayerAction::ATTACK && key != InputKey::ATTACK) return false;
+    if (type == PlayerAction::DEFEND && key != InputKey::DEFEND) return false;
 
-    if (type == PlayerAction::DEFEND && key != InputKey::DEFEND) {
-        return false;
-    }
-
-    // === 방어는 지속형이므로 canDefend 플래그를 사용하지 않음 ===
+    // 방어는 지속형
     if (type == PlayerAction::DEFEND) {
         action = PlayerAction::DEFEND;
-        actionFrame = 0; // 의미 없음
+        actionFrame = 0;
         return true;
     }
 
-    if (!canDo) {
-        return false;
-    }
+    if (!canDo) return false;
 
     action = type;
     actionFrame = GameConfig::PLAYER_ACTION_DURATION;
@@ -166,14 +155,16 @@ void Player::update() {
         --jumpCooldown;
     }
 
+    if (damageFrame > 0) {
+        --damageFrame;
+        if (damageFrame == 0) damaged = false;
+    }
+
     updateKeyRelease();
 }
 
 void Player::updateActionFrame() {
-    // 방어는 프레임 타이머에 의해 풀리지 않음
-    if (action == PlayerAction::DEFEND) {
-        return;
-    }
+    if (action == PlayerAction::DEFEND) return;
 
     if (actionFrame > 0) {
         --actionFrame;
@@ -189,18 +180,13 @@ void Player::updateActionFrame() {
 void Player::updateKeyRelease() {
     using namespace InputUtils;
 
-    if (isReleased('Z')) {
-        canAttack = true;
-    }
+    if (isReleased('Z')) canAttack = true;
 
-    // ↓키를 떼면 방어 해제
-    if (isReleased(VK_DOWN) && action == PlayerAction::DEFEND) {
+    if (isReleased(VK_DOWN) && action == PlayerAction::DEFEND)
         action = PlayerAction::IDLE;
-    }
 
-    if (!jumping && isReleased(VK_UP)) {
+    if (!jumping && isReleased(VK_UP))
         canJump = true;
-    }
 }
 
 /** ===================== 유틸 ===================== **/
@@ -211,6 +197,14 @@ bool Player::canMoveLeft() const {
 
 bool Player::canMoveRight() const {
     return x < GameConfig::MAP_MAX_X;
+}
+
+/** ===================== 피격 처리 ===================== **/
+
+void Player::takeDamage() {
+    if (damageFrame > 0) return; // 무적 시간 중
+    damaged = true;
+    damageFrame = 20; // 약 20프레임 지속
 }
 
 /** ===================== Getter ===================== **/
@@ -229,4 +223,8 @@ float Player::getY() const {
 
 PlayerAction Player::getAction() const {
     return action;
+}
+
+bool Player::isDamaged() const {
+    return damaged;
 }
