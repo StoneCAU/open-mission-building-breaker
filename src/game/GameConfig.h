@@ -15,4 +15,7 @@ namespace GameConfig {
 
     // ===== 액션 관련 =====
     inline constexpr int PLAYER_ACTION_DURATION = 10;
+
+    // ===== 시스템 관련 =====
+    inline constexpr int FRAME_DELAY_MS = 20;
 }
