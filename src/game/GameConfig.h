@@ -13,6 +13,7 @@ namespace GameConfig {
     inline constexpr int MAX_BUILDING_HEIGHT = 6;
     inline constexpr int MIN_ONSCREEN_BUILDINGS = 3;
     inline constexpr int MAX_ONSCREEN_BUILDINGS = 5;
+    inline constexpr int BUILDING_SPAWN_COOLDOWN = 80;
     inline constexpr float BUILDING_FALL_SPEED = 0.1;
 
     // ===== 플레이어 기본 스탯 =====
