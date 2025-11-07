@@ -2,20 +2,18 @@
 #include "../ui/UIRenderer.h"
 #include "../ui/InputHandler.h"
 #include <windows.h>
-#include <cstdlib>
 
-namespace {
-    void clearScreen() {
-        COORD coord = {0, 0};
-        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-    }
-}
+#include "GameConfig.h"
 
-Game::Game() : state(GameState::MENU), isRunning(true), highScore(0) {}
+Game::Game()
+    : state(GameState::MENU),
+      isRunning(true),
+      highScore(0) {}
+
 Game::~Game() = default;
 
 void Game::init() {
-    // TODO: 초기화 로직 (추후 필요 시 추가)
+    // TODO: 초기화 로직 (필요 시 추가)
 }
 
 void Game::run() {
@@ -23,12 +21,12 @@ void Game::run() {
 
     while (isRunning) {
         if (state == GameState::MENU) {
-            handleMenu();
+            runMenu();
             continue;
         }
 
         if (state == GameState::PLAYING) {
-            startGame();
+            runGame();
             continue;
         }
 
@@ -36,18 +34,20 @@ void Game::run() {
     }
 }
 
-void Game::handleMenu() {
+/** ===================== [MENU LOOP] ===================== **/
+void Game::runMenu() {
     ui.renderMenu(highScore);
 
     while (isRunning && state == GameState::MENU) {
         InputKey key = InputHandler::getInput();
 
-        if (key == InputKey::NONE)
+        if (key == InputKey::NONE) {
             continue;
+        }
 
         if (key == InputKey::ENTER) {
             state = GameState::PLAYING;
-            clearScreen();
+            ui.clearScreen();
             return;
         }
 
@@ -58,31 +58,52 @@ void Game::handleMenu() {
     }
 }
 
-void Game::startGame() {
+/** ===================== [GAME LOOP] ===================== **/
+void Game::runGame() {
     session.start();
-    clearScreen();
+    ui.clearScreen();
     ui.renderPlaying(session);
-    runPlayingLoop();
+
+    while (isRunning && state == GameState::PLAYING) {
+        processGameFrame();
+    }
 }
 
-void Game::runPlayingLoop() {
-    while (isRunning && state == GameState::PLAYING) {
-        InputKey key = InputHandler::getInput();
+/** ===================== [FRAME CYCLE] ===================== **/
+void Game::processGameFrame() {
+    handleFrameInput();
+    updateFrameState();
+    renderFrame();
+    Sleep(GameConfig::FRAME_DELAY_MS);
+}
 
-        if (key != InputKey::NONE)
-            session.handleInput(key);
-
-        session.update();
-
-        clearScreen();
-        ui.renderPlaying(session);
-
-        if (session.isGameOver()) {
-            state = GameState::MENU;
-            clearScreen();
-            return;
-        }
-
-        Sleep(20);
+/** ===== 입력 처리 ===== **/
+void Game::handleFrameInput() {
+    InputKey key = InputHandler::getInput();
+    if (key == InputKey::NONE) {
+        return;
     }
+
+    session.handleInput(key);
+}
+
+/** ===== 상태 갱신 ===== **/
+void Game::updateFrameState() {
+    session.update();
+
+    if (session.isGameOver()) {
+        onGameOver();
+    }
+}
+
+/** ===== 렌더링 ===== **/
+void Game::renderFrame() {
+    ui.clearScreen();
+    ui.renderPlaying(session);
+}
+
+/** ===== 게임 종료 처리 ===== **/
+void Game::onGameOver() {
+    state = GameState::MENU;
+    ui.clearScreen();
 }
