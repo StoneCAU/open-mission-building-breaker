@@ -1,6 +1,5 @@
 #include "UIRenderer.h"
 #include <iostream>
-
 #include "../game/GameConfig.h"
 
 namespace {
@@ -18,6 +17,16 @@ namespace {
     constexpr const char* HUD_GAUGE_UNIT = "%";
     constexpr const char* HUD_LIFE_ICON = "❤";
 
+    // ====== 단위 및 구분자 ======
+    constexpr const char* UNIT_POINT = "점";
+    constexpr const char* SPACE = " ";
+    constexpr const char* NEW_LINE = "\n";
+
+    // ====== 캐릭터 관련 아이콘 ======
+    constexpr const char* ICON_PLAYER = "@";
+    constexpr const char* ICON_ATTACK = "⚔️";
+    constexpr const char* ICON_DEFEND = "🛡️";
+
     // ====== 메뉴 관련 ======
     constexpr const char* MENU_TITLE = "최고 기록: ";
     constexpr const char* MENU_ENTER = "[ENTER] 게임 시작";
@@ -25,93 +34,119 @@ namespace {
 
     // ====== 하단 가이드 ======
     constexpr const char* UNDERLINE = "_________________________________________________";
-    constexpr const char* CONTROL_GUIDE ="조작: [←→]이동 [Z]공격 [↓]방어 [↑]점프 [X]필살기";
+    constexpr const char* CONTROL_GUIDE = "조작: [←→]이동 [Z]공격 [↓]방어 [↑]점프 [X]필살기";
 }
 
 void UIRenderer::printBorder() const {
-    std::cout << BORDER << std::endl;
+    std::cout << BORDER << NEW_LINE;
 }
 
-/** ========== 메뉴 화면 ========== **/
 void UIRenderer::renderMenu(int highScore) const {
     printBorder();
-    std::cout << TITLE << "\n";
+    std::cout << TITLE << NEW_LINE;
     printBorder();
 
-    // 일관된 포맷으로 출력
-    std::cout << MENU_TITLE << highScore << "점\n\n";
-    std::cout << MENU_ENTER << "\n";
-    std::cout << MENU_QUIT << "\n\n";
+    std::cout << MENU_TITLE << highScore << UNIT_POINT << NEW_LINE << NEW_LINE;
+    std::cout << MENU_ENTER << NEW_LINE;
+    std::cout << MENU_QUIT << NEW_LINE << NEW_LINE;
 
     printBorder();
 }
 
-/** ========== 게이지 시각화 ========== **/
 std::string UIRenderer::getGaugeBar(int gauge) const {
     constexpr int BAR_LENGTH = 10;
     int filled = (gauge * BAR_LENGTH) / 100;
     std::string bar;
     bar.reserve(BAR_LENGTH);
-    for (int i = 0; i < BAR_LENGTH; ++i)
-        bar += (i < filled ? HUD_GAUGE_ICON_FILLED : HUD_GAUGE_ICON_EMPTY);
+
+    for (int i = 0; i < BAR_LENGTH; ++i) {
+        if (i < filled) {
+            bar += HUD_GAUGE_ICON_FILLED;
+        }
+        if (i >= filled) {
+            bar += HUD_GAUGE_ICON_EMPTY;
+        }
+    }
+
     return bar;
 }
 
-/** ========== 플레이 화면 ========== **/
-void UIRenderer::renderPlaying(const GameSession& s) const {
+void UIRenderer::renderHUD(const GameSession& s) const {
     printBorder();
+
     std::cout << HUD_SCORE << s.getScore()
               << SEPARATOR << HUD_COMBO << s.getCombo()
               << SEPARATOR << HUD_GAUGE << getGaugeBar(s.getGauge())
-              << " " << s.getGauge() << HUD_GAUGE_UNIT
+              << SPACE << s.getGauge() << HUD_GAUGE_UNIT
               << SEPARATOR;
 
     for (int i = 0; i < s.getLife(); ++i) {
-        std::cout << HUD_LIFE_ICON << " ";
+        std::cout << HUD_LIFE_ICON << SPACE;
     }
 
-    std::cout << "\n";
+    std::cout << NEW_LINE;
     printBorder();
-    std::cout << "\n\n";
+    std::cout << NEW_LINE << NEW_LINE;
+}
 
-    // ===== Player 표시 =====
-    const Player& p = s.getPlayer();
+void UIRenderer::renderPlayer(const Player& p) const {
     const int playerX = p.getX();
     const int playerY = p.getY();
 
-    std::string motion = "@";
+    std::string motion = getPlayerMotion(p);
 
-    // ----- PlayerAction 상태에 따라 모션 결정 -----
-    if (p.getAction() == PlayerAction::ATTACK) {
-        motion += "⚔️";
-    }
-
-    if (p.getAction() == PlayerAction::DEFEND) {
-        motion += "🛡️";
-    }
-
-    // ===== 맵 출력 =====
     for (int y = 0; y <= GameConfig::MAP_GROUND_Y; ++y) {
         if (y == playerY) {
-            for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
-                if (x == playerX) {
-                    std::cout << motion;
-                }
-                if (x != playerX) {
-                    std::cout << " ";
-                }
-            }
-            std::cout << "\n";
+            renderPlayerLine(playerX, motion);
             continue;
         }
 
-        // 빈 줄 출력
-        for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
-            std::cout << " ";
-        }
-        std::cout << "\n";
+        renderEmptyLine();
+    }
+}
+
+std::string UIRenderer::getPlayerMotion(const Player& p) const {
+    std::string motion = ICON_PLAYER;
+
+    if (p.getAction() == PlayerAction::ATTACK) {
+        motion += ICON_ATTACK;
     }
 
-    std::cout << UNDERLINE << "\n";
-    std::cout << CONTROL_GUIDE << "\n";
+    if (p.getAction() == PlayerAction::DEFEND) {
+        motion += ICON_DEFEND;
+    }
+
+    return motion;
+}
+
+void UIRenderer::renderPlayerLine(int playerX, const std::string& motion) const {
+    for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
+        if (x == playerX) {
+            std::cout << motion;
+        }
+
+        if (x != playerX) {
+            std::cout << SPACE;
+        }
+    }
+    std::cout << NEW_LINE;
+}
+
+void UIRenderer::renderEmptyLine() const {
+    for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
+        std::cout << SPACE;
+    }
+    std::cout << NEW_LINE;
+}
+
+
+void UIRenderer::renderGuide() const {
+    std::cout << UNDERLINE << NEW_LINE;
+    std::cout << CONTROL_GUIDE << NEW_LINE;
+}
+
+void UIRenderer::renderPlaying(const GameSession& s) const {
+    renderHUD(s);
+    renderPlayer(s.getPlayer());
+    renderGuide();
 }
