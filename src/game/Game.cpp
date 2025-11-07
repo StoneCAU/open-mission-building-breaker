@@ -1,9 +1,17 @@
 #include "Game.h"
 #include "../ui/UIRenderer.h"
 #include "../ui/InputHandler.h"
+#include <windows.h>
 #include <cstdlib>
 
-Game::Game(): state(GameState::MENU), isRunning(true), highScore(0) {}
+namespace {
+    void clearScreen() {
+        COORD coord = {0, 0};
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+    }
+}
+
+Game::Game() : state(GameState::MENU), isRunning(true), highScore(0) {}
 Game::~Game() = default;
 
 void Game::init() {
@@ -15,11 +23,13 @@ void Game::run() {
 
     while (isRunning) {
         if (state == GameState::MENU) {
-            handleMenu(); continue;
+            handleMenu();
+            continue;
         }
 
         if (state == GameState::PLAYING) {
-            startGame(); continue;
+            startGame();
+            continue;
         }
 
         isRunning = false;
@@ -32,12 +42,15 @@ void Game::handleMenu() {
     while (isRunning && state == GameState::MENU) {
         InputKey key = InputHandler::getInput();
 
-        if (key == InputKey::NONE) continue;
+        if (key == InputKey::NONE)
+            continue;
+
         if (key == InputKey::ENTER) {
             state = GameState::PLAYING;
-            system("cls");
+            clearScreen();
             return;
         }
+
         if (key == InputKey::QUIT) {
             isRunning = false;
             return;
@@ -47,7 +60,7 @@ void Game::handleMenu() {
 
 void Game::startGame() {
     session.start();
-    system("cls");
+    clearScreen();
     ui.renderPlaying(session);
     runPlayingLoop();
 }
@@ -56,19 +69,20 @@ void Game::runPlayingLoop() {
     while (isRunning && state == GameState::PLAYING) {
         InputKey key = InputHandler::getInput();
 
-        if (key != InputKey::NONE) {
+        if (key != InputKey::NONE)
             session.handleInput(key);
-        }
 
         session.update();
 
-        system("cls");
+        clearScreen();
         ui.renderPlaying(session);
 
         if (session.isGameOver()) {
             state = GameState::MENU;
-            system("cls");
+            clearScreen();
             return;
         }
+
+        Sleep(30);
     }
 }
