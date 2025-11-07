@@ -47,7 +47,8 @@ void GameSession::checkCollisions() {
         if (player.isJumping() && withinX) {
             const float headY = playerY - 1.0f;
 
-            if (headY < buildingBottomY + 1.0f && playerY < buildingBottomY + 2.0f) {
+            // 🔥 범위 넓게 잡기 (속도 빨라도 감지되게)
+            if (playerY <= buildingBottomY + 3.0f && headY <= buildingBottomY + 2.0f) {
                 float targetY = buildingBottomY + 1.0f;
                 player.forceFall(targetY);
 
