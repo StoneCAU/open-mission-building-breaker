@@ -1,14 +1,38 @@
 #include "InputHandler.h"
-#include <conio.h>
 #include <windows.h>
 
-InputKey InputHandler::getInput() {
-    bool left = GetAsyncKeyState(VK_LEFT) & 0x8000;
-    bool right = GetAsyncKeyState(VK_RIGHT) & 0x8000;
-    bool up = GetAsyncKeyState(VK_UP) & 0x8000;
-    bool down = GetAsyncKeyState(VK_DOWN) & 0x8000;
+// ===== 내부 헬퍼 =====
+namespace {
+    bool isKeyPressed(int vkCode) {
+        return (GetAsyncKeyState(vkCode) & 0x8000) != 0;
+    }
 
-    // ← + ↑ 동시 입력
+    bool isCharPressed(char key) {
+        return (GetAsyncKeyState(static_cast<int>(key)) & 0x8000) != 0;
+    }
+}
+
+InputKey InputHandler::getInput() {
+    // 순서: 복합 → 단일 → 일반키
+    InputKey key = getCombinedInput();
+    if (key != InputKey::NONE) {
+        return key;
+    }
+
+    key = getDirectionalInput();
+    if (key != InputKey::NONE) {
+        return key;
+    }
+
+    return getGeneralInput();
+}
+
+// ===== 복합 입력 =====
+InputKey InputHandler::getCombinedInput() {
+    const bool left = isKeyPressed(VK_LEFT);
+    const bool right = isKeyPressed(VK_RIGHT);
+    const bool up = isKeyPressed(VK_UP);
+
     if (left && up) {
         return InputKey::MOVE_LEFT_JUMP;
     }
@@ -17,40 +41,49 @@ InputKey InputHandler::getInput() {
         return InputKey::MOVE_RIGHT_JUMP;
     }
 
-    // 단일 키 입력
-    if (up) {
+    return InputKey::NONE;
+}
+
+// ===== 단일 방향 입력 =====
+InputKey InputHandler::getDirectionalInput() {
+    if (isKeyPressed(VK_UP)) {
         return InputKey::JUMP;
     }
 
-    if (down) {
+    if (isKeyPressed(VK_DOWN)) {
         return InputKey::DEFEND;
     }
 
-    if (left) {
+    if (isKeyPressed(VK_LEFT)) {
         return InputKey::LEFT;
     }
 
-    if (right) {
+    if (isKeyPressed(VK_RIGHT)) {
         return InputKey::RIGHT;
     }
 
-    if (GetAsyncKeyState('Z') & 0x8000) {
+    return InputKey::NONE;
+}
+
+// ===== 일반 키 입력 =====
+InputKey InputHandler::getGeneralInput() {
+    if (isCharPressed('Z')) {
         return InputKey::ATTACK;
     }
 
-    if (GetAsyncKeyState('X') & 0x8000) {
+    if (isCharPressed('X')) {
         return InputKey::ULTIMATE;
     }
 
-    if (GetAsyncKeyState('Q') & 0x8000) {
+    if (isCharPressed('Q')) {
         return InputKey::QUIT;
     }
 
-    if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+    if (isKeyPressed(VK_RETURN)) {
         return InputKey::ENTER;
     }
 
-    if (GetAsyncKeyState('R') & 0x8000) {
+    if (isCharPressed('R')) {
         return InputKey::RESTART;
     }
 

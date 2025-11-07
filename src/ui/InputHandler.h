@@ -18,4 +18,9 @@ enum class InputKey {
 class InputHandler {
 public:
     static InputKey getInput();
+
+private:
+    static InputKey getCombinedInput();
+    static InputKey getDirectionalInput();
+    static InputKey getGeneralInput();
 };
