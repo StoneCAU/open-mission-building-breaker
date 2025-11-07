@@ -4,6 +4,7 @@
 
 class UIRenderer {
 public:
+    void clearScreen() const;
     void renderMenu(int highScore) const;
     void renderPlaying(const GameSession& session) const;
 

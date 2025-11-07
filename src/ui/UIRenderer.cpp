@@ -1,5 +1,7 @@
 #include "UIRenderer.h"
 #include <iostream>
+#include <windows.h>
+
 #include "../game/GameConfig.h"
 
 namespace {
@@ -35,6 +37,11 @@ namespace {
     // ====== 하단 가이드 ======
     constexpr const char* UNDERLINE = "_________________________________________________";
     constexpr const char* CONTROL_GUIDE = "조작: [←→]이동 [Z]공격 [↓]방어 [↑]점프 [X]필살기";
+}
+
+void UIRenderer::clearScreen() const {
+        COORD coord = {0, 0};
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
 void UIRenderer::printBorder() const {
