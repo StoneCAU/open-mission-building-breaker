@@ -30,6 +30,7 @@ private:
     // ----- 위치 / 크기 -----
     int x; // 콘솔 상의 가로 위치
     int y; // 현재 바닥 Y좌표
+    float yPos;
     int height; // 현재 층 수
 
     // ----- 상태 -----
