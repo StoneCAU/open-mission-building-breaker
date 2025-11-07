@@ -26,52 +26,77 @@ void GameSession::handleInput(InputKey key) {
 
 void GameSession::update() {
     player.update();
-    buildingManager.updateAll();
     checkCollisions();
+    buildingManager.updateAll();
 }
 
 void GameSession::checkCollisions() {
     auto& buildings = buildingManager.getAll();
     const int playerX = player.getX();
     const float playerY = player.getY();
-    const bool isOnGround = (playerY >= GameConfig::MAP_GROUND_Y);
+    const bool isOnGround = (playerY >= GameConfig::MAP_GROUND_Y - 0.1f);
 
     for (auto& b : buildings) {
-        if (b.isDestroyed()) {
-            continue;
+        if (b.isDestroyed()) continue;
+
+        const float buildingTopY = b.getY() - b.getHeight() + 1.0f;
+        const float buildingBottomY = b.getY();
+        const bool withinX = (playerX >= b.getX() && playerX < b.getX() + GameConfig::BUILDING_WIDTH);
+
+        /** [A] 점프 중 건물 밑면 충돌 체크 **/
+        if (player.isJumping() && withinX) {
+            const float headY = playerY - 1.0f;
+
+            if (headY < buildingBottomY + 1.0f && playerY < buildingBottomY + 2.0f) {
+                float targetY = buildingBottomY + 1.0f;
+                player.forceFall(targetY);
+
+                // 🔥 땅에 닿으면 데미지 + 건물 튕겨냄
+                if (targetY >= GameConfig::MAP_GROUND_Y - 0.1f) {
+                    if (!player.isInvincible()) {
+                        player.takeDamage();
+                        decreaseLife();
+                        resetCombo();
+                    }
+                    b.rebound();
+                }
+                continue;
+            }
         }
 
-        if (!b.collidesWith(playerX, playerY)) {
-            continue;
+        /** [B] 몸체 충돌 **/
+        if (!withinX) continue;
+        if (!(playerY >= buildingTopY && playerY <= buildingBottomY)) continue;
+
+        // 공중에서 피격 무시
+        if (!isOnGround) continue;
+
+        // ===== 무적 상태 =====
+        if (player.isInvincible()) {
+            b.rebound();
+            break;
         }
 
-        // ===== [1] 공격: 건물 바로 밑에서 부수기 가능 =====
+        // ===== 공격 =====
         if (player.getAction() == PlayerAction::ATTACK) {
             b.takeHit();
             addScore(100);
             addCombo();
-            continue;
+            break;
         }
 
-        // ===== [4] 방어: 공중/지상 모두 위로 튕겨남 =====
+        // ===== 방어 =====
         if (player.getAction() == PlayerAction::DEFEND) {
             b.rebound();
-            continue;
+            break;
         }
 
-        // ===== [2] 지상 충돌: 캐릭터 생명 깎이고 건물 한 칸 튕김 =====
-        if (isOnGround) {
-            player.takeDamage();
-            decreaseLife();
-            resetCombo();
-            b.rebound();
-            continue;
-        }
-
-        // ===== [3] 공중 충돌: 캐릭터 막힘 (생명만 깎임) =====
-        {
-            resetCombo();
-        }
+        // ===== 지상 피격 =====
+        player.takeDamage();
+        decreaseLife();
+        resetCombo();
+        b.rebound();
+        break;
     }
 }
 
