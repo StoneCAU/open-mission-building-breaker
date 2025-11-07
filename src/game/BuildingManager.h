@@ -11,7 +11,8 @@ public:
     void updateAll();         // 모든 빌딩 상태 갱신 (하강, 제거, 보충)
 
     // ===== 데이터 접근 =====
-    std::vector<Building>& getAll(); // 전체 빌딩 참조 반환
+    std::vector<Building>& getAll();
+    const std::vector<Building>& getAll() const;
 
 private:
     std::vector<Building> buildings;
