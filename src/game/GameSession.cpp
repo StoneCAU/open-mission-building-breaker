@@ -17,8 +17,12 @@ void GameSession::reset() {
     life = INITIAL_LIFE;
 }
 
+void GameSession::handleInput(InputKey key) {
+    player.handleInput(key);
+}
+
 void GameSession::update() {
-    // TODO: 추후 건물 낙하, 충돌 판정 등 추가
+    player.update();
 }
 
 void GameSession::addScore(int value) {
@@ -37,6 +41,10 @@ void GameSession::decreaseLife() {
 
 bool GameSession::isGameOver() const {
     return life <= 0;
+}
+
+const Player& GameSession::getPlayer() const {
+    return player;
 }
 
 int GameSession::getScore() const {

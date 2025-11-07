@@ -1,4 +1,5 @@
 #pragma once
+#include "Player.h"
 
 class GameSession {
 public:
@@ -6,6 +7,10 @@ public:
 
     void start();
     void update();
+    void handleInput(InputKey key);
+
+    const Player& getPlayer() const;
+
 
     void addScore(int value);
     void addCombo();
@@ -22,6 +27,7 @@ public:
 private:
     void reset();
 
+    Player player;
     int score;
     int combo;
     int gauge;
