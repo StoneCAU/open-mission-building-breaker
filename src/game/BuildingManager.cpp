@@ -13,16 +13,28 @@ void BuildingManager::initBuildings() {
     while (buildings.size() < GameConfig::MIN_ONSCREEN_BUILDINGS) {
         addRandomBuilding();
     }
+    spawnCooldown = GameConfig::BUILDING_SPAWN_COOLDOWN;
 }
 
 void BuildingManager::updateAll() {
-    // ===== 상태 갱신 =====
-    for (auto& b : buildings) {
-        if (b.isRebounding()) b.updateRebound();
-        else b.updateFall();
-    }
+    updateBuildings();
+    removeOffscreenBuildings();
+    handleSpawn();
+}
 
-    // ===== 화면 아래로 완전히 사라진 빌딩 제거 =====
+// ==================== 내부 분리 ====================
+
+void BuildingManager::updateBuildings() {
+    for (auto& b : buildings) {
+        if (b.isRebounding()) {
+            b.updateRebound();
+        } else {
+            b.updateFall();
+        }
+    }
+}
+
+void BuildingManager::removeOffscreenBuildings() {
     buildings.erase(
         std::remove_if(buildings.begin(), buildings.end(),
             [](const Building& b) {
@@ -30,11 +42,19 @@ void BuildingManager::updateAll() {
             }),
         buildings.end()
     );
+}
 
-    // ===== 부족하면 새 빌딩 생성 =====
-    while (buildings.size() < GameConfig::MIN_ONSCREEN_BUILDINGS) {
+void BuildingManager::handleSpawn() {
+    if (spawnCooldown > 0) {
+        spawnCooldown--;
+        return;
+    }
+
+    if (buildings.size() < GameConfig::MAX_ONSCREEN_BUILDINGS) {
         addRandomBuilding();
     }
+
+    spawnCooldown = GameConfig::BUILDING_SPAWN_COOLDOWN;
 }
 
 void BuildingManager::addRandomBuilding() {
@@ -67,10 +87,5 @@ bool BuildingManager::isOverlapping(int newX) const {
     return false;
 }
 
-std::vector<Building>& BuildingManager::getAll() {
-    return buildings;
-}
-
-const std::vector<Building>& BuildingManager::getAll() const {
-    return buildings;
-}
+std::vector<Building>& BuildingManager::getAll() { return buildings; }
+const std::vector<Building>& BuildingManager::getAll() const { return buildings; }
