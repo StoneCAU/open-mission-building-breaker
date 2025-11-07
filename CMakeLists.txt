@@ -14,6 +14,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/game/GameSession.h
         src/game/Player.cpp
         src/game/Player.h
-        src/game/GameConfig.h)
+        src/game/GameConfig.h
+        src/game/Building.cpp
+        src/game/Building.h)
 
 add_compile_options(/utf-8)
