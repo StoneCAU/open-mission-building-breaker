@@ -29,6 +29,7 @@ public:
 
 private:
     void reset();
+    void checkCollisions();
 
     Player player;
     BuildingManager buildingManager;
