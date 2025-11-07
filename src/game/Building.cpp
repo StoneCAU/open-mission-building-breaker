@@ -5,7 +5,7 @@ constexpr const char* BLOCK_UNIT = "#";
 constexpr int BUILDING_WIDTH = 3;
 constexpr int MIN_BUILDING_HEIGHT = 3;
 constexpr int MAX_BUILDING_HEIGHT = 6;
-constexpr int REBOUND_STRENGTH = 3;
+constexpr int REBOUND_STRENGTH = 10;
 constexpr int REBOUND_DECAY = 1;
 
 Building::Building(int x, int y, int height)
