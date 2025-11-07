@@ -25,5 +25,5 @@ private:
     /** ===================== 본문 렌더링 (빌딩 + 플레이어) ===================== **/
     void renderBody(const GameSession& session) const;
     void composeBuildings(const GameSession& session, std::vector<std::string>& screen) const;
-    void composePlayer(const Player& player, std::vector<std::string>& screen) const;
+    void composePlayer(const Player& p, const GameSession& s, std::vector<std::string>& screen) const;
 };

@@ -70,7 +70,6 @@ void UIRenderer::drawLine(std::vector<std::string>& screen, int x, int y, const 
     }
 }
 
-
 /** ===================== 메뉴 ===================== **/
 void UIRenderer::renderMenu(int highScore) const {
     printBorder();
@@ -133,19 +132,29 @@ void UIRenderer::composeBuildings(const GameSession& s, std::vector<std::string>
 }
 
 /** ===================== 플레이어 합성 ===================== **/
-void UIRenderer::composePlayer(const Player& p, std::vector<std::string>& screen) const {
-    const int x = p.getX();
-    const int y = static_cast<int>(p.getY());
-    if (!isInside(x, y)) return;
+void UIRenderer::composePlayer(const Player& p, const GameSession& s, std::vector<std::string>& screen) const {
+    const int px = p.getX();
+    const int py = static_cast<int>(p.getY());
+    if (!isInside(px, py)) return;
 
+    // 🔥 실제 위치 그대로 그리기
     std::string motion = ICON_PLAYER;
 
-    if (p.isDamaged()) motion = ICON_DAMAGED;
-    if (!p.isDamaged() && p.getAction() == PlayerAction::ATTACK) motion += ICON_ATTACK;
-    if (!p.isDamaged() && p.getAction() == PlayerAction::DEFEND) motion += ICON_DEFEND;
+    if (p.isDamaged()) {
+        motion = ICON_DAMAGED;
+    }
 
-    drawLine(screen, x, y, motion);
+    if (!p.isDamaged() && p.getAction() == PlayerAction::ATTACK) {
+        motion += ICON_ATTACK;
+    }
+
+    if (!p.isDamaged() && p.getAction() == PlayerAction::DEFEND) {
+        motion += ICON_DEFEND;
+    }
+
+    drawLine(screen, px, py, motion);
 }
+
 
 /** ===================== 본문 출력 (빌딩 + 플레이어) ===================== **/
 void UIRenderer::renderBody(const GameSession& s) const {
@@ -155,7 +164,7 @@ void UIRenderer::renderBody(const GameSession& s) const {
     );
 
     composeBuildings(s, screen);
-    composePlayer(s.getPlayer(), screen);
+    composePlayer(s.getPlayer(), s, screen);
 
     for (int y = 0; y <= GameConfig::MAP_GROUND_Y; ++y) {
         std::cout << screen[y] << NEW_LINE;
