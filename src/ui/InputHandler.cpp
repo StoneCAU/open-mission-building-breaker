@@ -1,28 +1,20 @@
 #include "InputHandler.h"
 #include <conio.h>
+#include <windows.h>
 
 InputKey InputHandler::getInput() {
-    if (!_kbhit()) {
-        return InputKey::NONE;
-    }
+    // 방향키
+    if (GetAsyncKeyState(VK_LEFT)  & 0x8000) return InputKey::LEFT;
+    if (GetAsyncKeyState(VK_RIGHT) & 0x8000) return InputKey::RIGHT;
+    if (GetAsyncKeyState(VK_UP)    & 0x8000) return InputKey::JUMP;
+    if (GetAsyncKeyState(VK_DOWN)  & 0x8000) return InputKey::DEFEND;
 
-    char input = _getch();
-
-    // 특수 키(2바이트) 감지 조건문
-    if (input == 0 || input == -32) {
-        input = _getch();
-        if (input == 75) return InputKey::LEFT;   // ←
-        if (input == 77) return InputKey::RIGHT;  // →
-        if (input == 72) return InputKey::JUMP;   // ↑
-        if (input == 80) return InputKey::DEFEND; // ↓
-    }
-
-    // 일반 키
-    if (input == 'z' || input == 'Z') return InputKey::ATTACK;
-    if (input == 'x' || input == 'X') return InputKey::ULTIMATE;
-    if (input == 'q' || input == 'Q') return InputKey::QUIT;
-    if (input == '\r') return InputKey::ENTER;  // Enter
-    if (input == 'r' || input == 'R') return InputKey::RESTART;
+    // 일반키
+    if (GetAsyncKeyState('Z') & 0x8000) return InputKey::ATTACK;
+    if (GetAsyncKeyState('X') & 0x8000) return InputKey::ULTIMATE;
+    if (GetAsyncKeyState('R') & 0x8000) return InputKey::RESTART;
+    if (GetAsyncKeyState('Q') & 0x8000) return InputKey::QUIT;
+    if (GetAsyncKeyState(VK_RETURN) & 0x8000) return InputKey::ENTER;
 
     return InputKey::NONE;
 }
