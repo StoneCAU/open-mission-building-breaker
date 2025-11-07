@@ -75,6 +75,13 @@ bool Player::tryAction(InputKey key, bool& canDo, PlayerAction type) {
         return false;
     }
 
+    // === 방어는 지속형이므로 canDefend 플래그를 사용하지 않음 ===
+    if (type == PlayerAction::DEFEND) {
+        action = PlayerAction::DEFEND;
+        actionFrame = 0; // 의미 없음
+        return true;
+    }
+
     if (!canDo) {
         return false;
     }
@@ -163,12 +170,16 @@ void Player::update() {
 }
 
 void Player::updateActionFrame() {
+    // 방어는 프레임 타이머에 의해 풀리지 않음
+    if (action == PlayerAction::DEFEND) {
+        return;
+    }
+
     if (actionFrame > 0) {
         --actionFrame;
     }
 
-    if (actionFrame == 0 &&
-        (action == PlayerAction::ATTACK || action == PlayerAction::DEFEND)) {
+    if (actionFrame == 0 && action == PlayerAction::ATTACK) {
         action = PlayerAction::IDLE;
     }
 }
@@ -182,8 +193,9 @@ void Player::updateKeyRelease() {
         canAttack = true;
     }
 
-    if (isReleased(VK_DOWN)) {
-        canDefend = true;
+    // ↓키를 떼면 방어 해제
+    if (isReleased(VK_DOWN) && action == PlayerAction::DEFEND) {
+        action = PlayerAction::IDLE;
     }
 
     if (!jumping && isReleased(VK_UP)) {
