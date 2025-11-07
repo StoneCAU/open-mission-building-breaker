@@ -79,26 +79,39 @@ void UIRenderer::renderPlaying(const GameSession& s) const {
     const int playerX = p.getX();
     const int playerY = p.getY();
 
-    // ===== 맵 높이만큼 출력 =====
+    std::string motion = "@";
+
+    // ----- PlayerAction 상태에 따라 모션 결정 -----
+    if (p.getAction() == PlayerAction::ATTACK) {
+        motion += "⚔️";
+    }
+
+    if (p.getAction() == PlayerAction::DEFEND) {
+        motion += "🛡️";
+    }
+
+    // ===== 맵 출력 =====
     for (int y = 0; y <= GameConfig::MAP_GROUND_Y; ++y) {
-        // 플레이어가 위치한 줄일 때
         if (y == playerY) {
             for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
-                if (x == playerX) std::cout << "@";
-                if (x != playerX) std::cout << " ";
+                if (x == playerX) {
+                    std::cout << motion;
+                }
+                if (x != playerX) {
+                    std::cout << " ";
+                }
             }
             std::cout << "\n";
             continue;
         }
 
-        // 빈 줄 처리 (else 금지)
+        // 빈 줄 출력
         for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
             std::cout << " ";
         }
         std::cout << "\n";
     }
 
-    // ===== 안내 =====
     std::cout << UNDERLINE << "\n";
     std::cout << CONTROL_GUIDE << "\n";
 }
