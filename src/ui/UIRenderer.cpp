@@ -1,6 +1,8 @@
 #include "UIRenderer.h"
 #include <iostream>
 
+#include "../game/GameConfig.h"
+
 namespace {
     // ====== 공통 UI 상수 ======
     constexpr const char* BORDER = "=====================================================";
@@ -64,21 +66,39 @@ void UIRenderer::renderPlaying(const GameSession& s) const {
               << " " << s.getGauge() << HUD_GAUGE_UNIT
               << SEPARATOR;
 
-    for (int i = 0; i < s.getLife(); ++i)
+    for (int i = 0; i < s.getLife(); ++i) {
         std::cout << HUD_LIFE_ICON << " ";
+    }
 
     std::cout << "\n";
     printBorder();
+    std::cout << "\n\n";
 
-    // 위쪽 공백
-    std::cout << "\n\n\n";
+    // ===== Player 표시 =====
+    const Player& p = s.getPlayer();
+    const int playerX = p.getX();
+    const int playerY = p.getY();
 
-    // 필드 영역은 추후 FieldRenderer로 대체
-    std::cout << "\n\n\n";
+    // ===== 맵 높이만큼 출력 =====
+    for (int y = 0; y <= GameConfig::MAP_GROUND_Y; ++y) {
+        // 플레이어가 위치한 줄일 때
+        if (y == playerY) {
+            for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
+                if (x == playerX) std::cout << "@";
+                if (x != playerX) std::cout << " ";
+            }
+            std::cout << "\n";
+            continue;
+        }
 
-    // 아래쪽 공백
-    std::cout << "\n";
+        // 빈 줄 처리 (else 금지)
+        for (int x = GameConfig::MAP_MIN_X; x <= GameConfig::MAP_MAX_X; ++x) {
+            std::cout << " ";
+        }
+        std::cout << "\n";
+    }
 
+    // ===== 안내 =====
     std::cout << UNDERLINE << "\n";
     std::cout << CONTROL_GUIDE << "\n";
 }

@@ -55,11 +55,9 @@ void Game::startGame() {
 void Game::runPlayingLoop() {
     while (isRunning && state == GameState::PLAYING) {
         InputKey key = InputHandler::getInput();
-        if (key == InputKey::NONE) continue;
 
-        if (key == InputKey::QUIT) {
-            isRunning = false;
-            return;
+        if (key != InputKey::NONE) {
+            session.handleInput(key);
         }
 
         session.update();
