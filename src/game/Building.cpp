@@ -2,7 +2,7 @@
 #include "../game/GameConfig.h"
 
 constexpr const char* BLOCK_UNIT = "#";
-constexpr int BUILDING_WIDTH = 3;
+constexpr int BUILDING_WIDTH = 6;
 constexpr int MIN_BUILDING_HEIGHT = 3;
 constexpr int MAX_BUILDING_HEIGHT = 6;
 constexpr int REBOUND_STRENGTH = 10;
