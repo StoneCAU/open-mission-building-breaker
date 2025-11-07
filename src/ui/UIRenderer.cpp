@@ -5,7 +5,7 @@
 
 namespace {
     // ====== 공통 UI 상수 ======
-    constexpr const char* BORDER = "=====================================================";
+    constexpr const char* BORDER = "==================================================";
     constexpr const char* TITLE = "        BUILDING BREAKER v1.0";
     constexpr const char* SEPARATOR = " | ";
 
