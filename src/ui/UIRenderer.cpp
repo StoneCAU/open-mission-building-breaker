@@ -58,12 +58,17 @@ void UIRenderer::drawLine(std::vector<std::string>& screen, int x, int y, const 
 
     for (int j = 0; j < static_cast<int>(text.size()); ++j) {
         int drawX = x + j;
-        if (drawX > GameConfig::MAP_MAX_X) break;
-        if (text[j] != ' ') {
-            screen[y][drawX] = text[j];
-        }
+
+        // 콘솔 경계 넘어가면 중단 (▩ 문자 깨짐 방지)
+        if (drawX >= GameConfig::MAP_MAX_X - 2) break;
+
+        const char ch = text[j];
+        if (ch == *SPACE) continue;  // 공백은 건너뜀
+
+        screen[y][drawX] = ch;
     }
 }
+
 
 /** ===================== 메뉴 ===================== **/
 void UIRenderer::renderMenu(int highScore) const {
@@ -146,7 +151,7 @@ void UIRenderer::composePlayer(const Player& p, std::vector<std::string>& screen
 void UIRenderer::renderBody(const GameSession& s) const {
     std::vector<std::string> screen(
         GameConfig::MAP_GROUND_Y + 1,
-        std::string(GameConfig::MAP_MAX_X + 1, ' ')
+        std::string(GameConfig::MAP_MAX_X + 1, *SPACE)
     );
 
     composeBuildings(s, screen);
