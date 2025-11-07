@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <windows.h>
+
 #include "../game/GameSession.h"
 
 class UIRenderer {
@@ -17,9 +19,7 @@ private:
     void renderHUD(const GameSession& session) const;
     void renderGuide() const;
 
-    // ====== 플레이어 렌더링 ======
-    void renderPlayer(const Player& player) const;
-    std::string getPlayerMotion(const Player& player) const;
-    void renderPlayerLine(int playerX, const std::string& motion) const;
-    void renderEmptyLine() const;
+    // ====== 플레이어 & 빌딩 통합 렌더링 ======
+    void composeBuildings(const GameSession& session, std::vector<std::string>& screen) const;
+    void composePlayer(const Player& player, std::vector<std::string>& screen) const;
 };
