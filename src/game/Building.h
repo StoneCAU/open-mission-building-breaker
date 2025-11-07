@@ -4,7 +4,7 @@
 
 class Building {
 public:
-    Building(int x, int startY, int height);
+    Building(int x, int y, int height);
 
     // ====== 상태 갱신 ======
     void updateFall();
@@ -29,7 +29,7 @@ public:
 private:
     // ----- 위치 / 크기 -----
     int x; // 콘솔 상의 가로 위치
-    int y; // 현재 상단 Y좌표
+    int y; // 현재 바닥 Y좌표
     int height; // 현재 층 수
 
     // ----- 상태 -----

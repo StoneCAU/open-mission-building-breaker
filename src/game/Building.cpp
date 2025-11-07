@@ -7,9 +7,9 @@ constexpr int MAX_BUILDING_HEIGHT = 6;
 constexpr int REBOUND_STRENGTH = 3;  // 튕겨오르는 세기
 constexpr int REBOUND_DECAY = 1;     // 프레임당 감속량
 
-Building::Building(int x, int startY, int height)
+Building::Building(int x, int y, int height)
     : x(x),
-      y(startY),
+      y(y),
       height(height),
       destroyed(false),
       falling(true),
@@ -48,6 +48,7 @@ void Building::takeHit() {
 
     shape.pop_back();
     --height;
+    --y;
 
     if (shape.empty()) {
         destroyed = true;
