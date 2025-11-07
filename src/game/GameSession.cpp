@@ -47,21 +47,41 @@ void GameSession::checkCollisions() {
         if (player.isJumping() && withinX) {
             const float headY = playerY - 1.0f;
 
-            // 🔥 범위 넓게 잡기 (속도 빨라도 감지되게)
             if (playerY <= buildingBottomY + 3.0f && headY <= buildingBottomY + 2.0f) {
                 float targetY = buildingBottomY + 1.0f;
                 player.forceFall(targetY);
 
-                // 🔥 땅에 닿으면 데미지 + 건물 튕겨냄
                 if (targetY >= GameConfig::MAP_GROUND_Y - 0.1f) {
-                    if (!player.isInvincible()) {
+                    if (player.getAction() == PlayerAction::DEFEND || player.isInvincible()) {
+                        b.rebound();
+                    } else {
                         player.takeDamage();
                         decreaseLife();
                         resetCombo();
+                        b.rebound();
                     }
-                    b.rebound();
                 }
                 continue;
+            }
+        }
+
+        /** [A-2] 🔥 점프 시작 직후 건물 범위 안에 있으면 피격 **/
+        if (player.isJumping() && withinX && isOnGround) {
+            // 점프 막 시작했는데 건물 안에 있음 = 꼼수
+            if (playerY >= buildingTopY - 1.0f && playerY <= buildingBottomY) {
+                // 방어 중이면 리바운드
+                if (player.getAction() == PlayerAction::DEFEND || player.isInvincible()) {
+                    b.rebound();
+                    player.forceFall(GameConfig::MAP_GROUND_Y);
+                } else {
+                    // 피격
+                    player.takeDamage();
+                    decreaseLife();
+                    resetCombo();
+                    b.rebound();
+                    player.forceFall(GameConfig::MAP_GROUND_Y);
+                }
+                break;
             }
         }
 
@@ -69,16 +89,32 @@ void GameSession::checkCollisions() {
         if (!withinX) continue;
         if (!(playerY >= buildingTopY && playerY <= buildingBottomY)) continue;
 
-        // 공중에서 피격 무시
-        if (!isOnGround) continue;
+        // 공중 충돌
+        if (!isOnGround) {
+            if (player.isInvincible()) {
+                b.rebound();
+                break;
+            }
+            if (player.getAction() == PlayerAction::DEFEND) {
+                b.rebound();
+                break;
+            }
+            if (player.getAction() == PlayerAction::ATTACK) {
+                b.takeHit();
+                addScore(100);
+                addCombo();
+                break;
+            }
+            player.forceFall(playerY);
+            break;
+        }
 
-        // ===== 무적 상태 =====
+        // 지상 충돌
         if (player.isInvincible()) {
             b.rebound();
             break;
         }
 
-        // ===== 공격 =====
         if (player.getAction() == PlayerAction::ATTACK) {
             b.takeHit();
             addScore(100);
@@ -86,13 +122,11 @@ void GameSession::checkCollisions() {
             break;
         }
 
-        // ===== 방어 =====
         if (player.getAction() == PlayerAction::DEFEND) {
             b.rebound();
             break;
         }
 
-        // ===== 지상 피격 =====
         player.takeDamage();
         decreaseLife();
         resetCombo();
