@@ -1,6 +1,13 @@
 #pragma once
 #include "../ui/InputHandler.h"
 
+enum class PlayerAction {
+    IDLE,
+    ATTACK,
+    DEFEND,
+    JUMP
+};
+
 class Player {
 public:
     Player();
@@ -11,6 +18,7 @@ public:
     int getX() const;
     int getY() const;
     bool isJumping() const;
+    PlayerAction getAction() const;
 
 private:
     void jump();
@@ -23,6 +31,11 @@ private:
     int y;
     bool jumping;
     bool canJump;
+    bool canAttack;
+    bool canDefend;
     int jumpFrame;
     int jumpCooldown;
+    int actionFrame;
+
+    PlayerAction action;
 };
