@@ -1,4 +1,5 @@
 #pragma once
+#include "Building.h"
 #include "../ui/InputHandler.h"
 
 enum class PlayerAction {
@@ -14,6 +15,7 @@ public:
 
     void handleInput(InputKey key);
     void update();
+    void forceFall(float newY);
 
     int getX() const;
     float getY() const;
@@ -22,6 +24,8 @@ public:
     // ====== 피격 여부 ======
     void takeDamage();
     bool isDamaged() const;
+    bool isInvincible() const;
+    void onReboundCollision(const Building& b, bool isGround);
 
     PlayerAction getAction() const;
 
@@ -58,6 +62,7 @@ private:
     bool canAttack;
     bool canDefend;
     bool damaged;
+    bool hitHead;
 
     float jumpFrame;
     int jumpCooldown;

@@ -25,7 +25,8 @@ Player::Player()
       action(PlayerAction::IDLE),
       actionFrame(0),
       damaged(false),
-      damageFrame(0) {}
+      damageFrame(0),
+      hitHead(false) {}
 
 /** ===================== 입력 처리 ===================== **/
 
@@ -146,6 +147,20 @@ void Player::finishJump() {
     }
 }
 
+void Player::forceFall(float newY) {
+    y = newY;
+
+    if (jumping) {
+        // 점프 중이면 낙하 구간으로 전환
+        jumpFrame = GameConfig::PLAYER_JUMP_DURATION / 2.0f;
+    }
+
+    // 🔥 땅에 닿았으면 점프 종료 처리
+    if (y >= GameConfig::MAP_GROUND_Y - 0.1f) {
+        finishJump();
+    }
+}
+
 /** ===================== 프레임 업데이트 ===================== **/
 
 void Player::update() {
@@ -208,9 +223,23 @@ bool Player::canMoveRight() const {
 void Player::takeDamage() {
     if (damageFrame > 0) return;
     damaged = true;
-    damageFrame = 10;
+    damageFrame = 30;
 }
 
+bool Player::isInvincible() const {
+    return damageFrame > 0;
+}
+
+void Player::onReboundCollision(const Building& b, bool isGround) {
+    if (isGround) {
+        // 지상에서 건물 반동 — 튕겨나감
+        y = GameConfig::MAP_GROUND_Y;
+        return;
+    }
+
+    // 공중 충돌 — 강제로 낙하 시작
+    forceFall(b.getY() + 1.0f);
+}
 /** ===================== Getter ===================== **/
 
 bool Player::isJumping() const {
