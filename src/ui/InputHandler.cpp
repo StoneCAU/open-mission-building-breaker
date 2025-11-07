@@ -3,18 +3,24 @@
 #include <windows.h>
 
 InputKey InputHandler::getInput() {
-    // 방향키
-    if (GetAsyncKeyState(VK_LEFT)  & 0x8000) return InputKey::LEFT;
-    if (GetAsyncKeyState(VK_RIGHT) & 0x8000) return InputKey::RIGHT;
-    if (GetAsyncKeyState(VK_UP)    & 0x8000) return InputKey::JUMP;
-    if (GetAsyncKeyState(VK_DOWN)  & 0x8000) return InputKey::DEFEND;
+    bool left = GetAsyncKeyState(VK_LEFT) & 0x8000;
+    bool right = GetAsyncKeyState(VK_RIGHT) & 0x8000;
+    bool up = GetAsyncKeyState(VK_UP) & 0x8000;
 
-    // 일반키
+    // ← + ↑ 동시 입력
+    if (left && up) return InputKey::MOVE_LEFT_JUMP;
+    if (right && up) return InputKey::MOVE_RIGHT_JUMP;
+
+    // 단일 키 입력
+    if (up) return InputKey::JUMP;
+    if (left) return InputKey::LEFT;
+    if (right) return InputKey::RIGHT;
+
     if (GetAsyncKeyState('Z') & 0x8000) return InputKey::ATTACK;
     if (GetAsyncKeyState('X') & 0x8000) return InputKey::ULTIMATE;
-    if (GetAsyncKeyState('R') & 0x8000) return InputKey::RESTART;
     if (GetAsyncKeyState('Q') & 0x8000) return InputKey::QUIT;
     if (GetAsyncKeyState(VK_RETURN) & 0x8000) return InputKey::ENTER;
+    if (GetAsyncKeyState('R') & 0x8000) return InputKey::RESTART;
 
     return InputKey::NONE;
 }

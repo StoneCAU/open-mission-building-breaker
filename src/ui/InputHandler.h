@@ -10,7 +10,9 @@ enum class InputKey {
     ULTIMATE,
     ENTER,
     QUIT,
-    RESTART
+    RESTART,
+    MOVE_LEFT_JUMP,
+    MOVE_RIGHT_JUMP
 };
 
 class InputHandler {
