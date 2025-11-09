@@ -17,8 +17,17 @@ PlayerAction::PlayerAction()
       canAttack(true),
       canDefend(true) {}
 
-bool PlayerAction::tryAttack(InputKey key) {
-    if (key != InputKey::ATTACK) return false;
+void PlayerAction::handleInput(InputKey key) {
+    if (key == InputKey::ATTACK) {
+        tryAttack();
+    }
+
+    if (key == InputKey::DEFEND) {
+        tryDefend();
+    }
+}
+
+bool PlayerAction::tryAttack() {
     if (actionCooldown > 0) return false;
     if (!canAttack) return false;
 
@@ -28,8 +37,7 @@ bool PlayerAction::tryAttack(InputKey key) {
     return true;
 }
 
-bool PlayerAction::tryDefend(InputKey key) {
-    if (key != InputKey::DEFEND) return false;
+bool PlayerAction::tryDefend() {
     if (actionCooldown > 0) return false;
 
     action = PlayerActionType::DEFEND;

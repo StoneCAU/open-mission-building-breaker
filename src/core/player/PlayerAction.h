@@ -6,8 +6,7 @@ class PlayerAction {
 public:
     PlayerAction();
 
-    bool tryAttack(InputKey key);
-    bool tryDefend(InputKey key);
+    void handleInput(InputKey key);
     void update();
 
     PlayerActionType getType() const;
@@ -21,6 +20,9 @@ private:
 
     bool canAttack;
     bool canDefend;
+
+    bool tryAttack();
+    bool tryDefend();
 
     void updateActionFrame();
     void updateKeyRelease();
