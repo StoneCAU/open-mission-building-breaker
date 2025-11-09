@@ -1,10 +1,11 @@
 #include "PlayerCollision.h"
+#include "../building/Building.h"
 #include "PlayerMovement.h"
 #include "PlayerAction.h"
 #include "../game/GameConfig.h"
 
-PlayerCollision::PlayerCollision(int& x, float& y, 
-                                 PlayerMovement& movement, 
+PlayerCollision::PlayerCollision(int& x, float& y,
+                                 PlayerMovement& movement,
                                  PlayerAction& action)
     : x(x), y(y),
       movement(movement),
@@ -12,130 +13,138 @@ PlayerCollision::PlayerCollision(int& x, float& y,
       damaged(false),
       damageFrame(0) {}
 
-CollisionResult PlayerCollision::processCollision(Building& b) {
-    CollisionResult result = tryHandleHeadCollision(b);
+CollisionResult PlayerCollision::processCollision(Building& building) {
+    CollisionResult result = tryHandleHeadCollision(building);
     if (result.type != CollisionResult::Type::NONE) return result;
 
-    result = tryHandleAttackRange(b);
+    result = tryHandleAttackRange(building);
     if (result.type != CollisionResult::Type::NONE) return result;
 
-    result = tryHandleDefenseRange(b);
+    result = tryHandleDefenseRange(building);
     if (result.type != CollisionResult::Type::NONE) return result;
 
-    return handleBodyCollision(b);
+    return handleBodyCollision(building);
 }
 
-CollisionResult PlayerCollision::tryHandleHeadCollision(Building& b) {
+CollisionResult PlayerCollision::tryHandleHeadCollision(Building& building) {
     if (!movement.isJumping()) return {CollisionResult::Type::NONE, nullptr};
 
     const float headY = y - 1.0f;
-    const float buildingBottom = b.getY();
+    const float buildingBottom = building.getY();
 
     if (headY > buildingBottom) return {CollisionResult::Type::NONE, nullptr};
 
     movement.forceFall(buildingBottom + 1.0f);
 
     if (action.getType() == PlayerActionType::ATTACK) {
-        b.takeHit();
-        return {CollisionResult::Type::ATTACK_HIT, &b};
+        building.takeHit();
+        return {CollisionResult::Type::ATTACK_HIT, &building};
     }
 
     if (action.getType() == PlayerActionType::DEFEND) {
-        b.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+        building.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 
     if (isGroundLevel(buildingBottom + 1.0f)) {
-        return processHeadDamage(b);
+        return processHeadDamage(building);
     }
 
     return {CollisionResult::Type::NONE, nullptr};
 }
 
-CollisionResult PlayerCollision::tryHandleAttackRange(Building& b) {
-    if (action.getType() != PlayerActionType::ATTACK) return {CollisionResult::Type::NONE, nullptr};
+CollisionResult PlayerCollision::tryHandleAttackRange(Building& building) {
+    if (action.getType() != PlayerActionType::ATTACK) {
+        return {CollisionResult::Type::NONE, nullptr};
+    }
 
     const float headY = y - 1.0f;
-    const float buildingBottom = b.getY();
+    const float buildingBottom = building.getY();
 
     if (buildingBottom > headY) return {CollisionResult::Type::NONE, nullptr};
-    if (buildingBottom < headY - GameConfig::PLAYER_ATTACK_RANGE) return {CollisionResult::Type::NONE, nullptr};
+    if (buildingBottom < headY - GameConfig::PLAYER_ATTACK_RANGE) {
+        return {CollisionResult::Type::NONE, nullptr};
+    }
 
-    b.takeHit();
-    return {CollisionResult::Type::ATTACK_HIT, &b};
+    building.takeHit();
+    return {CollisionResult::Type::ATTACK_HIT, &building};
 }
 
-CollisionResult PlayerCollision::tryHandleDefenseRange(Building& b) {
-    if (action.getType() != PlayerActionType::DEFEND) return {CollisionResult::Type::NONE, nullptr};
+CollisionResult PlayerCollision::tryHandleDefenseRange(Building& building) {
+    if (action.getType() != PlayerActionType::DEFEND) {
+        return {CollisionResult::Type::NONE, nullptr};
+    }
 
     const float headY = y - 1.0f;
-    const float buildingBottom = b.getY();
+    const float buildingBottom = building.getY();
 
     if (buildingBottom > headY) return {CollisionResult::Type::NONE, nullptr};
-    if (buildingBottom < headY - GameConfig::PLAYER_DEFENSE_RANGE) return {CollisionResult::Type::NONE, nullptr};
+    if (buildingBottom < headY - GameConfig::PLAYER_DEFENSE_RANGE) {
+        return {CollisionResult::Type::NONE, nullptr};
+    }
 
-    b.rebound();
-    return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    building.rebound();
+    return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
 }
 
-CollisionResult PlayerCollision::handleBodyCollision(Building& b) {
+CollisionResult PlayerCollision::handleBodyCollision(Building& building) {
     if (!isGroundLevel(y)) {
-        return processAirCollision(b);
+        return processAirCollision(building);
     } else {
-        return processGroundCollision(b);
+        return processGroundCollision(building);
     }
 }
 
-CollisionResult PlayerCollision::processHeadDamage(Building& b) {
+CollisionResult PlayerCollision::processHeadDamage(Building& building) {
     if (!isInvincible()) {
         takeDamage();
-        b.rebound();
-        return {CollisionResult::Type::PLAYER_DAMAGED, &b};
+        building.rebound();
+        return {CollisionResult::Type::PLAYER_DAMAGED, &building};
     } else {
-        b.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+        building.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 }
 
-CollisionResult PlayerCollision::processAirCollision(Building& b) {
+CollisionResult PlayerCollision::processAirCollision(Building& building) {
     if (isInvincible()) {
-        b.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+        building.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 
     if (action.getType() == PlayerActionType::DEFEND) {
-        b.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+        building.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 
     if (action.getType() == PlayerActionType::ATTACK) {
-        b.takeHit();
-        return {CollisionResult::Type::ATTACK_HIT, &b};
+        building.takeHit();
+        return {CollisionResult::Type::ATTACK_HIT, &building};
     }
 
     movement.forceFall(y);
     return {CollisionResult::Type::NONE, nullptr};
 }
 
-CollisionResult PlayerCollision::processGroundCollision(Building& b) {
+CollisionResult PlayerCollision::processGroundCollision(Building& building) {
     if (isInvincible()) {
-        b.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+        building.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 
     if (action.getType() == PlayerActionType::ATTACK) {
-        b.takeHit();
-        return {CollisionResult::Type::ATTACK_HIT, &b};
+        building.takeHit();
+        return {CollisionResult::Type::ATTACK_HIT, &building};
     }
 
     if (action.getType() == PlayerActionType::DEFEND) {
-        b.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+        building.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 
     takeDamage();
-    b.rebound();
-    return {CollisionResult::Type::PLAYER_DAMAGED, &b};
+    building.rebound();
+    return {CollisionResult::Type::PLAYER_DAMAGED, &building};
 }
 
 bool PlayerCollision::isGroundLevel(float y) const {
