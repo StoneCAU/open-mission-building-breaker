@@ -1,13 +1,15 @@
 #pragma once
-#include "Building.h"
+#include "CollisionResult.h"
 #include "../ui/InputHandler.h"
+
+class Building;
 
 enum class PlayerAction {
     IDLE,
     ATTACK,
-    DEFEND,
-    JUMP
+    DEFEND
 };
+
 
 class Player {
 public:
@@ -15,60 +17,60 @@ public:
 
     void handleInput(InputKey key);
     void update();
-    void forceFall(float newY);
+    CollisionResult processCollision(Building& building);
 
+    bool isJumping() const;
     int getX() const;
     float getY() const;
-    bool isJumping() const;
-
-    // ====== 피격 여부 ======
-    void takeDamage();
-    bool isDamaged() const;
-    bool isInvincible() const;
-    void onReboundCollision(const Building& b, bool isGround);
-
     PlayerAction getAction() const;
+    bool isDamaged() const;
+
+    void takeDamage();
+    bool isInvincible() const;
+    void forceFall(float newY);
 
 private:
-    // ====== 입력 처리 ======
+    int x;
+    float y;
+    bool jumping;
+    bool canJump;
+    bool canAttack;
+    bool canDefend;
+    int jumpFrame;
+    int jumpCooldown;
+    PlayerAction action;
+    int actionFrame;
+    bool damaged;
+    int damageFrame;
+    bool hitHead;
+    int actionCooldown;
+
     void handleGroundInput(InputKey key);
     void handleAirInput(InputKey key);
     void handleMovement(InputKey key);
-
-    // ====== 액션 처리 ======
     bool tryAction(InputKey key, bool& canDo, PlayerAction type);
     bool tryJump(InputKey key);
 
-    // ====== 점프 처리 ======
     void jump();
     void applyJumpMotion();
     void applyJumpRise(float half);
     void applyJumpFall(float half);
     void finishJump();
 
-    // ====== 프레임 처리 ======
     void updateActionFrame();
     void updateKeyRelease();
 
-    // ====== 이동 가능 여부 ======
     bool canMoveLeft() const;
     bool canMoveRight() const;
 
-    int x;
-    float y;
+    CollisionResult tryHandleHeadCollision(Building& b);
+    CollisionResult tryHandleAttackRange(Building& b);
+    CollisionResult tryHandleDefenseRange(Building& b);
+    CollisionResult handleBodyCollision(Building& b);
 
-    bool jumping;
-    bool canJump;
-    bool canAttack;
-    bool canDefend;
-    bool damaged;
-    bool hitHead;
+    CollisionResult processHeadDamage(Building& b);
+    CollisionResult processAirCollision(Building& b);
+    CollisionResult processGroundCollision(Building& b);
 
-    float jumpFrame;
-    int jumpCooldown;
-    int damageFrame;
-    int actionCooldown;
-
-    PlayerAction action;
-    int actionFrame;
+    bool isGroundLevel(float y) const;
 };

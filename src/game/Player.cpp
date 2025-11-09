@@ -1,7 +1,8 @@
 #include "Player.h"
-#include "GameConfig.h"
-#include "../ui/InputHandler.h"
+#include "Building.h"
 #include <windows.h>
+
+#include "GameConfig.h"
 
 namespace InputUtils {
     inline bool isPressed(int key) {
@@ -27,14 +28,12 @@ Player::Player()
       damaged(false),
       damageFrame(0),
       hitHead(false),
-      actionCooldown(0){}
+      actionCooldown(0) {}
 
 /** ===================== 입력 처리 ===================== **/
 
 void Player::handleInput(InputKey key) {
-    if (damaged) {
-        return;
-    }
+    if (damaged) return;
 
     if (jumping) {
         handleAirInput(key);
@@ -66,16 +65,12 @@ void Player::handleMovement(InputKey key) {
     }
 }
 
-/** ===================== 액션 처리 ===================== **/
-
 bool Player::tryAction(InputKey key, bool& canDo, PlayerAction type) {
     if (type == PlayerAction::ATTACK && key != InputKey::ATTACK) return false;
     if (type == PlayerAction::DEFEND && key != InputKey::DEFEND) return false;
 
-    // 🔥 점프 직후 쿨타임 체크
     if (actionCooldown > 0) return false;
 
-    // 방어는 지속형
     if (type == PlayerAction::DEFEND) {
         action = PlayerAction::DEFEND;
         actionFrame = 0;
@@ -109,7 +104,7 @@ void Player::jump() {
     jumping = true;
     canJump = false;
     jumpFrame = 0;
-    actionCooldown = 15;  // 🔥 점프 후 3프레임 동안 액션 불가 (약 0.06초)
+    actionCooldown = 15;
 }
 
 void Player::applyJumpMotion() {
@@ -146,7 +141,6 @@ void Player::finishJump() {
     jumping = false;
     jumpCooldown = GameConfig::PLAYER_JUMP_COOLDOWN_MAX;
 
-    // 🔥 방어는 유지, 공격만 초기화
     if (action == PlayerAction::ATTACK) {
         action = PlayerAction::IDLE;
         actionFrame = 0;
@@ -157,11 +151,9 @@ void Player::forceFall(float newY) {
     y = newY;
 
     if (jumping) {
-        // 점프 중이면 낙하 구간으로 전환
         jumpFrame = GameConfig::PLAYER_JUMP_DURATION / 2.0f;
     }
 
-    // 🔥 땅에 닿았으면 점프 종료 처리
     if (y >= GameConfig::MAP_GROUND_Y - 0.1f) {
         finishJump();
     }
@@ -180,7 +172,6 @@ void Player::update() {
         --jumpCooldown;
     }
 
-    // 🔥 액션 쿨타임 감소
     if (actionCooldown > 0) {
         --actionCooldown;
     }
@@ -205,8 +196,6 @@ void Player::updateActionFrame() {
     }
 }
 
-/** ===================== 입력 해제 감지 ===================== **/
-
 void Player::updateKeyRelease() {
     using namespace InputUtils;
 
@@ -219,7 +208,139 @@ void Player::updateKeyRelease() {
         canJump = true;
 }
 
+/** ===================== 🔥 충돌 처리 ===================== **/
+
+CollisionResult Player::processCollision(Building& b) {
+    CollisionResult result = tryHandleHeadCollision(b);
+    if (result.type != CollisionResult::Type::NONE) return result;
+
+    result = tryHandleAttackRange(b);
+    if (result.type != CollisionResult::Type::NONE) return result;
+
+    result = tryHandleDefenseRange(b);
+    if (result.type != CollisionResult::Type::NONE) return result;
+
+    return handleBodyCollision(b);
+}
+
+CollisionResult Player::tryHandleHeadCollision(Building& b) {
+    if (!jumping) return {CollisionResult::Type::NONE, nullptr};
+
+    const float headY = y - 1.0f;
+    const float buildingBottom = b.getY();
+
+    if (headY > buildingBottom) return {CollisionResult::Type::NONE, nullptr};
+
+    forceFall(buildingBottom + 1.0f);
+
+    if (action == PlayerAction::ATTACK) {
+        b.takeHit();
+        return {CollisionResult::Type::ATTACK_HIT, &b};
+    }
+
+    if (action == PlayerAction::DEFEND) {
+        b.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    }
+
+    if (isGroundLevel(buildingBottom + 1.0f)) {
+        return processHeadDamage(b);
+    }
+
+    return {CollisionResult::Type::NONE, nullptr};
+}
+
+CollisionResult Player::tryHandleAttackRange(Building& b) {
+    if (action != PlayerAction::ATTACK) return {CollisionResult::Type::NONE, nullptr};
+
+    const float headY = y - 1.0f;
+    const float buildingBottom = b.getY();
+
+    if (buildingBottom > headY) return {CollisionResult::Type::NONE, nullptr};
+    if (buildingBottom < headY - GameConfig::PLAYER_ATTACK_RANGE) return {CollisionResult::Type::NONE, nullptr};
+
+    b.takeHit();
+    return {CollisionResult::Type::ATTACK_HIT, &b};
+}
+
+CollisionResult Player::tryHandleDefenseRange(Building& b) {
+    if (action != PlayerAction::DEFEND) return {CollisionResult::Type::NONE, nullptr};
+
+    const float headY = y - 1.0f;
+    const float buildingBottom = b.getY();
+
+    if (buildingBottom > headY) return {CollisionResult::Type::NONE, nullptr};
+    if (buildingBottom < headY - GameConfig::PLAYER_DEFENSE_RANGE) return {CollisionResult::Type::NONE, nullptr};
+
+    b.rebound();
+    return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+}
+
+CollisionResult Player::handleBodyCollision(Building& b) {
+    if (!isGroundLevel(y)) {
+        return processAirCollision(b);
+    } else {
+        return processGroundCollision(b);
+    }
+}
+
+CollisionResult Player::processHeadDamage(Building& b) {
+    if (!isInvincible()) {
+        takeDamage();
+        b.rebound();
+        return {CollisionResult::Type::PLAYER_DAMAGED, &b};
+    } else {
+        b.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    }
+}
+
+CollisionResult Player::processAirCollision(Building& b) {
+    if (isInvincible()) {
+        b.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    }
+
+    if (action == PlayerAction::DEFEND) {
+        b.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    }
+
+    if (action == PlayerAction::ATTACK) {
+        b.takeHit();
+        return {CollisionResult::Type::ATTACK_HIT, &b};
+    }
+
+    forceFall(y);
+    return {CollisionResult::Type::NONE, nullptr};
+}
+
+CollisionResult Player::processGroundCollision(Building& b) {
+    if (isInvincible()) {
+        b.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    }
+
+    if (action == PlayerAction::ATTACK) {
+        b.takeHit();
+        return {CollisionResult::Type::ATTACK_HIT, &b};
+    }
+
+    if (action == PlayerAction::DEFEND) {
+        b.rebound();
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &b};
+    }
+
+    takeDamage();
+    b.rebound();
+    return {CollisionResult::Type::PLAYER_DAMAGED, &b};
+}
+
 /** ===================== 유틸 ===================== **/
+
+bool Player::isGroundLevel(float y) const {
+    return y >= GameConfig::MAP_GROUND_Y - 0.1f;
+}
 
 bool Player::canMoveLeft() const {
     return x > GameConfig::MAP_MIN_X;
@@ -228,8 +349,6 @@ bool Player::canMoveLeft() const {
 bool Player::canMoveRight() const {
     return x < GameConfig::MAP_MAX_X;
 }
-
-/** ===================== 피격 처리 ===================== **/
 
 void Player::takeDamage() {
     if (damageFrame > 0) return;
@@ -241,16 +360,6 @@ bool Player::isInvincible() const {
     return damageFrame > 0;
 }
 
-void Player::onReboundCollision(const Building& b, bool isGround) {
-    if (isGround) {
-        // 지상에서 건물 반동 — 튕겨나감
-        y = GameConfig::MAP_GROUND_Y;
-        return;
-    }
-
-    // 공중 충돌 — 강제로 낙하 시작
-    forceFall(b.getY() + 1.0f);
-}
 /** ===================== Getter ===================== **/
 
 bool Player::isJumping() const {
