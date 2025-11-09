@@ -1,0 +1,81 @@
+#include "PlayerAction.h"
+#include <windows.h>
+
+#include "../../ui/InputHandler.h"
+#include "../game/GameConfig.h"
+
+namespace {
+    inline bool isKeyReleased(int key) {
+        return (GetAsyncKeyState(key) & 0x8000) == 0;
+    }
+}
+
+PlayerAction::PlayerAction()
+    : action(PlayerActionType::IDLE),
+      actionFrame(0),
+      actionCooldown(0),
+      canAttack(true),
+      canDefend(true) {}
+
+bool PlayerAction::tryAttack(InputKey key) {
+    if (key != InputKey::ATTACK) return false;
+    if (actionCooldown > 0) return false;
+    if (!canAttack) return false;
+
+    action = PlayerActionType::ATTACK;
+    actionFrame = GameConfig::PLAYER_ACTION_DURATION;
+    canAttack = false;
+    return true;
+}
+
+bool PlayerAction::tryDefend(InputKey key) {
+    if (key != InputKey::DEFEND) return false;
+    if (actionCooldown > 0) return false;
+
+    action = PlayerActionType::DEFEND;
+    actionFrame = 0;
+    return true;
+}
+
+void PlayerAction::update() {
+    updateActionFrame();
+    updateKeyRelease();
+
+    if (actionCooldown > 0) {
+        --actionCooldown;
+    }
+}
+
+void PlayerAction::updateActionFrame() {
+    if (action == PlayerActionType::DEFEND) return;
+
+    if (actionFrame > 0) {
+        --actionFrame;
+    }
+
+    if (actionFrame == 0 && action == PlayerActionType::ATTACK) {
+        action = PlayerActionType::IDLE;
+    }
+}
+
+void PlayerAction::updateKeyRelease() {
+    if (isKeyReleased('Z')) {
+        canAttack = true;
+    }
+
+    if (isKeyReleased(VK_DOWN) && action == PlayerActionType::DEFEND) {
+        action = PlayerActionType::IDLE;
+    }
+}
+
+PlayerActionType PlayerAction::getType() const {
+    return action;
+}
+
+int PlayerAction::getActionCooldown() const {
+    return actionCooldown;
+}
+
+void PlayerAction::setActionCooldown(int value) {
+    actionCooldown = value;
+}
