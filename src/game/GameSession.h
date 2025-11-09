@@ -1,35 +1,32 @@
 #pragma once
-#include "BuildingManager.h"
 #include "Player.h"
+#include "BuildingManager.h"
+#include "../ui/InputHandler.h"
 
 class GameSession {
 public:
     GameSession();
 
     void start();
-    void update();
+    void reset();
     void handleInput(InputKey key);
+    void update();
 
     const Player& getPlayer() const;
-
     BuildingManager& getBuildingManager();
     const BuildingManager& getBuildingManager() const;
-
-    void addScore(int value);
-    void addCombo();
-    void resetCombo();
-    void decreaseLife();
-
-    bool isGameOver() const;
 
     int getScore() const;
     int getCombo() const;
     int getGauge() const;
     int getLife() const;
+    bool isGameOver() const;
 
 private:
-    void reset();
-    void checkCollisions();
+    static constexpr int INITIAL_SCORE = 0;
+    static constexpr int INITIAL_COMBO = 0;
+    static constexpr int INITIAL_GAUGE = 0;
+    static constexpr int INITIAL_LIFE = 3;
 
     Player player;
     BuildingManager buildingManager;
@@ -39,8 +36,14 @@ private:
     int gauge;
     int life;
 
-    static constexpr int INITIAL_LIFE = 3;
-    static constexpr int INITIAL_GAUGE = 0;
-    static constexpr int INITIAL_SCORE = 0;
-    static constexpr int INITIAL_COMBO = 0;
+    void checkAndHandleCollision();
+    void handleCollisionResult(const CollisionResult& result);
+    
+    void onAttackHit();
+    void onPlayerDamaged();
+    
+    void addScore(int value);
+    void addCombo();
+    void resetCombo();
+    void decreaseLife();
 };
