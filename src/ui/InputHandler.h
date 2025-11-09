@@ -18,6 +18,7 @@ enum class InputKey {
 class InputHandler {
 public:
     static InputKey getInput();
+    static bool isKeyReleased(int vkCode);
 
 private:
     static InputKey getCombinedInput();

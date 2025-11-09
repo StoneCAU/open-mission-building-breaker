@@ -4,12 +4,6 @@
 #include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
-namespace {
-    inline bool isKeyReleased(int key) {
-        return (GetAsyncKeyState(key) & 0x8000) == 0;
-    }
-}
-
 PlayerAction::PlayerAction()
     : action(PlayerActionType::IDLE),
       actionFrame(0),
@@ -67,11 +61,11 @@ void PlayerAction::updateActionFrame() {
 }
 
 void PlayerAction::updateKeyRelease() {
-    if (isKeyReleased('Z')) {
+    if (InputHandler::isKeyReleased('Z')) {
         canAttack = true;
     }
 
-    if (isKeyReleased(VK_DOWN) && action == PlayerActionType::DEFEND) {
+    if (InputHandler::isKeyReleased(VK_DOWN) && action == PlayerActionType::DEFEND) {
         action = PlayerActionType::IDLE;
     }
 }

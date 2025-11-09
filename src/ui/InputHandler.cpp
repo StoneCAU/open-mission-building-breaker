@@ -12,6 +12,10 @@ namespace {
     }
 }
 
+bool InputHandler::isKeyReleased(int vkCode) {
+    return (GetAsyncKeyState(vkCode) & 0x8000) == 0;
+}
+
 InputKey InputHandler::getInput() {
     // 순서: 복합 → 단일 → 일반키
     InputKey key = getCombinedInput();
