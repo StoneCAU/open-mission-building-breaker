@@ -5,12 +5,11 @@ class PlayerMovement {
 public:
     PlayerMovement(int& x, float& y);
 
-    void handleMovement(InputKey key);
-    bool tryJump(InputKey key);
     void update();
     
     void forceFall(float newY);
     bool isJumping() const;
+    bool handleInput(InputKey key);
 
 private:
     int& x;
@@ -32,4 +31,7 @@ private:
     
     bool canMoveLeft() const;
     bool canMoveRight() const;
+
+    void handleMovement(InputKey key);
+    bool tryJump(InputKey key);
 };

@@ -17,6 +17,16 @@ PlayerMovement::PlayerMovement(int& x, float& y)
       jumpFrame(0),
       jumpCooldown(0) {}
 
+bool PlayerMovement::handleInput(InputKey key) {
+    bool jumped = tryJump(key);
+
+    if (!jumping) {
+        handleMovement(key);
+    }
+
+    return jumped;
+}
+
 void PlayerMovement::handleMovement(InputKey key) {
     if (key == InputKey::LEFT && canMoveLeft()) {
         --x;
