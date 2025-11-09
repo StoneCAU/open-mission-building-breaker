@@ -2,11 +2,6 @@
 #include "../game/GameConfig.h"
 
 constexpr const char* BLOCK_UNIT = "#";
-constexpr int BUILDING_WIDTH = 6;
-constexpr int MIN_BUILDING_HEIGHT = 3;
-constexpr int MAX_BUILDING_HEIGHT = 6;
-constexpr int REBOUND_STRENGTH = 10;
-constexpr int REBOUND_DECAY = 1;
 
 Building::Building(int x, int y, int height)
     : x(x),
@@ -26,7 +21,7 @@ Building::Building(int x, int y, int height)
 void Building::initShape() {
     shape.clear();
     std::string blockLine;
-    for (int i = 0; i < BUILDING_WIDTH; ++i) {
+    for (int i = 0; i < GameConfig::BUILDING_WIDTH; ++i) {
         blockLine += BLOCK_UNIT;
     }
     for (int i = 0; i < height; ++i) {
@@ -71,7 +66,7 @@ void Building::rebound() {
     if (destroyed) {
         return;
     }
-    reboundPower = REBOUND_STRENGTH;
+    reboundPower = GameConfig::BUILDING_REBOUND_STRENGTH;
     falling = false;
     rebounding = true;
 }
@@ -86,7 +81,7 @@ void Building::updateRebound() {
 
     yPos -= 1.0f;
     y = static_cast<int>(yPos);
-    reboundPower -= REBOUND_DECAY;
+    reboundPower -= GameConfig::BUILDING_REBOUND_DECAY;
 
     if (reboundPower <= 0) {
         rebounding = false;
@@ -96,7 +91,7 @@ void Building::updateRebound() {
 
 bool Building::collidesWith(int playerX, float playerY) const {
     // 플레이어와 수평 위치가 겹치는가?
-    bool xOverlap = (playerX >= x && playerX < x + BUILDING_WIDTH);
+    bool xOverlap = (playerX >= x && playerX < x + GameConfig::BUILDING_WIDTH);
 
     // 플레이어가 빌딩의 높이 범위 안에 있는가?
     int buildingTop = y - height + 1;

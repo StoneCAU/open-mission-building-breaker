@@ -8,13 +8,18 @@ namespace GameConfig {
     inline constexpr int MAP_GROUND_Y = 20;
 
     // ===== 빌딩 관련 =====
-    inline constexpr int BUILDING_WIDTH = 3;
+    inline constexpr int BUILDING_WIDTH = 6;
     inline constexpr int MIN_BUILDING_HEIGHT = 3;
     inline constexpr int MAX_BUILDING_HEIGHT = 6;
     inline constexpr int MIN_ONSCREEN_BUILDINGS = 3;
     inline constexpr int MAX_ONSCREEN_BUILDINGS = 5;
     inline constexpr int BUILDING_SPAWN_COOLDOWN = 80;
     inline constexpr float BUILDING_FALL_SPEED = 0.15f;
+
+    // ===== 빌딩 물리/반응 =====
+    inline constexpr int BUILDING_REBOUND_STRENGTH = 10;
+    inline constexpr int BUILDING_REBOUND_DECAY = 1;
+    inline constexpr int BUILDING_RECOVER_DURATION = 60;
 
     // ===== 플레이어 기본 스탯 =====
     inline constexpr int PLAYER_JUMP_HEIGHT = 5;
@@ -24,6 +29,8 @@ namespace GameConfig {
 
     // ===== 액션 관련 =====
     inline constexpr int PLAYER_ACTION_DURATION = 10;
+    inline constexpr float PLAYER_ATTACK_RANGE = 1.0f;
+    inline constexpr float PLAYER_DEFENSE_RANGE = 0.5f;
 
     // ===== 시스템 관련 =====
     inline constexpr int FRAME_DELAY_MS = 20;
