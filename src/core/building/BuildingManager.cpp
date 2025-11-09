@@ -1,5 +1,4 @@
 #include "BuildingManager.h"
-#include "GameConfig.h"
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
