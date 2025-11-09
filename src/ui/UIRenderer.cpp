@@ -1,7 +1,8 @@
 #include "UIRenderer.h"
 #include <iostream>
 #include <windows.h>
-#include "../game/GameConfig.h"
+#include "../core/game/GameConfig.h"
+#include "../core/game/GameSession.h"
 
 namespace {
     // ====== 공통 UI 상수 ======
@@ -144,11 +145,11 @@ void UIRenderer::composePlayer(const Player& p, const GameSession& s, std::vecto
         motion = ICON_DAMAGED;
     }
 
-    if (!p.isDamaged() && p.getAction() == PlayerAction::ATTACK) {
+    if (!p.isDamaged() && p.getAction() == PlayerActionType::ATTACK) {
         motion += ICON_ATTACK;
     }
 
-    if (!p.isDamaged() && p.getAction() == PlayerAction::DEFEND) {
+    if (!p.isDamaged() && p.getAction() == PlayerActionType::DEFEND) {
         motion += ICON_DEFEND;
     }
 

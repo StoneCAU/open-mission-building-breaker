@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <iostream>
-#include "game/Game.h"
+#include "core/game/Game.h"
 
 int main() {
 

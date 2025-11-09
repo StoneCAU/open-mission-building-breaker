@@ -4,6 +4,8 @@
 #include <ctime>
 #include <algorithm>
 
+#include "../game/GameConfig.h"
+
 BuildingManager::BuildingManager() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 }

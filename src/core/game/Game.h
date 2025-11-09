@@ -1,6 +1,6 @@
 #pragma once
 #include "GameSession.h"
-#include "../ui/UIRenderer.h"
+#include "../../ui/UIRenderer.h"
 
 enum class GameState {
     MENU,

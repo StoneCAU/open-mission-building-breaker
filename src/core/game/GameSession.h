@@ -1,7 +1,7 @@
 #pragma once
-#include "Player.h"
-#include "BuildingManager.h"
-#include "../ui/InputHandler.h"
+#include "../../ui/InputHandler.h"
+#include "../building/BuildingManager.h"
+#include "../player/Player.h"
 
 class GameSession {
 public:

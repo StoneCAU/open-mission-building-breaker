@@ -1,5 +1,9 @@
 #include "GameSession.h"
 
+#include "../player/Player.h"
+
+class BuildingManager;
+
 GameSession::GameSession()
     : score(INITIAL_SCORE),
       combo(INITIAL_COMBO),

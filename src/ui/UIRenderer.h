@@ -1,8 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "../game/GameSession.h"
-#include "../game/Player.h"
+#include "../core/game/GameSession.h"
 
 class UIRenderer {
 public:

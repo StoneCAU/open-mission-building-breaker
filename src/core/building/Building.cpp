@@ -1,5 +1,7 @@
 #include "Building.h"
+
 #include "../game/GameConfig.h"
+
 
 constexpr const char* BLOCK_UNIT = "#";
 

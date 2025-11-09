@@ -1,9 +1,8 @@
 #include "Game.h"
-#include "../ui/UIRenderer.h"
-#include "../ui/InputHandler.h"
 #include <windows.h>
 
 #include "GameConfig.h"
+#include "../../ui/InputHandler.h"
 
 Game::Game()
     : state(GameState::MENU),
