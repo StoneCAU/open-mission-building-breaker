@@ -1,7 +1,8 @@
 #pragma once
-#include "../../ui/InputHandler.h"
-#include "../building/BuildingManager.h"
+
 #include "../player/Player.h"
+#include "../building/BuildingManager.h"
+#include "../player/CollisionResult.h"
 
 class GameSession {
 public:
@@ -12,6 +13,8 @@ public:
     void handleInput(InputKey key);
     void update();
 
+    bool isGameOver() const;
+
     const Player& getPlayer() const;
     BuildingManager& getBuildingManager();
     const BuildingManager& getBuildingManager() const;
@@ -20,14 +23,8 @@ public:
     int getCombo() const;
     int getGauge() const;
     int getLife() const;
-    bool isGameOver() const;
 
 private:
-    static constexpr int INITIAL_SCORE = 0;
-    static constexpr int INITIAL_COMBO = 0;
-    static constexpr int INITIAL_GAUGE = 0;
-    static constexpr int INITIAL_LIFE = 3;
-
     Player player;
     BuildingManager buildingManager;
 
@@ -36,12 +33,17 @@ private:
     int gauge;
     int life;
 
+    // 충돌 처리
     void checkAndHandleCollision();
     void handleCollisionResult(const CollisionResult& result);
-    
+    void applyCollisionEffect(const CollisionResult& result);
+
+    // 게임 이벤트 처리
     void onAttackHit();
+    void onDefenseSuccess();
     void onPlayerDamaged();
-    
+
+    // 점수/상태 관리
     void addScore(int value);
     void addCombo();
     void resetCombo();

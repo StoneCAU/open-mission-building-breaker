@@ -1,14 +1,12 @@
 #include "GameSession.h"
-
-#include "../player/Player.h"
-
-class BuildingManager;
+#include "GameConfig.h"
+#include "../building/Building.h"
 
 GameSession::GameSession()
-    : score(INITIAL_SCORE),
-      combo(INITIAL_COMBO),
-      gauge(INITIAL_GAUGE),
-      life(INITIAL_LIFE) {}
+    : score(GameConfig::INITIAL_SCORE),
+      combo(GameConfig::INITIAL_COMBO),
+      gauge(GameConfig::INITIAL_GAUGE),
+      life(GameConfig::INITIAL_LIFE) {}
 
 void GameSession::start() {
     reset();
@@ -16,10 +14,10 @@ void GameSession::start() {
 }
 
 void GameSession::reset() {
-    score = INITIAL_SCORE;
-    combo = INITIAL_COMBO;
-    gauge = INITIAL_GAUGE;
-    life = INITIAL_LIFE;
+    score = GameConfig::INITIAL_SCORE;
+    combo = GameConfig::INITIAL_COMBO;
+    gauge = GameConfig::INITIAL_GAUGE;
+    life = GameConfig::INITIAL_LIFE;
 }
 
 void GameSession::handleInput(InputKey key) {
@@ -33,11 +31,37 @@ void GameSession::update() {
 }
 
 void GameSession::checkAndHandleCollision() {
-    Building* b = buildingManager.getBuildingAt(player.getX(), player.getY());
-    if (b == nullptr) return;
-    
-    CollisionResult result = player.processCollision(*b);
+    const float playerTopY = player.getY() - GameConfig::PLAYER_HEIGHT;
+
+    Building* building = buildingManager.getBuildingAt(player.getX(), playerTopY);
+    if (building == nullptr) return;
+
+    CollisionResult result = player.processCollision(*building);
+    applyCollisionEffect(result);
     handleCollisionResult(result);
+}
+
+void GameSession::applyCollisionEffect(const CollisionResult& result) {
+    if (result.building == nullptr) return;
+
+    if (result.type == CollisionResult::Type::ATTACK_HIT) {
+        result.building->takeHit();
+        return;
+    }
+
+    if (result.type == CollisionResult::Type::HEAD_COLLISION_RELEASED) {
+        result.building->takeHit();
+        return;
+    }
+
+    if (result.type == CollisionResult::Type::DEFENSE_SUCCESS) {
+        result.building->rebound();
+        return;
+    }
+
+    if (result.type == CollisionResult::Type::PLAYER_DAMAGED) {
+        result.building->rebound();
+    }
 }
 
 void GameSession::handleCollisionResult(const CollisionResult& result) {
@@ -45,15 +69,29 @@ void GameSession::handleCollisionResult(const CollisionResult& result) {
         onAttackHit();
         return;
     }
-    
+
+    if (result.type == CollisionResult::Type::HEAD_COLLISION_RELEASED) {
+        onAttackHit();
+        return;
+    }
+
+    if (result.type == CollisionResult::Type::DEFENSE_SUCCESS) {
+        onDefenseSuccess();
+        return;
+    }
+
     if (result.type == CollisionResult::Type::PLAYER_DAMAGED) {
         onPlayerDamaged();
     }
 }
 
 void GameSession::onAttackHit() {
-    addScore(100);
+    addScore(GameConfig::SCORE_PER_ATTACK_HIT);
     addCombo();
+}
+
+void GameSession::onDefenseSuccess() {
+    // 추후 방어 성공 보너스 구현 시 사용
 }
 
 void GameSession::onPlayerDamaged() {
@@ -74,7 +112,9 @@ void GameSession::resetCombo() {
 }
 
 void GameSession::decreaseLife() {
-    if (life > 0) --life;
+    if (life > 0) {
+        --life;
+    }
 }
 
 bool GameSession::isGameOver() const {
