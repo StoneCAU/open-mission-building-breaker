@@ -17,7 +17,8 @@ namespace {
     constexpr const char *HUD_GAUGE_ICON_FILLED = "█";
     constexpr const char *HUD_GAUGE_ICON_EMPTY = "░";
     constexpr const char *HUD_GAUGE_UNIT = "%";
-    constexpr const char *HUD_LIFE_ICON = "❤";
+    constexpr const char *HUD_LIFE_ICON_FILLED = "❤";
+    constexpr const char *HUD_LIFE_ICON_EMPTY = "♡";
 
     // ====== 단위 및 구분자 ======
     constexpr const char *UNIT_POINT = "점";
@@ -102,9 +103,18 @@ void UIRenderer::renderHUD(const GameSession& s) const {
               << SEPARATOR << HUD_GAUGE << getGaugeBar(s.getGauge())
               << SPACE << s.getGauge() << HUD_GAUGE_UNIT
               << SEPARATOR;
-    for (int i = 0; i < s.getLife(); ++i) {
-        std::cout << HUD_LIFE_ICON << SPACE;
+
+    int currentLife = s.getLife();
+    int maxLife = GameConfig::INITIAL_LIFE;
+
+    for (int i = 0; i < currentLife; ++i) {
+        std::cout << HUD_LIFE_ICON_FILLED << SPACE;
     }
+
+    for (int i = currentLife; i < maxLife; ++i) {
+        std::cout << HUD_LIFE_ICON_EMPTY << SPACE;
+    }
+
     std::cout << NEW_LINE;
     printBorder();
     std::cout << NEW_LINE << NEW_LINE;
@@ -138,7 +148,6 @@ void UIRenderer::composePlayer(const Player& p, const GameSession& s, std::vecto
     const int py = static_cast<int>(p.getY());
     if (!isInside(px, py)) return;
 
-    // 🔥 실제 위치 그대로 그리기
     std::string motion = ICON_PLAYER;
 
     if (p.isDamaged()) {
