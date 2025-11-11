@@ -48,6 +48,8 @@ private:
     void addCombo();
     void resetCombo();
     void decreaseLife();
+    void addGauge(int value);
+    void resetGauge();
 
     Building* lastHitBuilding = nullptr;
     bool hitThisFrame = false;

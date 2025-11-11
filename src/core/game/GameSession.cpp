@@ -94,6 +94,7 @@ void GameSession::handleCollisionResult(const CollisionResult& result) {
 void GameSession::onAttackHit() {
     addScore(GameConfig::SCORE_PER_ATTACK_HIT);
     addCombo();
+    addGauge(10);
 }
 
 void GameSession::onDefenseSuccess() {
@@ -129,6 +130,14 @@ bool GameSession::isGameOver() const {
 
 const Player& GameSession::getPlayer() const {
     return player;
+}
+
+void GameSession::addGauge(int value) {
+    gauge = std::min(100, gauge + value);
+}
+
+void GameSession::resetGauge() {
+    gauge = 0;
 }
 
 BuildingManager& GameSession::getBuildingManager() {
