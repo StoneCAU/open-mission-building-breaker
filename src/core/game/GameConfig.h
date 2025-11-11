@@ -1,6 +1,15 @@
 #pragma once
 
 namespace GameConfig {
+    // ===== 게임 세션 초기값 =====
+    inline constexpr int INITIAL_SCORE = 0;
+    inline constexpr int INITIAL_COMBO = 0;
+    inline constexpr int INITIAL_GAUGE = 0;
+    inline constexpr int INITIAL_LIFE = 3;
+
+    // ===== 점수 관련 =====
+    inline constexpr int SCORE_PER_ATTACK_HIT = 100;
+
     // ===== 맵 관련 =====
     inline constexpr int MAP_WIDTH = 50;
     inline constexpr int MAP_MIN_X = 0;
@@ -23,10 +32,14 @@ namespace GameConfig {
     inline constexpr int BUILDING_RECOVER_DURATION_FRAMES = 60;
 
     // ===== 플레이어 기본 스탯 =====
+    inline constexpr float PLAYER_HEIGHT = 1.0f;
     inline constexpr int PLAYER_JUMP_HEIGHT = 5;
     inline constexpr int PLAYER_JUMP_DURATION = 20;
     inline constexpr int PLAYER_JUMP_COOLDOWN_MAX = 15;
     inline constexpr int PLAYER_START_X = MAP_WIDTH / 2;
+
+    // ===== 플레이어 피격 관련 =====
+    inline constexpr int PLAYER_INVINCIBILITY_FRAMES = 30;
 
     // ===== 액션 관련 =====
     inline constexpr int PLAYER_ACTION_DURATION = 10;
