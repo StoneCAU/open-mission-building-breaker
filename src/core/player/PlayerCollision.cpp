@@ -75,28 +75,29 @@ CollisionResult PlayerCollision::tryHandleHeadCollision(Building& building) {
         return {CollisionResult::Type::NONE, nullptr};
     }
 
-    // 머리가 빌딩에 박힘 → 강제로 빌딩 최하층에 붙임
-    movement.forceFall(buildingBottomY + GameConfig::PLAYER_HEIGHT);
-
     const PlayerActionType actionType = action.getType();
 
-    // 공격 중이면 빌딩 파괴하고 찧힌 상태 해제
+    // ===== 공격 중이면 forceFall 금지 =====
     if (actionType == PlayerActionType::ATTACK) {
+        if (!action.isAttackFirstFrame()) {
+            return {CollisionResult::Type::NONE, nullptr};
+        }
+        // 건물 부순 후에는 위치 보정하지 않음
         return {CollisionResult::Type::HEAD_COLLISION_RELEASED, &building};
     }
 
-    // 방어 중이면 빌딩 튕김하고 찧힌 상태 즉시 해제
+    // ===== 공격 아닐 때만 위치 보정 =====
+    movement.forceFall(buildingBottomY + GameConfig::PLAYER_HEIGHT);
+
     if (actionType == PlayerActionType::DEFEND) {
         return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
     }
 
-    // 지상까지 눌렸으면 피해
     if (isGroundLevel(buildingBottomY + GameConfig::PLAYER_HEIGHT)) {
         takeDamage();
         return {CollisionResult::Type::PLAYER_DAMAGED, &building};
     }
 
-    // 아무것도 안 하면 찧혀서 같이 떨어지는 중
     return {CollisionResult::Type::HEAD_COLLISION_STUCK, &building};
 }
 

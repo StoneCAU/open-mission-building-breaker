@@ -1,6 +1,5 @@
 #include "PlayerAction.h"
 #include <windows.h>
-
 #include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
@@ -27,6 +26,7 @@ bool PlayerAction::tryAttack() {
 
     action = PlayerActionType::ATTACK;
     actionFrame = GameConfig::PLAYER_ACTION_DURATION;
+    actionCooldown = GameConfig::PLAYER_ATTACK_COOLDOWN;
     canAttack = false;
     return true;
 }
@@ -45,6 +45,10 @@ void PlayerAction::update() {
 
     if (actionCooldown > 0) {
         --actionCooldown;
+
+        if (actionCooldown == 0) {
+            canAttack = true;
+        }
     }
 }
 
@@ -61,10 +65,6 @@ void PlayerAction::updateActionFrame() {
 }
 
 void PlayerAction::updateKeyRelease() {
-    if (InputHandler::isKeyReleased('Z')) {
-        canAttack = true;
-    }
-
     if (InputHandler::isKeyReleased(VK_DOWN) && action == PlayerActionType::DEFEND) {
         action = PlayerActionType::IDLE;
     }
@@ -80,4 +80,9 @@ int PlayerAction::getActionCooldown() const {
 
 void PlayerAction::setActionCooldown(int value) {
     actionCooldown = value;
+}
+
+bool PlayerAction::isAttackFirstFrame() const {
+    return action == PlayerActionType::ATTACK &&
+           actionFrame == GameConfig::PLAYER_ACTION_DURATION-1;
 }

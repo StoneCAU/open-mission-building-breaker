@@ -12,6 +12,7 @@ public:
     PlayerActionType getType() const;
     int getActionCooldown() const;
     void setActionCooldown(int value);
+    bool isAttackFirstFrame() const;
 
 private:
     PlayerActionType action;
