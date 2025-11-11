@@ -14,12 +14,13 @@ namespace GameConfig {
     inline constexpr int MIN_ONSCREEN_BUILDINGS = 3;
     inline constexpr int MAX_ONSCREEN_BUILDINGS = 5;
     inline constexpr int BUILDING_SPAWN_COOLDOWN = 80;
-    inline constexpr float BUILDING_FALL_SPEED = 0.15f;
+    inline constexpr float BUILDING_FALL_SPEED_PER_FRAME = 0.15f;
 
     // ===== 빌딩 물리/반응 =====
-    inline constexpr int BUILDING_REBOUND_STRENGTH = 10;
-    inline constexpr int BUILDING_REBOUND_DECAY = 1;
-    inline constexpr int BUILDING_RECOVER_DURATION = 60;
+    inline constexpr int BUILDING_REBOUND_DURATION_FRAMES = 10;
+    inline constexpr int BUILDING_REBOUND_DECAY_PER_FRAME = 1;
+    inline constexpr float BUILDING_REBOUND_SPEED_PER_FRAME = 1.0f;
+    inline constexpr int BUILDING_RECOVER_DURATION_FRAMES = 60;
 
     // ===== 플레이어 기본 스탯 =====
     inline constexpr int PLAYER_JUMP_HEIGHT = 5;
