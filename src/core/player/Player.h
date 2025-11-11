@@ -16,11 +16,13 @@ public:
     void update();
     CollisionResult processCollision(Building& building);
 
+    // Getters
     bool isJumping() const;
     int getX() const;
     float getY() const;
     PlayerActionType getAction() const;
     bool isDamaged() const;
+    bool isStuckUnderBuilding() const;
 
 private:
     int x;
@@ -29,4 +31,13 @@ private:
     PlayerMovement movement;
     PlayerAction action;
     PlayerCollision collision;
+
+    bool stuckUnderBuilding;
+    Building* stuckBuilding;
+
+    void updateStuckState();
+    bool shouldReleaseFromBuilding() const;
+    void handleCollisionResult(const CollisionResult& result);
+    void stickToBuilding(Building* building);
+    void releaseFromBuilding();
 };
