@@ -48,4 +48,7 @@ private:
     void addCombo();
     void resetCombo();
     void decreaseLife();
+
+    Building* lastHitBuilding = nullptr;
+    bool hitThisFrame = false;
 };

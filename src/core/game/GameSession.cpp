@@ -25,18 +25,24 @@ void GameSession::handleInput(InputKey key) {
 }
 
 void GameSession::update() {
+    hitThisFrame = false;  // 프레임이 바뀔 때 초기화
     player.update();
     checkAndHandleCollision();
     buildingManager.updateAll();
 }
 
 void GameSession::checkAndHandleCollision() {
-    const float playerTopY = player.getY() - GameConfig::PLAYER_HEIGHT;
+    if (hitThisFrame) return; // 이미 이번 틱에서 처리했으면 무시
 
+    const float playerTopY = player.getY() - GameConfig::PLAYER_HEIGHT;
     Building* building = buildingManager.getBuildingAt(player.getX(), playerTopY);
     if (building == nullptr) return;
 
     CollisionResult result = player.processCollision(*building);
+    if (result.type == CollisionResult::Type::ATTACK_HIT) {
+        hitThisFrame = true;         // 이 프레임에서 한 번만 허용
+        lastHitBuilding = building;  // 기록
+    }
     applyCollisionEffect(result);
     handleCollisionResult(result);
 }
