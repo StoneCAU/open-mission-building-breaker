@@ -14,136 +14,145 @@ PlayerCollision::PlayerCollision(int& x, float& y,
       damageFrame(0) {}
 
 CollisionResult PlayerCollision::processCollision(Building& building) {
-    CollisionResult result = tryHandleHeadCollision(building);
-    if (result.type != CollisionResult::Type::NONE) return result;
+    CollisionResult result;
 
-    result = tryHandleAttackRange(building);
-    if (result.type != CollisionResult::Type::NONE) return result;
+    result = tryHandleHeadCollision(building);
+    if (isValidResult(result)) return result;
 
-    result = tryHandleDefenseRange(building);
-    if (result.type != CollisionResult::Type::NONE) return result;
+    result = tryHandleActionRange(building);
+    if (isValidResult(result)) return result;
 
     return handleBodyCollision(building);
 }
 
-CollisionResult PlayerCollision::tryHandleHeadCollision(Building& building) {
-    if (!movement.isJumping()) return {CollisionResult::Type::NONE, nullptr};
+bool PlayerCollision::isValidResult(const CollisionResult& result) {
+    return result.type != CollisionResult::Type::NONE;
+}
 
-    const float headY = y - 1.0f;
-    const float buildingBottom = building.getY();
+float PlayerCollision::getPlayerTopY() const {
+    return y - GameConfig::PLAYER_HEIGHT;
+}
 
-    if (headY > buildingBottom) return {CollisionResult::Type::NONE, nullptr};
+float PlayerCollision::getBuildingBottomY(const Building& b) const {
+    return b.getY();
+}
 
-    movement.forceFall(buildingBottom + 1.0f);
-
-    if (action.getType() == PlayerActionType::ATTACK) {
-        building.takeHit();
-        return {CollisionResult::Type::ATTACK_HIT, &building};
+CollisionResult PlayerCollision::handleActionByType(PlayerActionType type, Building& building) {
+    if (type == PlayerActionType::ATTACK) {
+        return createAttackResult(building);
     }
 
-    if (action.getType() == PlayerActionType::DEFEND) {
-        building.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
-    }
-
-    if (isGroundLevel(buildingBottom + 1.0f)) {
-        return processHeadDamage(building);
+    if (type == PlayerActionType::DEFEND) {
+        return createDefenseResult(building);
     }
 
     return {CollisionResult::Type::NONE, nullptr};
 }
 
-CollisionResult PlayerCollision::tryHandleAttackRange(Building& building) {
-    if (action.getType() != PlayerActionType::ATTACK) {
-        return {CollisionResult::Type::NONE, nullptr};
+bool PlayerCollision::isInActionRange(float playerTopY, float buildingBottomY, PlayerActionType type) const {
+    if (buildingBottomY > playerTopY) return false;
+
+    if (type == PlayerActionType::ATTACK) {
+        return buildingBottomY >= playerTopY - GameConfig::PLAYER_ATTACK_RANGE;
     }
 
-    const float headY = y - 1.0f;
-    const float buildingBottom = building.getY();
-
-    if (buildingBottom > headY) return {CollisionResult::Type::NONE, nullptr};
-    if (buildingBottom < headY - GameConfig::PLAYER_ATTACK_RANGE) {
-        return {CollisionResult::Type::NONE, nullptr};
+    if (type == PlayerActionType::DEFEND) {
+        return buildingBottomY >= playerTopY - GameConfig::PLAYER_DEFENSE_RANGE;
     }
 
-    building.takeHit();
-    return {CollisionResult::Type::ATTACK_HIT, &building};
+    return false;
 }
 
-CollisionResult PlayerCollision::tryHandleDefenseRange(Building& building) {
-    if (action.getType() != PlayerActionType::DEFEND) {
+CollisionResult PlayerCollision::tryHandleHeadCollision(Building& building) {
+    if (!movement.isJumping()) {
         return {CollisionResult::Type::NONE, nullptr};
     }
 
-    const float headY = y - 1.0f;
-    const float buildingBottom = building.getY();
+    const float playerTopY = getPlayerTopY();
+    const float buildingBottomY = getBuildingBottomY(building);
 
-    if (buildingBottom > headY) return {CollisionResult::Type::NONE, nullptr};
-    if (buildingBottom < headY - GameConfig::PLAYER_DEFENSE_RANGE) {
+    if (playerTopY > buildingBottomY) {
         return {CollisionResult::Type::NONE, nullptr};
     }
 
-    building.rebound();
-    return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
+    // 머리가 빌딩에 박힘 → 강제로 빌딩 최하층에 붙임
+    movement.forceFall(buildingBottomY + GameConfig::PLAYER_HEIGHT);
+
+    const PlayerActionType actionType = action.getType();
+
+    // 공격 중이면 빌딩 파괴하고 찧힌 상태 해제
+    if (actionType == PlayerActionType::ATTACK) {
+        return {CollisionResult::Type::HEAD_COLLISION_RELEASED, &building};
+    }
+
+    // 방어 중이면 빌딩 튕김하고 찧힌 상태 즉시 해제
+    if (actionType == PlayerActionType::DEFEND) {
+        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
+    }
+
+    // 지상까지 눌렸으면 피해
+    if (isGroundLevel(buildingBottomY + GameConfig::PLAYER_HEIGHT)) {
+        takeDamage();
+        return {CollisionResult::Type::PLAYER_DAMAGED, &building};
+    }
+
+    // 아무것도 안 하면 찧혀서 같이 떨어지는 중
+    return {CollisionResult::Type::HEAD_COLLISION_STUCK, &building};
+}
+
+CollisionResult PlayerCollision::tryHandleActionRange(Building& building) {
+    const PlayerActionType actionType = action.getType();
+
+    if (actionType == PlayerActionType::IDLE) {
+        return {CollisionResult::Type::NONE, nullptr};
+    }
+
+    const float playerTopY = getPlayerTopY();
+    const float buildingBottomY = getBuildingBottomY(building);
+
+    if (!isInActionRange(playerTopY, buildingBottomY, actionType)) {
+        return {CollisionResult::Type::NONE, nullptr};
+    }
+
+    return handleActionByType(actionType, building);
 }
 
 CollisionResult PlayerCollision::handleBodyCollision(Building& building) {
-    if (!isGroundLevel(y)) {
-        return processAirCollision(building);
-    } else {
-        return processGroundCollision(building);
+    if (isInvincible()) {
+        return createDefenseResult(building);
     }
+
+    const PlayerActionType actionType = action.getType();
+
+    if (actionType != PlayerActionType::IDLE) {
+        return handleActionByType(actionType, building);
+    }
+
+    return createDamageResult(building);
 }
 
 CollisionResult PlayerCollision::processHeadDamage(Building& building) {
-    if (!isInvincible()) {
-        takeDamage();
-        building.rebound();
-        return {CollisionResult::Type::PLAYER_DAMAGED, &building};
-    } else {
-        building.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
-    }
-}
-
-CollisionResult PlayerCollision::processAirCollision(Building& building) {
     if (isInvincible()) {
-        building.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
-    }
-
-    if (action.getType() == PlayerActionType::DEFEND) {
-        building.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
-    }
-
-    if (action.getType() == PlayerActionType::ATTACK) {
-        building.takeHit();
-        return {CollisionResult::Type::ATTACK_HIT, &building};
-    }
-
-    movement.forceFall(y);
-    return {CollisionResult::Type::NONE, nullptr};
-}
-
-CollisionResult PlayerCollision::processGroundCollision(Building& building) {
-    if (isInvincible()) {
-        building.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
-    }
-
-    if (action.getType() == PlayerActionType::ATTACK) {
-        building.takeHit();
-        return {CollisionResult::Type::ATTACK_HIT, &building};
-    }
-
-    if (action.getType() == PlayerActionType::DEFEND) {
-        building.rebound();
-        return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
+        return createDefenseResult(building);
     }
 
     takeDamage();
-    building.rebound();
+    return {CollisionResult::Type::PLAYER_DAMAGED, &building};
+}
+
+CollisionResult PlayerCollision::createAttackResult(Building& building) {
+    // Building 조작 제거 - GameSession에서 처리
+    return {CollisionResult::Type::ATTACK_HIT, &building};
+}
+
+CollisionResult PlayerCollision::createDefenseResult(Building& building) {
+    // Building 조작 제거 - GameSession에서 처리
+    return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
+}
+
+CollisionResult PlayerCollision::createDamageResult(Building& building) {
+    takeDamage();
+    // Building 조작 제거 - GameSession에서 처리
     return {CollisionResult::Type::PLAYER_DAMAGED, &building};
 }
 
@@ -154,7 +163,7 @@ bool PlayerCollision::isGroundLevel(float y) const {
 void PlayerCollision::takeDamage() {
     if (damageFrame > 0) return;
     damaged = true;
-    damageFrame = 30;
+    damageFrame = GameConfig::PLAYER_INVINCIBILITY_FRAMES;
 }
 
 bool PlayerCollision::isInvincible() const {
@@ -168,6 +177,8 @@ bool PlayerCollision::isDamaged() const {
 void PlayerCollision::update() {
     if (damageFrame > 0) {
         --damageFrame;
-        if (damageFrame == 0) damaged = false;
+        if (damageFrame == 0) {
+            damaged = false;
+        }
     }
 }
