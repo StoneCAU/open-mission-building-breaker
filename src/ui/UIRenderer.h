@@ -20,6 +20,7 @@ private:
     std::string getGaugeBar(int gauge) const;
     void renderHUD(const GameSession& session) const;
     void renderGuide() const;
+    void renderMessage(const GameSession& session) const;
 
     /** ===================== 본문 렌더링 (빌딩 + 플레이어) ===================== **/
     void renderBody(const GameSession& session) const;

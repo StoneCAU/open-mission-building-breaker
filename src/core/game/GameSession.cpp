@@ -95,15 +95,17 @@ void GameSession::onAttackHit() {
     addScore(GameConfig::SCORE_PER_ATTACK_HIT);
     addCombo();
     addGauge(10);
+    messageQueue.push(MessageType::ATTACK_HIT, 1);
 }
 
 void GameSession::onDefenseSuccess() {
-    // 추후 방어 성공 보너스 구현 시 사용
+    messageQueue.push(MessageType::DEFENSE_SUCCESS);
 }
 
 void GameSession::onPlayerDamaged() {
     decreaseLife();
     resetCombo();
+    messageQueue.push(MessageType::PLAYER_DAMAGED);
 }
 
 void GameSession::addScore(int value) {

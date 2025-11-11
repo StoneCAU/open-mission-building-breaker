@@ -187,11 +187,22 @@ void UIRenderer::renderGuide() const {
     std::cout << CONTROL_GUIDE << NEW_LINE;
 }
 
+/** ===================== 메시지 ===================== **/
+void UIRenderer::renderMessage(const GameSession& session) const {
+    const UIMessageQueue& msgQueue = session.messageQueue;
+
+    if (msgQueue.hasMessage()) {
+        std::cout << msgQueue.getMessage() << NEW_LINE;
+    }
+}
+
+
 /** ===================== 전체 출력 ===================== **/
 void UIRenderer::renderPlaying(const GameSession& s) const {
     clearScreen();
     renderHUD(s);
     renderBody(s);
     renderGuide();
+    renderMessage(s);
     std::cout.flush();
 }

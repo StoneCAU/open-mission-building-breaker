@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../ui/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
 #include "../player/CollisionResult.h"
@@ -18,6 +19,7 @@ public:
     const Player& getPlayer() const;
     BuildingManager& getBuildingManager();
     const BuildingManager& getBuildingManager() const;
+    UIMessageQueue messageQueue;
 
     int getScore() const;
     int getCombo() const;
