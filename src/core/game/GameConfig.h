@@ -18,8 +18,8 @@ namespace GameConfig {
 
     // ===== 빌딩 관련 =====
     inline constexpr int BUILDING_WIDTH = 6;
-    inline constexpr int MIN_BUILDING_HEIGHT = 3;
-    inline constexpr int MAX_BUILDING_HEIGHT = 6;
+    inline constexpr int MIN_BUILDING_HEIGHT = 5;
+    inline constexpr int MAX_BUILDING_HEIGHT = 8;
     inline constexpr int MIN_ONSCREEN_BUILDINGS = 3;
     inline constexpr int MAX_ONSCREEN_BUILDINGS = 5;
     inline constexpr int BUILDING_SPAWN_COOLDOWN = 80;
@@ -45,6 +45,7 @@ namespace GameConfig {
     inline constexpr int PLAYER_ACTION_DURATION = 10;
     inline constexpr float PLAYER_ATTACK_RANGE = 1.0f;
     inline constexpr float PLAYER_DEFENSE_RANGE = 0.5f;
+    inline constexpr int PLAYER_ATTACK_COOLDOWN = 10;
 
     // ===== 시스템 관련 =====
     inline constexpr int FRAME_DELAY_MS = 20;
