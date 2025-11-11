@@ -27,6 +27,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/player/PlayerCollision.cpp
         src/core/player/PlayerCollision.h
         src/core/player/PlayerActionType.h
+        src/ui/UIMessage.h
+        src/ui/UIMessage.cpp
 )
 
 add_compile_options(/utf-8)
