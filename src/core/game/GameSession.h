@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "../../ui/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
@@ -26,6 +28,7 @@ public:
     int getMaxCombo() const;
     int getGauge() const;
     int getLife() const;
+    int getPlayTimeSeconds() const;
 
 private:
     Player player;
@@ -36,6 +39,7 @@ private:
     int maxCombo;
     int gauge;
     int life;
+    std::chrono::steady_clock::time_point startTime;
 
     // 충돌 처리
     void checkAndHandleCollision();

@@ -7,7 +7,8 @@ GameSession::GameSession()
       combo(GameConfig::INITIAL_COMBO),
       gauge(GameConfig::INITIAL_GAUGE),
       life(GameConfig::INITIAL_LIFE),
-      maxCombo(0) {}
+      maxCombo(0),
+      startTime(std::chrono::steady_clock::now()) {}
 
 void GameSession::start() {
     reset();
@@ -20,6 +21,7 @@ void GameSession::reset() {
     gauge = GameConfig::INITIAL_GAUGE;
     life = GameConfig::INITIAL_LIFE;
     maxCombo = 0;
+    startTime = std::chrono::steady_clock::now();
 }
 
 void GameSession::handleInput(InputKey key) {
@@ -173,4 +175,10 @@ int GameSession::getLife() const {
 
 int GameSession::getMaxCombo() const {
     return maxCombo;
+}
+
+int GameSession::getPlayTimeSeconds() const {
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(now - startTime);
+    return static_cast<int>(duration.count());
 }
