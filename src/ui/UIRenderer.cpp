@@ -39,12 +39,36 @@ namespace {
     // ====== 하단 가이드 ======
     constexpr const char *UNDERLINE = "_________________________________________________";
     constexpr const char *CONTROL_GUIDE = "조작: [←→]이동 [Z]공격 [↓]방어 [↑]점프 [X]필살기";
+
+    // ====== 게임오버 관련 ======
+    constexpr const char *GAMEOVER_TITLE = "           GAME OVER";
+    constexpr const char *GAMEOVER_FINAL_SCORE = "최종 점수: ";
+    constexpr const char *GAMEOVER_MAX_COMBO = "최고 콤보: x";
+    constexpr const char *GAMEOVER_NEW_RECORD = "★ 새로운 최고 기록 달성! ★";
+    constexpr const char *GAMEOVER_PREV_RECORD = "이전 기록: ";
+    constexpr const char *GAMEOVER_RESTART = "[R] 재시작";
 }
 
 /** ===================== 공통 유틸 ===================== **/
 void UIRenderer::clearScreen() const {
     COORD coord = {0, 0};
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+void UIRenderer::clearScreenFull() const {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coordScreen = {0, 0};
+    DWORD cCharsWritten;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+        return;
+    }
+
+    DWORD dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+    FillConsoleOutputCharacter(hConsole, (TCHAR)' ', dwConSize, coordScreen, &cCharsWritten);
+    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
+    SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
 void UIRenderer::printBorder() const {
@@ -205,4 +229,26 @@ void UIRenderer::renderPlaying(const GameSession& s) const {
     renderGuide();
     renderMessage(s);
     std::cout.flush();
+}
+
+void UIRenderer::renderGameOver(int finalScore, int maxCombo, int highScore, bool isNewRecord) const {
+    printBorder();
+    std::cout << GAMEOVER_TITLE << NEW_LINE;
+    printBorder();
+    std::cout << NEW_LINE;
+
+    std::cout << GAMEOVER_FINAL_SCORE << finalScore << UNIT_POINT << NEW_LINE;
+    std::cout << GAMEOVER_MAX_COMBO << maxCombo << NEW_LINE;
+    std::cout << NEW_LINE;
+
+    if (isNewRecord) {
+        std::cout << GAMEOVER_NEW_RECORD << NEW_LINE;
+        std::cout << GAMEOVER_PREV_RECORD << highScore << UNIT_POINT << NEW_LINE;
+        std::cout << NEW_LINE;
+    }
+
+    printBorder();
+    std::cout << GAMEOVER_RESTART << NEW_LINE;
+    std::cout << MENU_QUIT << NEW_LINE;
+    printBorder();
 }
