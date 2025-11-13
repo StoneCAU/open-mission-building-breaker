@@ -29,6 +29,12 @@ void Game::run() {
             continue;
         }
 
+        if (state == GameState::GAME_OVER) {
+            runGameOver();
+            continue;
+        }
+
+
         isRunning = false;
     }
 }
@@ -65,6 +71,10 @@ void Game::runGame() {
 
     while (isRunning && state == GameState::PLAYING) {
         processGameFrame();
+    }
+
+    if (state == GameState::GAME_OVER) {
+        ui.clearScreen();
     }
 }
 
@@ -103,6 +113,38 @@ void Game::renderFrame() {
 
 /** ===== 게임 종료 처리 ===== **/
 void Game::onGameOver() {
-    state = GameState::MENU;
-    ui.clearScreen();
+    state = GameState::GAME_OVER;
+}
+
+void Game::runGameOver() {
+    ui.clearScreenFull();
+
+    int finalScore = session.getScore();
+    int maxCombo = session.getMaxCombo();
+    bool isNewRecord = finalScore > highScore;
+
+    if (isNewRecord) {
+        highScore = finalScore;
+    }
+
+    ui.renderGameOver(finalScore, maxCombo, highScore, isNewRecord);
+
+    while (isRunning && state == GameState::GAME_OVER) {
+        InputKey key = InputHandler::getInput();
+
+        if (key == InputKey::NONE) {
+            continue;
+        }
+
+        if (key == InputKey::RESTART) {
+            state = GameState::PLAYING;
+            ui.clearScreen();
+            return;
+        }
+
+        if (key == InputKey::QUIT) {
+            isRunning = false;
+            return;
+        }
+    }
 }

@@ -16,21 +16,18 @@ public:
     void run();
 
 private:
-    // ====== 초기화 및 루프 ======
     void init();
     void runMenu();
     void runGame();
 
-    // ====== 프레임 단위 처리 ======
     void processGameFrame();
     void handleFrameInput();
     void updateFrameState();
     void renderFrame();
 
-    // ====== 게임 상태 전환 ======
     void onGameOver();
+    void runGameOver();
 
-private:
     GameState state;
     bool isRunning;
     int highScore;
