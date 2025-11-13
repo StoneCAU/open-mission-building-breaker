@@ -121,13 +121,14 @@ void Game::runGameOver() {
 
     int finalScore = session.getScore();
     int maxCombo = session.getMaxCombo();
+    int playTime = session.getPlayTimeSeconds();
     bool isNewRecord = finalScore > highScore;
 
     if (isNewRecord) {
         highScore = finalScore;
     }
 
-    ui.renderGameOver(finalScore, maxCombo, highScore, isNewRecord);
+    ui.renderGameOver(finalScore, maxCombo, highScore, isNewRecord, playTime);
 
     while (isRunning && state == GameState::GAME_OVER) {
         InputKey key = InputHandler::getInput();
