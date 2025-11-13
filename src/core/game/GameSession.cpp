@@ -6,7 +6,8 @@ GameSession::GameSession()
     : score(GameConfig::INITIAL_SCORE),
       combo(GameConfig::INITIAL_COMBO),
       gauge(GameConfig::INITIAL_GAUGE),
-      life(GameConfig::INITIAL_LIFE) {}
+      life(GameConfig::INITIAL_LIFE),
+      maxCombo(0) {}
 
 void GameSession::start() {
     reset();
@@ -18,6 +19,7 @@ void GameSession::reset() {
     combo = GameConfig::INITIAL_COMBO;
     gauge = GameConfig::INITIAL_GAUGE;
     life = GameConfig::INITIAL_LIFE;
+    maxCombo = 0;
 }
 
 void GameSession::handleInput(InputKey key) {
@@ -114,6 +116,9 @@ void GameSession::addScore(int value) {
 
 void GameSession::addCombo() {
     ++combo;
+    if (combo > maxCombo) {
+        maxCombo = combo;
+    }
 }
 
 void GameSession::resetCombo() {
@@ -164,4 +169,8 @@ int GameSession::getGauge() const {
 
 int GameSession::getLife() const {
     return life;
+}
+
+int GameSession::getMaxCombo() const {
+    return maxCombo;
 }

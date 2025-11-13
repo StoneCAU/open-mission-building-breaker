@@ -23,6 +23,7 @@ public:
 
     int getScore() const;
     int getCombo() const;
+    int getMaxCombo() const;
     int getGauge() const;
     int getLife() const;
 
@@ -32,6 +33,7 @@ private:
 
     int score;
     int combo;
+    int maxCombo;
     int gauge;
     int life;
 
