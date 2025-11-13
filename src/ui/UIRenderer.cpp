@@ -47,6 +47,9 @@ namespace {
     constexpr const char *GAMEOVER_NEW_RECORD = "★ 새로운 최고 기록 달성! ★";
     constexpr const char *GAMEOVER_PREV_RECORD = "이전 기록: ";
     constexpr const char *GAMEOVER_RESTART = "[R] 재시작";
+    constexpr const char *GAMEOVER_PLAY_TIME = "플레이 시간: ";
+    constexpr const char *UNIT_MINUTE = "분 ";
+    constexpr const char *UNIT_SECOND = "초";
 }
 
 /** ===================== 공통 유틸 ===================== **/
@@ -231,7 +234,10 @@ void UIRenderer::renderPlaying(const GameSession& s) const {
     std::cout.flush();
 }
 
-void UIRenderer::renderGameOver(int finalScore, int maxCombo, int highScore, bool isNewRecord) const {
+void UIRenderer::renderGameOver(int finalScore, int maxCombo, int playTimeSeconds,
+                                  int highScore, bool isNewRecord) const {
+    clearScreenFull();
+
     printBorder();
     std::cout << GAMEOVER_TITLE << NEW_LINE;
     printBorder();
@@ -239,6 +245,11 @@ void UIRenderer::renderGameOver(int finalScore, int maxCombo, int highScore, boo
 
     std::cout << GAMEOVER_FINAL_SCORE << finalScore << UNIT_POINT << NEW_LINE;
     std::cout << GAMEOVER_MAX_COMBO << maxCombo << NEW_LINE;
+
+    // 플레이 시간 표시
+    int minutes = playTimeSeconds / 60;
+    int seconds = playTimeSeconds % 60;
+    std::cout << GAMEOVER_PLAY_TIME << minutes << UNIT_MINUTE << seconds << UNIT_SECOND << NEW_LINE;
     std::cout << NEW_LINE;
 
     if (isNewRecord) {
