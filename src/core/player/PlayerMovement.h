@@ -5,33 +5,33 @@ class PlayerMovement {
 public:
     PlayerMovement(int& x, float& y);
 
-    void update();
-    
-    void forceFall(float newY);
-    bool isJumping() const;
     bool handleInput(InputKey key);
+    void update();
+
+    // 물리
+    void applyPhysics();
+    void stopVerticalMovement();
+    bool isOnGround() const;
+
+    // 점프
+    void jump();
+    bool isJumping() const;
+
+    float getVelocityY() const;
+    void setY(float newY);
 
 private:
     int& x;
     float& y;
-    
+    float velocityY;
     bool jumping;
     bool canJump;
-    int jumpFrame;
     int jumpCooldown;
-    
-    void jump();
-    void applyJumpMotion();
-    void applyJumpRise(float half);
-    void applyJumpFall(float half);
-    void finishJump();
-    
-    void updateJumpCooldown();
-    void updateKeyRelease();
-    
-    bool canMoveLeft() const;
-    bool canMoveRight() const;
 
     void handleMovement(InputKey key);
     bool tryJump(InputKey key);
+    void updateJumpCooldown();
+    void updateKeyRelease();
+    bool canMoveLeft() const;
+    bool canMoveRight() const;
 };

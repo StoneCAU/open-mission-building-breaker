@@ -1,21 +1,11 @@
 #include "PlayerMovement.h"
 #include <windows.h>
-
 #include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
-namespace {
-    inline bool isKeyReleased(int key) {
-        return (GetAsyncKeyState(key) & 0x8000) == 0;
-    }
-}
-
 PlayerMovement::PlayerMovement(int& x, float& y)
-    : x(x), y(y),
-      jumping(false),
-      canJump(true),
-      jumpFrame(0),
-      jumpCooldown(0) {}
+    : x(x), y(y), velocityY(0.0f),
+      jumping(false), canJump(true), jumpCooldown(0) {}
 
 bool PlayerMovement::handleInput(InputKey key) {
     bool jumped = tryJump(key);
@@ -25,6 +15,39 @@ bool PlayerMovement::handleInput(InputKey key) {
     }
 
     return jumped;
+}
+
+void PlayerMovement::update() {
+    applyPhysics();
+    updateJumpCooldown();
+    updateKeyRelease();
+}
+
+void PlayerMovement::applyPhysics() {
+    // 중력과 속도 적용
+    velocityY += GameConfig::GRAVITY;
+    y += velocityY;
+
+    // 지면 체크
+    if (y >= GameConfig::MAP_GROUND_Y) {
+        y = static_cast<float>(GameConfig::MAP_GROUND_Y);
+        velocityY = 0.0f;
+        jumping = false;
+    }
+}
+
+void PlayerMovement::stopVerticalMovement() {
+    velocityY = 0.0f;
+}
+
+bool PlayerMovement::isOnGround() const {
+    return y >= GameConfig::MAP_GROUND_Y - 0.1f;
+}
+
+void PlayerMovement::jump() {
+    jumping = true;
+    canJump = false;
+    velocityY = GameConfig::JUMP_VELOCITY;
 }
 
 void PlayerMovement::handleMovement(InputKey key) {
@@ -44,71 +67,10 @@ bool PlayerMovement::tryJump(InputKey key) {
 
     if (jumpKey && canJump && !jumping && jumpCooldown == 0) {
         jump();
+        jumpCooldown = GameConfig::PLAYER_JUMP_COOLDOWN_MAX;
         return true;
     }
     return false;
-}
-
-void PlayerMovement::jump() {
-    jumping = true;
-    canJump = false;
-    jumpFrame = 0;
-}
-
-void PlayerMovement::applyJumpMotion() {
-    const float half = GameConfig::PLAYER_JUMP_DURATION / 2.0f;
-
-    if (jumpFrame < half) {
-        applyJumpRise(half);
-        return;
-    }
-
-    if (jumpFrame < GameConfig::PLAYER_JUMP_DURATION) {
-        applyJumpFall(half);
-        return;
-    }
-
-    finishJump();
-}
-
-void PlayerMovement::applyJumpRise(float half) {
-    const float t = jumpFrame / half;
-    y = GameConfig::MAP_GROUND_Y - (GameConfig::PLAYER_JUMP_HEIGHT * t);
-    ++jumpFrame;
-}
-
-void PlayerMovement::applyJumpFall(float half) {
-    const float t = (jumpFrame - half) / half;
-    y = (GameConfig::MAP_GROUND_Y - GameConfig::PLAYER_JUMP_HEIGHT)
-      + (GameConfig::PLAYER_JUMP_HEIGHT * t);
-    ++jumpFrame;
-}
-
-void PlayerMovement::finishJump() {
-    y = GameConfig::MAP_GROUND_Y;
-    jumping = false;
-    jumpCooldown = GameConfig::PLAYER_JUMP_COOLDOWN_MAX;
-}
-
-void PlayerMovement::forceFall(float newY) {
-    y = newY;
-
-    if (jumping) {
-        jumpFrame = GameConfig::PLAYER_JUMP_DURATION / 2.0f;
-    }
-
-    if (y >= GameConfig::MAP_GROUND_Y - 0.1f) {
-        finishJump();
-    }
-}
-
-void PlayerMovement::update() {
-    if (jumping) {
-        applyJumpMotion();
-    }
-
-    updateJumpCooldown();
-    updateKeyRelease();
 }
 
 void PlayerMovement::updateJumpCooldown() {
@@ -118,7 +80,7 @@ void PlayerMovement::updateJumpCooldown() {
 }
 
 void PlayerMovement::updateKeyRelease() {
-    if (!jumping && isKeyReleased(VK_UP)) {
+    if (!jumping && InputHandler::isKeyReleased(VK_UP)) {
         canJump = true;
     }
 }
@@ -133,4 +95,12 @@ bool PlayerMovement::canMoveRight() const {
 
 bool PlayerMovement::isJumping() const {
     return jumping;
+}
+
+void PlayerMovement::setY(float newY) {
+    y = newY;
+}
+
+float PlayerMovement::getVelocityY() const {
+    return velocityY;
 }
