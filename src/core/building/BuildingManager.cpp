@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <iostream>
 
 #include "../game/GameConfig.h"
 
@@ -18,18 +19,16 @@ void BuildingManager::initBuildings() {
 }
 
 void BuildingManager::updateAll() {
-    updateBuildings();
-    removeOffscreenBuildings();
+    applyPhysicsAll();  // 물리 먼저 적용
     handleSpawn();
+    removeOffscreenBuildings();
 }
 
-void BuildingManager::updateBuildings() {
+void BuildingManager::applyPhysicsAll() {
     for (auto& b : buildings) {
-        if (b.isRebounding()) {
-            b.updateRebound();
-            continue;
+        if (!b.isDestroyed()) {
+            b.applyPhysics();
         }
-        b.updateFall();
     }
 }
 
@@ -37,7 +36,7 @@ void BuildingManager::removeOffscreenBuildings() {
     buildings.erase(
         std::remove_if(buildings.begin(), buildings.end(),
             [](const Building& b) {
-                return b.getY() - b.getHeight() > GameConfig::MAP_GROUND_Y + 1;
+                return b.isOnGround() || b.getBottomY() > GameConfig::MAP_GROUND_Y + 5;
             }),
         buildings.end()
     );
@@ -61,7 +60,7 @@ void BuildingManager::addRandomBuilding() {
         int height = GameConfig::MIN_BUILDING_HEIGHT +
                      (std::rand() % (GameConfig::MAX_BUILDING_HEIGHT - GameConfig::MIN_BUILDING_HEIGHT + 1));
         int x = std::rand() % (GameConfig::MAP_WIDTH - GameConfig::BUILDING_WIDTH + 1);
-        int y = -height;
+        float y = static_cast<float>(-height);
         if (isOverlapping(x)) continue;
         buildings.emplace_back(x, y, height);
         break;
@@ -83,7 +82,16 @@ bool BuildingManager::isOverlapping(int newX) const {
 Building* BuildingManager::getBuildingAt(int x, float y) {
     for (auto& b : buildings) {
         if (b.isDestroyed()) continue;
-        if (b.collidesWith(x, y)) return &b;
+
+        // 빌딩 범위 체크 (x 범위 + y 범위)
+        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
+        bool yInRange = (y >= b.getBottomY() && y <= b.getTopY());
+
+        if (xInRange && yInRange) {
+            std::cout << "\nCollision! Player(" << x << "," << y << ") Building("
+                      << b.getX() << "," << b.getBottomY() << "-" << b.getTopY() << ")" << std::endl;
+            return &b;
+        }
     }
     return nullptr;
 }
@@ -102,5 +110,10 @@ int BuildingManager::getActiveCount() const {
     return count;
 }
 
-std::vector<Building>& BuildingManager::getAll() { return buildings; }
-const std::vector<Building>& BuildingManager::getAll() const { return buildings; }
+std::vector<Building>& BuildingManager::getAll() {
+    return buildings;
+}
+
+const std::vector<Building>& BuildingManager::getAll() const {
+    return buildings;
+}

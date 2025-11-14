@@ -9,6 +9,7 @@ public:
     void initBuildings();
     void updateAll();
     void destroyAll();
+    void applyPhysicsAll();
     int getActiveCount() const;
 
     Building* getBuildingAt(int x, float y);
