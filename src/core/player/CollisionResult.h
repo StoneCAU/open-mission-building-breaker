@@ -7,9 +7,7 @@ struct CollisionResult {
         NONE,
         ATTACK_HIT,
         DEFENSE_SUCCESS,
-        PLAYER_DAMAGED,
-        HEAD_COLLISION_STUCK,
-        HEAD_COLLISION_RELEASED
+        PLAYER_DAMAGED
     };
     
     Type type;
