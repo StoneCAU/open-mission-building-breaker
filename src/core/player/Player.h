@@ -36,4 +36,6 @@ private:
     PlayerAction action;
     PlayerCollision collision;
     Building* attachedBuilding;
+
+    void onPlayerDamaged();
 };

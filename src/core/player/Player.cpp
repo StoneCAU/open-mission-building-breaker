@@ -21,16 +21,25 @@ void Player::handleInput(InputKey key) {
 void Player::update() {
     // 1. 빌딩에 붙어있으면 빌딩 따라 이동
     if (attachedBuilding) {
+        // 빌딩 파괴되었으면 떼어냄
         if (attachedBuilding->isDestroyed()) {
             detachFromBuilding();
-        } else {
+        }
+        // 빌딩이 지면 닿으면 피격 + 떼어냄 (추가!)
+        else if (attachedBuilding->isOnGround()) {
+            if (!collision.isDamaged()) {
+                collision.takeDamage();
+            }
+            detachFromBuilding();
+        }
+        // 정상: 빌딩 따라 이동
+        else {
             float targetY = attachedBuilding->getBottomY() + GameConfig::PLAYER_HEIGHT;
             float targetVelocityY = attachedBuilding->getVelocityY();
             movement.followObject(targetY, targetVelocityY);
         }
     }
 
-    // 2. 일반 업데이트
     action.update();
 
     if (!attachedBuilding) {
