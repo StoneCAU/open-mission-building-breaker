@@ -57,16 +57,25 @@ void GameSession::update() {
 }
 
 void GameSession::checkPhysicsCollision() {
+    // 이미 붙어있으면 물리 충돌 체크 안 함
+    if (player.isAttachedToBuilding()) {
+        return;
+    }
+
     const int px = player.getX();
     const float py = player.getY();
     const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
 
     Building* building = buildingManager.getBuildingAt(px, playerTopY);
-    if (building == nullptr) return;
 
-    // 플레이어가 위로 올라가는 중이고, 빌딩 밑면과 충돌
-    if (player.getVelocityY() < 0 && playerTopY >= building->getBottomY() - 1.0f) {
+    if (building == nullptr) {
+        return;
+    }
+
+    // 위로 올라가는 중 충돌
+    if (player.getVelocityY() < 0) {
         player.handlePhysicsCollision(building->getBottomY());
+        player.attachToBuilding(building);
     }
 }
 
@@ -105,19 +114,28 @@ void GameSession::checkActionCollision() {
         if (defendBuilding) {
             defendBuilding->applyRebound();
             onDefenseSuccess();
+
+            // 방어하면 떼어냄 (이미 있음!)
+            if (player.isAttachedToBuilding()) {
+                player.detachFromBuilding();
+            }
+
+            return;
         }
-        return;
     }
 
-    if (actionType == PlayerActionType::IDLE) {
+    if (actionType == PlayerActionType::IDLE && !player.isDamaged()) {
+        // 점프 중이거나 붙어있으면 데미지 X
+        if (player.isJumping() || player.isAttachedToBuilding()) {
+            return;
+        }
+
         Building* building = buildingManager.getBuildingAbovePlayer(px, playerTopY, 0.5f);
 
-        if (building && !player.isDamaged()) {
-            if (building->getVelocityY() > 0.01f) {
-                player.takeDamage();
-                building->applyRebound();
-                onPlayerDamaged();
-            }
+        if (building && building->getVelocityY() > 0.01f) {
+            player.takeDamage();
+            building->applyRebound();
+            onPlayerDamaged();
         }
     }
 }
