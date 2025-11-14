@@ -40,6 +40,16 @@ void PlayerMovement::stopVerticalMovement() {
     velocityY = 0.0f;
 }
 
+void PlayerMovement::handleCollisionWith(float obstacleY) {
+    // 위로 올라가는 중 장애물에 부딪혔을 때
+    if (velocityY < 0) {
+        // 속도 0으로 (더 이상 올라가지 못함)
+        velocityY = 0.0f;
+        // 위치는 장애물 바로 아래로
+        y = obstacleY + GameConfig::PLAYER_HEIGHT;
+    }
+}
+
 bool PlayerMovement::isOnGround() const {
     return y >= GameConfig::MAP_GROUND_Y - 0.1f;
 }
@@ -95,10 +105,6 @@ bool PlayerMovement::canMoveRight() const {
 
 bool PlayerMovement::isJumping() const {
     return jumping;
-}
-
-void PlayerMovement::setY(float newY) {
-    y = newY;
 }
 
 float PlayerMovement::getVelocityY() const {

@@ -1,4 +1,6 @@
 #pragma once
+#include <functional>
+
 #include "../../ui/InputHandler.h"
 
 class PlayerMovement {
@@ -11,6 +13,7 @@ public:
     // 물리
     void applyPhysics();
     void stopVerticalMovement();
+    void handleCollisionWith(float obstacleY);
     bool isOnGround() const;
 
     // 점프
@@ -18,9 +21,10 @@ public:
     bool isJumping() const;
 
     float getVelocityY() const;
-    void setY(float newY);
 
 private:
+    using CollisionCheckFunc = std::function<bool(int x, float y)>;
+
     int& x;
     float& y;
     float velocityY;
