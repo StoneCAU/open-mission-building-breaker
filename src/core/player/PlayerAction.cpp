@@ -86,3 +86,8 @@ bool PlayerAction::isAttackFirstFrame() const {
     return action == PlayerActionType::ATTACK &&
            actionFrame == GameConfig::PLAYER_ACTION_DURATION-1;
 }
+
+bool PlayerAction::isAttackActiveFrame() const {
+    return action == PlayerActionType::ATTACK &&
+           actionFrame >= 5 && actionFrame <= 7;
+}
