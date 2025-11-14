@@ -20,6 +20,8 @@ public:
     void jump();
     bool isJumping() const;
 
+    void followObject(float targetY, float targetVelocityY);
+
     float getVelocityY() const;
 
 private:

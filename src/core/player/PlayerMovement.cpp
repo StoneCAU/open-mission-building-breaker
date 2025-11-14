@@ -83,6 +83,12 @@ bool PlayerMovement::tryJump(InputKey key) {
     return false;
 }
 
+void PlayerMovement::followObject(float targetY, float targetVelocityY) {
+    y = targetY;
+    velocityY = targetVelocityY;
+    jumping = false;
+}
+
 void PlayerMovement::updateJumpCooldown() {
     if (jumpCooldown > 0) {
         --jumpCooldown;
