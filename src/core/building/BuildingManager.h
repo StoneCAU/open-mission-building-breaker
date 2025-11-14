@@ -14,13 +14,16 @@ public:
 
     Building* getBuildingAt(int x, float y);
     Building* getBuildingInRange(int x, float y, float range);
+    Building* getBuildingAbove(int x, float y, float range);
     Building* getBuildingAbovePlayer(int x, float y, float threshold);
+
     std::vector<Building>& getAll();
     const std::vector<Building>& getAll() const;
 
 private:
     std::vector<Building> buildings;
     int spawnCooldown = 0;
+    int nextSpawnX;
 
     void updateBuildings();
     void removeOffscreenBuildings();
