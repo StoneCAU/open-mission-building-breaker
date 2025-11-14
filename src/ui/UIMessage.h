@@ -6,7 +6,8 @@ enum class MessageType {
     NONE,
     ATTACK_HIT,
     DEFENSE_SUCCESS,
-    PLAYER_DAMAGED
+    PLAYER_DAMAGED,
+    ULTIMATE_ACTIVATED
 };
 
 struct UIMessage {
