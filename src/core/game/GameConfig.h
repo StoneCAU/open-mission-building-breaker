@@ -46,6 +46,7 @@ namespace GameConfig {
     inline constexpr float PLAYER_ATTACK_RANGE = 1.0f;
     inline constexpr float PLAYER_DEFENSE_RANGE = 0.5f;
     inline constexpr int PLAYER_ATTACK_COOLDOWN = 10;
+    inline constexpr int ULTIMATE_GAUGE_COST = 100;
 
     // ===== 시스템 관련 =====
     inline constexpr int FRAME_DELAY_MS = 20;
