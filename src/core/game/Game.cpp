@@ -66,7 +66,7 @@ void Game::runMenu() {
 /** ===================== [GAME LOOP] ===================== **/
 void Game::runGame() {
     session.start();
-    ui.clearScreen();
+    ui.clearScreenFull();
     ui.renderPlaying(session);
 
     while (isRunning && state == GameState::PLAYING) {
