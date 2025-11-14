@@ -1,8 +1,11 @@
 #include "Building.h"
+
+#include <iostream>
+
 #include "../game/GameConfig.h"
 
 Building::Building(int x, float y, int height)
-    : x(x), y(y), velocityY(0.0f), destroyed(false), groundFrames(0) {
+    : x(x), y(y), velocityY(0.0f), destroyed(false), groundFrames(0), rebounded(false) {
 
     floors.reserve(height);
     for (int i = 0; i < height; ++i) {
@@ -15,18 +18,16 @@ void Building::applyPhysics() {
         return;
     }
 
-    // 이미 지면이면 정지
     if (isOnGround()) {
         velocityY = 0.0f;
         ++groundFrames;
-        return;
+        return;  // 여기서 리턴하면 중력 안 받음!
     }
 
-    // 중력 적용
+    // 중력 적용 (rebounded 빌딩도 여기서 중력 받아야 함)
     velocityY += GameConfig::BUILDING_GRAVITY;
     y += velocityY;
 
-    // 지면 체크
     if (y >= GameConfig::MAP_GROUND_Y) {
         y = static_cast<float>(GameConfig::MAP_GROUND_Y);
         velocityY = 0.0f;
@@ -34,7 +35,8 @@ void Building::applyPhysics() {
 }
 
 void Building::applyRebound() {
-    velocityY = -1.5f;
+    velocityY = GameConfig::BUILDING_REBOUND_VELOCITY;
+    rebounded = true;
 }
 
 void Building::stopVerticalMovement() {
@@ -78,6 +80,10 @@ int Building::getHeight() const {
 
 bool Building::isDestroyed() const {
     return destroyed;
+}
+
+bool Building::isRebounded() const {
+    return rebounded;
 }
 
 std::vector<std::string> Building::getRenderLines() const {

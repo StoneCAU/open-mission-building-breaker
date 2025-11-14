@@ -12,6 +12,7 @@ public:
     void applyRebound();
     void stopVerticalMovement();
     bool isOnGround() const;
+    bool isRebounded() const;
 
     void removeBottomFloor();
     Floor* getFloorAt(float worldY);
@@ -33,6 +34,7 @@ private:
     float velocityY;
     std::vector<Floor> floors;
     bool destroyed;
+    bool rebounded;
     int groundFrames;
 
     std::vector<std::string> shape;
