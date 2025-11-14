@@ -36,7 +36,7 @@ void BuildingManager::removeOffscreenBuildings() {
     buildings.erase(
         std::remove_if(buildings.begin(), buildings.end(),
             [](const Building& b) {
-                return b.isOnGround() || b.getBottomY() > GameConfig::MAP_GROUND_Y + 5;
+                return b.getGroundFrames() > 60 || b.getTopY() > GameConfig::MAP_GROUND_Y + 10;
             }),
         buildings.end()
     );
@@ -88,8 +88,41 @@ Building* BuildingManager::getBuildingAt(int x, float y) {
         bool yInRange = (y >= b.getBottomY() && y <= b.getTopY());
 
         if (xInRange && yInRange) {
-            std::cout << "\nCollision! Player(" << x << "," << y << ") Building("
-                      << b.getX() << "," << b.getBottomY() << "-" << b.getTopY() << ")" << std::endl;
+            return &b;
+        }
+    }
+    return nullptr;
+}
+
+Building* BuildingManager::getBuildingInRange(int x, float y, float range) {
+    for (auto& b : buildings) {
+        if (b.isDestroyed()) continue;
+
+        // X 범위 체크
+        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
+
+        // Y 범위 체크 (y 기준으로 range 내)
+        bool yInRange = (b.getBottomY() >= y - range && b.getBottomY() <= y + range);
+
+        if (xInRange && yInRange) {
+            return &b;
+        }
+    }
+    return nullptr;
+}
+
+Building* BuildingManager::getBuildingAbovePlayer(int x, float y, float threshold) {
+    for (auto& b : buildings) {
+        if (b.isDestroyed()) continue;
+
+        // X 범위
+        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
+
+        // 빌딩 밑면이 플레이어 y 바로 위
+        float buildingBottom = b.getBottomY();
+        bool nearBottom = (buildingBottom < y && buildingBottom >= y - threshold);
+
+        if (xInRange && nearBottom) {
             return &b;
         }
     }

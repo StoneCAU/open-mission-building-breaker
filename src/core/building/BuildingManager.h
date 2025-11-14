@@ -13,6 +13,8 @@ public:
     int getActiveCount() const;
 
     Building* getBuildingAt(int x, float y);
+    Building* getBuildingInRange(int x, float y, float range);
+    Building* getBuildingAbovePlayer(int x, float y, float threshold);
     std::vector<Building>& getAll();
     const std::vector<Building>& getAll() const;
 
