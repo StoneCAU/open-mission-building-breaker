@@ -11,7 +11,7 @@ GameSession::GameSession()
       gauge(GameConfig::INITIAL_GAUGE),
       life(GameConfig::INITIAL_LIFE),
       maxCombo(0),
-      startTime(std::chrono::steady_clock::now()) {}
+      startTime(std::chrono::steady_clock::now()){}
 
 void GameSession::start() {
     reset();
@@ -49,15 +49,24 @@ void GameSession::executeUltimate() {
 void GameSession::update() {
     hitThisFrame = false;
 
+    // 플레이어 업데이트 전 데미지 상태 기록
+    bool wasDamaged = player.isDamaged();
+
     player.update();
-    buildingManager.updateAll();
+
+    // 방금 데미지 입었으면 라이프 감소
+    if (!wasDamaged && player.isDamaged()) {
+        decreaseLife();
+        resetCombo();
+        messageQueue.push(MessageType::PLAYER_DAMAGED);
+    }
 
     checkPhysicsCollision();
     checkActionCollision();
+    buildingManager.updateAll();
 }
 
 void GameSession::checkPhysicsCollision() {
-    // 이미 붙어있으면 물리 충돌 체크 안 함
     if (player.isAttachedToBuilding()) {
         return;
     }
@@ -66,15 +75,18 @@ void GameSession::checkPhysicsCollision() {
     const float py = player.getY();
     const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
 
-    Building* building = buildingManager.getBuildingAt(px, playerTopY);
+    // 플레이어 위 3칸 범위에 빌딩 있는지 체크
+    Building* building = buildingManager.getBuildingAbove(px, playerTopY, 3.0f);
 
     if (building == nullptr) {
         return;
     }
 
-    // 위로 올라가는 중 충돌
-    if (player.getVelocityY() < 0) {
-        player.handlePhysicsCollision(building->getBottomY());
+    float buildingBottom = building->getBottomY();
+
+    // 위로 올라가는 중 + 충돌 예상
+    if (player.getVelocityY() < -0.1f && playerTopY <= buildingBottom + 1.0f) {
+        player.handlePhysicsCollision(buildingBottom);
         player.attachToBuilding(building);
     }
 }
@@ -96,11 +108,21 @@ void GameSession::checkActionCollision() {
         );
 
         if (attackBuilding) {
+            // 빌딩이 바닥에 있으면 공격 불가 (추가)
+            if (attackBuilding->isOnGround()) {
+                return;
+            }
+
             hitThisFrame = true;
             attackBuilding->removeBottomFloor();
             onAttackHit();
+
+            if (player.isAttachedToBuilding()) {
+                player.detachFromBuilding();
+            }
+
+            return;
         }
-        return;
     }
 
     // 방어 체크
