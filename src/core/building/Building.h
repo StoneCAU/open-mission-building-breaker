@@ -2,37 +2,35 @@
 #include <vector>
 #include <string>
 
+#include "Floor.h"
+
 class Building {
 public:
-    Building(int x, int y, int height);
+    Building(int x, float y, int height);
 
-    void updateFall();
-    void updateRebound();
-    void takeHit();
+    void applyPhysics();
+    void applyRebound();
+    void stopVerticalMovement();
+    bool isOnGround() const;
 
-    void rebound();
-
-    bool isDestroyed() const;
-    bool isRebounding() const;
-    bool isFalling() const;
-    bool collidesWith(int playerX, float playerY) const;
-
-    int getX() const;
-    int getY() const;
+    void removeBottomFloor();
+    Floor* getFloorAt(float worldY);
     int getHeight() const;
+    bool isDestroyed() const;
 
     std::vector<std::string> getRenderLines() const;
 
+    int getX() const;
+    float getY() const;
+    float getBottomY() const;
+    float getTopY() const;
+
 private:
     int x;
-    int renderY;
-    float physicsY;
-    int height;
-
+    float y;
+    float velocityY;
+    std::vector<Floor> floors;
     bool destroyed;
-    bool falling;
-    bool rebounding;
-    int reboundFramesLeft;
 
     std::vector<std::string> shape;
 

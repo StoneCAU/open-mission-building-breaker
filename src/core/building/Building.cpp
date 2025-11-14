@@ -1,94 +1,109 @@
 #include "Building.h"
 #include "../game/GameConfig.h"
 
-constexpr const char* BLOCK_UNIT = "#";
+Building::Building(int x, float y, int height)
+    : x(x), y(y), velocityY(0.0f), destroyed(false) {
 
-Building::Building(int x, int y, int height)
-    : x(x),
-      renderY(y),
-      physicsY(static_cast<float>(y)),
-      height(height),
-      destroyed(false),
-      falling(true),
-      rebounding(false),
-      reboundFramesLeft(0) {
-    initShape();
-}
-
-void Building::initShape() {
-    shape.clear();
-    std::string blockLine;
-    for (int i = 0; i < GameConfig::BUILDING_WIDTH; ++i) {
-        blockLine += BLOCK_UNIT;
-    }
+    floors.reserve(height);
     for (int i = 0; i < height; ++i) {
-        shape.push_back(blockLine);
+        floors.emplace_back(FloorType::NORMAL);
     }
 }
 
-void Building::updateFall() {
-    if (destroyed || rebounding) {
+void Building::applyPhysics() {
+    if (destroyed) {
         return;
     }
 
-    // 부드러운 낙하를 위해 실수 좌표 업데이트
-    physicsY += GameConfig::BUILDING_FALL_SPEED_PER_FRAME;
+    // 이미 지면이면 정지
+    if (isOnGround()) {
+        velocityY = 0.0f;
+        return;
+    }
 
-    // 렌더링용 정수 좌표 동기화
-    renderY = static_cast<int>(physicsY);
+    // 중력 적용
+    velocityY += GameConfig::BUILDING_GRAVITY;
+    y += velocityY;
+
+    // 지면 체크
+    if (y >= GameConfig::MAP_GROUND_Y) {
+        y = static_cast<float>(GameConfig::MAP_GROUND_Y);
+        velocityY = 0.0f;
+    }
 }
 
-void Building::takeHit() {
-    if (destroyed || shape.empty()) {
+void Building::applyRebound() {
+    velocityY = -1.5f;
+}
+
+void Building::stopVerticalMovement() {
+    velocityY = 0.0f;
+}
+
+bool Building::isOnGround() const {
+    return y >= GameConfig::MAP_GROUND_Y - 0.1f;
+}
+
+void Building::removeBottomFloor() {
+    if (floors.empty()) {
+        destroyed = true;
         return;
     }
 
-    shape.pop_back();
-    --height;
+    floors.erase(floors.begin());
 
-    if (shape.empty()) {
+    if (floors.empty()) {
         destroyed = true;
     }
 }
 
-void Building::rebound() {
-    if (destroyed) {
-        return;
-    }
-    reboundFramesLeft = GameConfig::BUILDING_REBOUND_DURATION_FRAMES;
-    falling = false;
-    rebounding = true;
-}
-
-void Building::updateRebound() {
-    if (!rebounding) {
-        return;
+Floor* Building::getFloorAt(float worldY) {
+    if (worldY < y || worldY > getTopY()) {
+        return nullptr;
     }
 
-    physicsY -= GameConfig::BUILDING_REBOUND_SPEED_PER_FRAME;
-    renderY = static_cast<int>(physicsY);
-    reboundFramesLeft -= GameConfig::BUILDING_REBOUND_DECAY_PER_FRAME;
+    int floorIndex = static_cast<int>(getTopY() - worldY);
 
-    if (reboundFramesLeft <= 0) {
-        rebounding = false;
-        falling = true;
+    if (floorIndex < 0 || floorIndex >= static_cast<int>(floors.size())) {
+        return nullptr;
     }
+
+    return &floors[floorIndex];
 }
 
-bool Building::collidesWith(int playerX, float playerY) const {
-    bool xOverlap = playerX >= x && playerX < x + GameConfig::BUILDING_WIDTH;
-
-    int buildingTop = renderY - height + 1;
-    bool yOverlap = playerY <= renderY && playerY >= buildingTop;
-
-    return xOverlap && yOverlap;
+int Building::getHeight() const {
+    return static_cast<int>(floors.size());
 }
 
-bool Building::isDestroyed() const { return destroyed; }
-bool Building::isRebounding() const { return rebounding; }
-bool Building::isFalling() const { return falling; }
+bool Building::isDestroyed() const {
+    return destroyed;
+}
 
-int Building::getX() const { return x; }
-int Building::getY() const { return renderY; }
-int Building::getHeight() const { return height; }
-std::vector<std::string> Building::getRenderLines() const { return shape; }
+std::vector<std::string> Building::getRenderLines() const {
+    std::vector<std::string> lines;
+    lines.reserve(floors.size());
+
+    for (const auto& floor : floors) {
+        if (!floor.isDestroyed()) {
+            lines.push_back(floor.getVisual());
+        }
+    }
+
+    return lines;
+}
+
+int Building::getX() const {
+    return x;
+}
+
+float Building::getY() const {
+    return y;
+}
+
+float Building::getBottomY() const {
+    return y;
+}
+
+float Building::getTopY() const {
+    return y + static_cast<float>(floors.size());
+}
