@@ -2,7 +2,7 @@
 #include "../game/GameConfig.h"
 
 Building::Building(int x, float y, int height)
-    : x(x), y(y), velocityY(0.0f), destroyed(false) {
+    : x(x), y(y), velocityY(0.0f), destroyed(false), groundFrames(0) {
 
     floors.reserve(height);
     for (int i = 0; i < height; ++i) {
@@ -18,6 +18,7 @@ void Building::applyPhysics() {
     // 이미 지면이면 정지
     if (isOnGround()) {
         velocityY = 0.0f;
+        ++groundFrames;
         return;
     }
 
@@ -106,4 +107,12 @@ float Building::getBottomY() const {
 
 float Building::getTopY() const {
     return y + static_cast<float>(floors.size());
+}
+
+int Building::getGroundFrames() const {
+    return groundFrames;
+}
+
+float Building::getVelocityY() const {
+    return velocityY;
 }

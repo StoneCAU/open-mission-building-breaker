@@ -24,6 +24,8 @@ public:
     float getY() const;
     float getBottomY() const;
     float getTopY() const;
+    int getGroundFrames() const;
+    float getVelocityY() const;
 
 private:
     int x;
@@ -31,6 +33,7 @@ private:
     float velocityY;
     std::vector<Floor> floors;
     bool destroyed;
+    int groundFrames;
 
     std::vector<std::string> shape;
 
