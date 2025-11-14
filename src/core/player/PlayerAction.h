@@ -13,6 +13,7 @@ public:
     int getActionCooldown() const;
     void setActionCooldown(int value);
     bool isAttackFirstFrame() const;
+    bool tryUltimate();
 
 private:
     PlayerActionType action;
