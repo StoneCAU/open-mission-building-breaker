@@ -3,5 +3,6 @@
 enum class PlayerActionType {
     IDLE,
     ATTACK,
-    DEFEND
+    DEFEND,
+    ULTIMATE
 };
