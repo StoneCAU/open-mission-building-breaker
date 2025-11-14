@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "../building/Building.h"
 #include "../game/GameConfig.h"
 
 Player::Player()
@@ -18,8 +19,24 @@ void Player::handleInput(InputKey key) {
 }
 
 void Player::update() {
+    // 1. 빌딩에 붙어있으면 빌딩 따라 이동
+    if (attachedBuilding) {
+        if (attachedBuilding->isDestroyed()) {
+            detachFromBuilding();
+        } else {
+            float targetY = attachedBuilding->getBottomY() + GameConfig::PLAYER_HEIGHT;
+            float targetVelocityY = attachedBuilding->getVelocityY();
+            movement.followObject(targetY, targetVelocityY);
+        }
+    }
+
+    // 2. 일반 업데이트
     action.update();
-    movement.update();
+
+    if (!attachedBuilding) {
+        movement.update();
+    }
+
     collision.update();
 }
 
@@ -51,6 +68,22 @@ bool Player::isAttackActiveFrame() const {
     return action.isAttackActiveFrame();
 }
 
+bool Player::isJumping() const {
+    return movement.isJumping();
+}
+
 void Player::handlePhysicsCollision(float obstacleY) {
     movement.handleCollisionWith(obstacleY);
+}
+
+void Player::attachToBuilding(Building* building) {
+    attachedBuilding = building;
+}
+
+void Player::detachFromBuilding() {
+    attachedBuilding = nullptr;
+}
+
+bool Player::isAttachedToBuilding() const {
+    return attachedBuilding != nullptr;
 }

@@ -16,12 +16,17 @@ public:
     void takeDamage();
     void update();
 
+    void attachToBuilding(Building* building);
+    void detachFromBuilding();
+    bool isAttachedToBuilding() const;
+
     // Getter
     int getX() const;
     float getY() const;
     float getVelocityY() const;
     PlayerActionType getAction() const;
     bool isDamaged() const;
+    bool isJumping() const;
     bool isAttackActiveFrame() const;
 
 private:
@@ -30,4 +35,5 @@ private:
     PlayerMovement movement;
     PlayerAction action;
     PlayerCollision collision;
+    Building* attachedBuilding;
 };
