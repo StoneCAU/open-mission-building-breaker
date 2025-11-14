@@ -25,8 +25,24 @@ void GameSession::reset() {
 }
 
 void GameSession::handleInput(InputKey key) {
+    if (key == InputKey::ULTIMATE && gauge >= GameConfig::ULTIMATE_GAUGE_COST) {
+        executeUltimate();
+        return;
+    }
+
     player.handleInput(key);
 }
+
+void GameSession::executeUltimate() {
+    int destroyedCount = buildingManager.getActiveCount();
+    buildingManager.destroyAll();
+
+    resetGauge();
+    addScore(destroyedCount * GameConfig::SCORE_PER_ATTACK_HIT);
+
+    messageQueue.push(MessageType::ULTIMATE_ACTIVATED, destroyedCount);
+}
+
 
 void GameSession::update() {
     hitThisFrame = false;  // 프레임이 바뀔 때 초기화

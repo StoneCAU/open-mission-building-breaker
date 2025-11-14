@@ -59,6 +59,8 @@ private:
     void addGauge(int value);
     void resetGauge();
 
+    void executeUltimate();
+
     Building* lastHitBuilding = nullptr;
     bool hitThisFrame = false;
 };
