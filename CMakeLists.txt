@@ -29,6 +29,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/player/PlayerActionType.h
         src/ui/UIMessage.h
         src/ui/UIMessage.cpp
+        src/core/building/Floor.cpp
+        src/core/building/Floor.h
 )
 
 add_compile_options(/utf-8)
