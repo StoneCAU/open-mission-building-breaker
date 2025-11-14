@@ -1,4 +1,7 @@
 #include "GameSession.h"
+
+#include <iostream>
+
 #include "GameConfig.h"
 #include "../building/Building.h"
 
@@ -43,92 +46,84 @@ void GameSession::executeUltimate() {
     messageQueue.push(MessageType::ULTIMATE_ACTIVATED, destroyedCount);
 }
 
-
 void GameSession::update() {
-    hitThisFrame = false;  // 프레임이 바뀔 때 초기화
+    hitThisFrame = false;
+
     player.update();
-    checkAndHandleCollision();
     buildingManager.updateAll();
+
+    checkPhysicsCollision();
+    checkActionCollision();
 }
 
-void GameSession::checkGroundCollision() {
-    auto& buildings = buildingManager.getAll();
+void GameSession::checkPhysicsCollision() {
+    const int px = player.getX();
+    const float py = player.getY();
+    const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
 
-    for (auto& building : buildings) {
-        if (building.isDestroyed()) continue;
-
-        // 빌딩이 지면에 닿았으면
-        if (building.isOnGround()) {
-            decreaseLife();
-            resetCombo();
-            messageQueue.push(MessageType::PLAYER_DAMAGED);
-            // 빌딩은 제거하지 않음 (화면 밖으로 나가야 제거)
-        }
-    }
-}
-
-void GameSession::checkAndHandleCollision() {
-    if (hitThisFrame) return;
-
-    const float playerTopY = player.getY() - GameConfig::PLAYER_HEIGHT;
-    Building* building = buildingManager.getBuildingAt(player.getX(), playerTopY);
-
+    Building* building = buildingManager.getBuildingAt(px, playerTopY);
     if (building == nullptr) return;
 
-    // 점프해서 위로 올라가는 중일 때만 머리 충돌 체크
-    if (player.getVelocityY() < 0) {
-        CollisionResult result = player.processCollision(*building);
-        if (result.type == CollisionResult::Type::ATTACK_HIT) {
+    // 플레이어가 위로 올라가는 중이고, 빌딩 밑면과 충돌
+    if (player.getVelocityY() < 0 && playerTopY >= building->getBottomY() - 1.0f) {
+        player.handlePhysicsCollision(building->getBottomY());
+    }
+}
+
+void GameSession::checkActionCollision() {
+    if (hitThisFrame) return;
+
+    const PlayerActionType actionType = player.getAction();
+    const int px = player.getX();
+    const float py = player.getY();
+    const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
+
+    // 공격 체크
+    if (actionType == PlayerActionType::ATTACK && player.isAttackActiveFrame()) {
+        Building* attackBuilding = buildingManager.getBuildingInRange(
+            px,
+            playerTopY,
+            GameConfig::PLAYER_ATTACK_RANGE
+        );
+
+        if (attackBuilding) {
             hitThisFrame = true;
-            lastHitBuilding = building;
+            attackBuilding->removeBottomFloor();
+            onAttackHit();
         }
-        applyCollisionEffect(result);
-        handleCollisionResult(result);
+        return;
+    }
+
+    // 방어 체크
+    if (actionType == PlayerActionType::DEFEND) {
+        Building* defendBuilding = buildingManager.getBuildingInRange(
+            px,
+            playerTopY,
+            GameConfig::PLAYER_DEFENSE_RANGE
+        );
+
+        if (defendBuilding) {
+            defendBuilding->applyRebound();
+            onDefenseSuccess();
+        }
+        return;
+    }
+
+    if (actionType == PlayerActionType::IDLE) {
+        Building* building = buildingManager.getBuildingAbovePlayer(px, playerTopY, 0.5f);
+
+        if (building && !player.isDamaged()) {
+            if (building->getVelocityY() > 0.01f) {
+                player.takeDamage();
+                building->applyRebound();
+                onPlayerDamaged();
+            }
+        }
     }
 }
-
-void GameSession::applyCollisionEffect(const CollisionResult& result) {
-    if (result.building == nullptr) return;
-
-    if (result.type == CollisionResult::Type::ATTACK_HIT) {
-        result.building->removeBottomFloor();  // takeHit() 대신
-        return;
-    }
-
-    if (result.type == CollisionResult::Type::HEAD_COLLISION_RELEASED) {
-        result.building->removeBottomFloor();  // takeHit() 대신
-        return;
-    }
-
-     if (result.type == CollisionResult::Type::DEFENSE_SUCCESS) {
-         result.building->applyRebound();
-         return;
-     }
-
-     if (result.type == CollisionResult::Type::PLAYER_DAMAGED) {
-         result.building->applyRebound();
-     }
-}
-
-void GameSession::handleCollisionResult(const CollisionResult& result) {
-    if (result.type == CollisionResult::Type::ATTACK_HIT) {
-        onAttackHit();
-        return;
-    }
-
-    if (result.type == CollisionResult::Type::HEAD_COLLISION_RELEASED) {
-        onAttackHit();
-        return;
-    }
-
-    if (result.type == CollisionResult::Type::DEFENSE_SUCCESS) {
-        onDefenseSuccess();
-        return;
-    }
-
-    if (result.type == CollisionResult::Type::PLAYER_DAMAGED) {
-        onPlayerDamaged();
-    }
+void GameSession::checkGroundCollision() {
+    // 빌딩이 지면 닿으면 조용히 제거 (BuildingManager에서 처리 중)
+    // 추가 로직 필요 시 여기 작성
 }
 
 void GameSession::onAttackHit() {
