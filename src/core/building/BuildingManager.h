@@ -8,6 +8,8 @@ public:
 
     void initBuildings();
     void updateAll();
+    void destroyAll();
+    int getActiveCount() const;
 
     Building* getBuildingAt(int x, float y);
     std::vector<Building>& getAll();

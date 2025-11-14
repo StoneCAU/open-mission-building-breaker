@@ -88,5 +88,19 @@ Building* BuildingManager::getBuildingAt(int x, float y) {
     return nullptr;
 }
 
+void BuildingManager::destroyAll() {
+    buildings.clear();
+}
+
+int BuildingManager::getActiveCount() const {
+    int count = 0;
+    for (const auto& b : buildings) {
+        if (!b.isDestroyed()) {
+            ++count;
+        }
+    }
+    return count;
+}
+
 std::vector<Building>& BuildingManager::getAll() { return buildings; }
 const std::vector<Building>& BuildingManager::getAll() const { return buildings; }
