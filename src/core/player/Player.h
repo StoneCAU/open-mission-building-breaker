@@ -20,6 +20,7 @@ public:
     bool isJumping() const;
     int getX() const;
     float getY() const;
+    float getVelocityY() const;
     PlayerActionType getAction() const;
     bool isDamaged() const;
     bool isStuckUnderBuilding() const;

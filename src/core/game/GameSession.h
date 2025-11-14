@@ -45,6 +45,7 @@ private:
     void checkAndHandleCollision();
     void handleCollisionResult(const CollisionResult& result);
     void applyCollisionEffect(const CollisionResult& result);
+    void checkGroundCollision();
 
     // 게임 이벤트 처리
     void onAttackHit();

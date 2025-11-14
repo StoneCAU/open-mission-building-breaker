@@ -43,7 +43,8 @@ void Player::updateStuckState() {
 
     // 빌딩 하단에 계속 붙어있기
     const float newY = stuckBuilding->getY() + GameConfig::PLAYER_HEIGHT;
-    movement.forceFall(newY);
+    movement.setY(newY);
+    movement.stopVerticalMovement();
 }
 
 bool Player::shouldReleaseFromBuilding() const {
@@ -109,6 +110,10 @@ int Player::getX() const {
 
 float Player::getY() const {
     return y;
+}
+
+float Player::getVelocityY() const {
+    return movement.getVelocityY();
 }
 
 PlayerActionType Player::getAction() const {

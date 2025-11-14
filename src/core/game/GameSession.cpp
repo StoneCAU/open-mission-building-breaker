@@ -51,43 +51,63 @@ void GameSession::update() {
     buildingManager.updateAll();
 }
 
+void GameSession::checkGroundCollision() {
+    auto& buildings = buildingManager.getAll();
+
+    for (auto& building : buildings) {
+        if (building.isDestroyed()) continue;
+
+        // 빌딩이 지면에 닿았으면
+        if (building.isOnGround()) {
+            decreaseLife();
+            resetCombo();
+            messageQueue.push(MessageType::PLAYER_DAMAGED);
+            // 빌딩은 제거하지 않음 (화면 밖으로 나가야 제거)
+        }
+    }
+}
+
 void GameSession::checkAndHandleCollision() {
-    if (hitThisFrame) return; // 이미 이번 틱에서 처리했으면 무시
+    if (hitThisFrame) return;
 
     const float playerTopY = player.getY() - GameConfig::PLAYER_HEIGHT;
     Building* building = buildingManager.getBuildingAt(player.getX(), playerTopY);
+
     if (building == nullptr) return;
 
-    CollisionResult result = player.processCollision(*building);
-    if (result.type == CollisionResult::Type::ATTACK_HIT) {
-        hitThisFrame = true;         // 이 프레임에서 한 번만 허용
-        lastHitBuilding = building;  // 기록
+    // 점프해서 위로 올라가는 중일 때만 머리 충돌 체크
+    if (player.getVelocityY() < 0) {
+        CollisionResult result = player.processCollision(*building);
+        if (result.type == CollisionResult::Type::ATTACK_HIT) {
+            hitThisFrame = true;
+            lastHitBuilding = building;
+        }
+        applyCollisionEffect(result);
+        handleCollisionResult(result);
     }
-    applyCollisionEffect(result);
-    handleCollisionResult(result);
 }
 
 void GameSession::applyCollisionEffect(const CollisionResult& result) {
     if (result.building == nullptr) return;
 
     if (result.type == CollisionResult::Type::ATTACK_HIT) {
-        result.building->takeHit();
+        result.building->removeBottomFloor();  // takeHit() 대신
         return;
     }
 
     if (result.type == CollisionResult::Type::HEAD_COLLISION_RELEASED) {
-        result.building->takeHit();
+        result.building->removeBottomFloor();  // takeHit() 대신
         return;
     }
 
-    if (result.type == CollisionResult::Type::DEFENSE_SUCCESS) {
-        result.building->rebound();
-        return;
-    }
+     if (result.type == CollisionResult::Type::DEFENSE_SUCCESS) {
+         result.building->applyRebound();
+         return;
+     }
 
-    if (result.type == CollisionResult::Type::PLAYER_DAMAGED) {
-        result.building->rebound();
-    }
+     if (result.type == CollisionResult::Type::PLAYER_DAMAGED) {
+         result.building->applyRebound();
+     }
 }
 
 void GameSession::handleCollisionResult(const CollisionResult& result) {

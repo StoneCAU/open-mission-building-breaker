@@ -87,7 +87,8 @@ CollisionResult PlayerCollision::tryHandleHeadCollision(Building& building) {
     }
 
     // ===== 공격 아닐 때만 위치 보정 =====
-    movement.forceFall(buildingBottomY + GameConfig::PLAYER_HEIGHT);
+    movement.setY(buildingBottomY + GameConfig::PLAYER_HEIGHT);
+    movement.stopVerticalMovement();
 
     if (actionType == PlayerActionType::DEFEND) {
         return {CollisionResult::Type::DEFENSE_SUCCESS, &building};
