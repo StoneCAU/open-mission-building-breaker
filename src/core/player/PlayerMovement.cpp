@@ -1,19 +1,27 @@
 #include "PlayerMovement.h"
 #include <windows.h>
-
-#include "Player.h"
 #include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
 PlayerMovement::PlayerMovement(int& x, float& y)
-    : x(x), y(y), velocityY(0.0f),
-      jumping(false), canJump(true), jumpCooldown(0) {}
+    : x(x), 
+      y(y), 
+      velocityY(0.0f),
+      jumping(false), 
+      canJump(true), 
+      jumpCooldown(0),
+      startX(GameConfig::PLAYER_START_X),
+      groundY(static_cast<float>(GameConfig::MAP_GROUND_Y)),
+      mapMinX(GameConfig::MAP_MIN_X),
+      mapMaxX(GameConfig::MAP_MAX_X) {}
 
 void PlayerMovement::reset() {
-    x = GameConfig::PLAYER_START_X;
-    y = static_cast<float>(GameConfig::MAP_GROUND_Y);
+    x = startX;
+    y = groundY;
     velocityY = 0.0f;
     jumping = false;
+    canJump = true;
+    jumpCooldown = 0;
 }
 
 bool PlayerMovement::handleInput(InputKey key) {
@@ -29,17 +37,15 @@ bool PlayerMovement::handleInput(InputKey key) {
 void PlayerMovement::update() {
     applyPhysics();
     updateJumpCooldown();
-    updateKeyRelease();
+    updateJumpRelease();
 }
 
 void PlayerMovement::applyPhysics() {
-    // 중력과 속도 적용
-    velocityY += GameConfig::GRAVITY;
+    velocityY += GRAVITY;
     y += velocityY;
 
-    // 지면 체크
-    if (y >= GameConfig::MAP_GROUND_Y) {
-        y = static_cast<float>(GameConfig::MAP_GROUND_Y);
+    if (y >= groundY) {
+        y = groundY;
         velocityY = 0.0f;
         jumping = false;
     }
@@ -49,24 +55,21 @@ void PlayerMovement::stopVerticalMovement() {
     velocityY = 0.0f;
 }
 
-void PlayerMovement::handleCollisionWith(float obstacleY) {
-    // 위로 올라가는 중 장애물에 부딪혔을 때
-    if (velocityY < 0) {
-        // 속도 0으로 (더 이상 올라가지 못함)
+void PlayerMovement::handleCollisionWith(float obstacleY, float playerHeight) {
+    if (velocityY < UPWARD_VELOCITY_THRESHOLD) {
         velocityY = 0.0f;
-        // 위치는 장애물 바로 아래로
-        y = obstacleY + Player::HEIGHT;
+        y = obstacleY + playerHeight;
     }
 }
 
 bool PlayerMovement::isOnGround() const {
-    return y >= GameConfig::MAP_GROUND_Y - 0.1f;
+    return y >= groundY - GROUND_CHECK_THRESHOLD;
 }
 
 void PlayerMovement::jump() {
     jumping = true;
     canJump = false;
-    velocityY = GameConfig::JUMP_VELOCITY;
+    velocityY = JUMP_VELOCITY;
 }
 
 void PlayerMovement::handleMovement(InputKey key) {
@@ -79,17 +82,27 @@ void PlayerMovement::handleMovement(InputKey key) {
 }
 
 bool PlayerMovement::tryJump(InputKey key) {
-    const bool jumpKey =
-        (key == InputKey::JUMP ||
-         key == InputKey::MOVE_LEFT_JUMP ||
-         key == InputKey::MOVE_RIGHT_JUMP);
-
-    if (jumpKey && canJump && !jumping && jumpCooldown == 0) {
-        jump();
-        jumpCooldown = Player::JUMP_ACTION_COOLDOWN;
-        return true;
+    if (!isJumpKey(key)) {
+        return false;
     }
-    return false;
+
+    if (!canStartJump()) {
+        return false;
+    }
+
+    jump();
+    jumpCooldown = JUMP_COOLDOWN_MAX;
+    return true;
+}
+
+bool PlayerMovement::isJumpKey(InputKey key) const {
+    return key == InputKey::JUMP ||
+           key == InputKey::MOVE_LEFT_JUMP ||
+           key == InputKey::MOVE_RIGHT_JUMP;
+}
+
+bool PlayerMovement::canStartJump() const {
+    return canJump && !jumping && jumpCooldown == 0;
 }
 
 void PlayerMovement::followObject(float targetY, float targetVelocityY) {
@@ -104,18 +117,22 @@ void PlayerMovement::updateJumpCooldown() {
     }
 }
 
-void PlayerMovement::updateKeyRelease() {
-    if (!jumping && InputHandler::isKeyReleased(VK_UP)) {
+void PlayerMovement::updateJumpRelease() {
+    if (!jumping && isJumpKeyReleased()) {
         canJump = true;
     }
 }
 
+bool PlayerMovement::isJumpKeyReleased() const {
+    return InputHandler::isKeyReleased(VK_UP);
+}
+
 bool PlayerMovement::canMoveLeft() const {
-    return x > GameConfig::MAP_MIN_X;
+    return x > mapMinX;
 }
 
 bool PlayerMovement::canMoveRight() const {
-    return x < GameConfig::MAP_MAX_X;
+    return x < mapMaxX;
 }
 
 bool PlayerMovement::isJumping() const {

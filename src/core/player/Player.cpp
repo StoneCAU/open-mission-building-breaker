@@ -113,7 +113,7 @@ bool Player::isJumping() const {
 }
 
 void Player::handlePhysicsCollision(float obstacleY) {
-    movement.handleCollisionWith(obstacleY);
+    movement.handleCollisionWith(obstacleY, HEIGHT);
 }
 
 void Player::attachToBuilding(Building* building) {
