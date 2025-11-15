@@ -3,10 +3,6 @@ namespace GameConfig {
     inline constexpr float GRAVITY = 0.1f;
     inline constexpr float JUMP_VELOCITY = -1.0f;
 
-    // ===== 플레이어 =====
-    inline constexpr float PLAYER_ATTACK_RANGE = 2.0f;
-    inline constexpr float PLAYER_DEFENSE_RANGE = 0.5f;
-
     // ===== 맵 =====
     inline constexpr int MAP_WIDTH = 50;
     inline constexpr int MAP_MIN_X = 0;
@@ -22,7 +18,6 @@ namespace GameConfig {
 
     // ===== 점프 =====
     inline constexpr int PLAYER_JUMP_DURATION = 20;
-    inline constexpr int PLAYER_START_X = MAP_WIDTH / 2;
 
     // ===== 필살기 =====
     inline constexpr int ULTIMATE_GAUGE_COST = 100;

@@ -11,7 +11,9 @@ class Building;
 class Player {
 public:
     static constexpr float HEIGHT = 1.0f;
-    static constexpr int JUMP_ACTION_COOLDOWN = 15;
+    static constexpr float ATTACK_RANGE = 2.0f;
+    static constexpr float DEFENSE_RANGE = 0.5f;
+    static constexpr int START_X = 25;
 
     Player();
 
@@ -34,6 +36,7 @@ public:
     bool isAttachedToBuilding() const;
 
 private:
+    static constexpr int JUMP_ACTION_COOLDOWN = 5;
 
     int x;
     float y;
