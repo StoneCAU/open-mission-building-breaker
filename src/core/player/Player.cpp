@@ -8,6 +8,16 @@ Player::Player()
       movement(x, y),
       collision(x, y, movement, action) {}
 
+void Player::reset() {
+    movement.reset();
+    action.reset();
+    collision.reset();
+
+    if (attachedBuilding) {
+        attachedBuilding = nullptr;
+    }
+}
+
 void Player::handleInput(InputKey key) {
     if (collision.isDamaged()) return;
 

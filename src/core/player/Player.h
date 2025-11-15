@@ -11,6 +11,7 @@ class Player {
 public:
     Player();
 
+    void reset();
     void handleInput(InputKey key);
     void handlePhysicsCollision(float obstacleY);
     void takeDamage();
