@@ -2,6 +2,10 @@
 #include <windows.h>
 #include "GameConfig.h"
 
+#ifdef USE_SDL
+    #include "../../platform/sdl/SDLInputHandler.h"
+#endif
+
 Game::Game(std::unique_ptr<IRenderer> r, std::unique_ptr<IInputHandler> i)
     : renderer(std::move(r)),
       inputHandler(std::move(i)),
@@ -52,6 +56,15 @@ void Game::runGameOver() {
 }
 
 void Game::processGameFrame() {
+#ifdef USE_SDL
+    auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
+    if (sdlInput && !sdlInput->pollEvents()) {
+        isRunning = false;
+        state = GameState::MENU;
+        return;
+    }
+#endif
+
     handleFrameInput();
     updateFrameState();
     renderFrame();
@@ -82,6 +95,14 @@ void Game::renderFrame() {
 
 void Game::handleMenuInput() {
     while (isRunning && state == GameState::MENU) {
+#ifdef USE_SDL
+        auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
+        if (sdlInput && !sdlInput->pollEvents()) {
+            isRunning = false;
+            return;
+        }
+#endif
+
         InputKey key = inputHandler->getInput();
 
         if (key == InputKey::NONE) {
@@ -116,6 +137,15 @@ void Game::displayGameOverScreen() {
 
 void Game::handleGameOverInput() {
     while (isRunning && state == GameState::GAME_OVER) {
+#ifdef USE_SDL
+        // SDL 이벤트 처리
+        auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
+        if (sdlInput && !sdlInput->pollEvents()) {
+            isRunning = false;
+            return;
+        }
+#endif
+
         InputKey key = inputHandler->getInput();
 
         if (key == InputKey::NONE) {

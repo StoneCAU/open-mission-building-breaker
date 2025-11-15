@@ -1,12 +1,37 @@
-#include <windows.h>
 #include <iostream>
 #include <memory>
 
-#include "core/game/Game.h"
-#include "platform/console/ConsoleRenderer.h"
-#include "platform/console/ConsoleInputHandler.h"
+#ifdef USE_SDL
+    #include <SDL2/SDL.h>
+    #include "platform/sdl/SDLRenderer.h"
+    #include "platform/sdl/SDLInputHandler.h"
+#else
+    #include <windows.h>
+    #include "platform/console/ConsoleRenderer.h"
+    #include "platform/console/ConsoleInputHandler.h"
+#endif
 
-int main() {
+#include "core/game/Game.h"
+
+int main(int argc, char* argv[]) {
+#ifdef USE_SDL
+    std::cout << "🎮 SDL2 버전으로 실행합니다!" << std::endl;
+
+    auto sdlRenderer = std::make_unique<SDLRenderer>();
+    if (!sdlRenderer->initialize()) {
+        std::cerr << "❌ SDL2 초기화 실패!" << std::endl;
+        return 1;
+    }
+
+    auto renderer = std::unique_ptr<IRenderer>(std::move(sdlRenderer));
+    auto inputHandler = std::make_unique<SDLInputHandler>();
+
+    Game game(std::move(renderer), std::move(inputHandler));
+    game.run();
+
+#else
+    std::cout << "💻 콘솔 버전으로 실행합니다!" << std::endl;
+
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -16,16 +41,12 @@ int main() {
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(hConsole, &cursorInfo);
 
-#ifdef USE_SDL
-    std::cout << "SDL2 version not implemented yet!" << std::endl;
-    return 1;
-#else
     auto renderer = std::make_unique<ConsoleRenderer>();
     auto inputHandler = std::make_unique<ConsoleInputHandler>();
-#endif
 
     Game game(std::move(renderer), std::move(inputHandler));
     game.run();
+#endif
 
     return 0;
 }
