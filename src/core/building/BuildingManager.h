@@ -9,6 +9,7 @@ public:
     void initBuildings();
     void updateAll();
     void destroyAll();
+    void damageAllFloors();
 
     void addRandomBuilding();
 
@@ -27,6 +28,7 @@ private:
     int nextSpawnX;
 
     void applyPhysicsAll();
+    void updateFloorsAll();
     void removeOffscreenBuildings();
     void handleSpawn();
 

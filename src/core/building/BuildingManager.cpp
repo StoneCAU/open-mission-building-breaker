@@ -26,12 +26,21 @@ void BuildingManager::initBuildings() {
 
 void BuildingManager::updateAll() {
     applyPhysicsAll();
+    updateFloorsAll();
     removeOffscreenBuildings();
     handleSpawn();
 }
 
 void BuildingManager::destroyAll() {
     buildings.clear();
+}
+
+void BuildingManager::damageAllFloors() {
+    for (auto& building : buildings) {
+        if (building.isDestroyed()) continue;
+
+        building.damageAllFloors();
+    }
 }
 
 void BuildingManager::addRandomBuilding() {
@@ -123,6 +132,14 @@ void BuildingManager::applyPhysicsAll() {
     for (auto& b : buildings) {
         if (!b.isDestroyed()) {
             b.applyPhysics();
+        }
+    }
+}
+
+void BuildingManager::updateFloorsAll() {
+    for (auto& b : buildings) {
+        if (!b.isDestroyed()) {
+            b.updateFloors();
         }
     }
 }
