@@ -28,7 +28,7 @@ void Game::run() {
 }
 
 void Game::runMenu() {
-    ui.renderMenu(highScore);
+    ui.renderMenu(scoreManager.loadHighScore());
     handleMenuInput();
 }
 
@@ -104,10 +104,11 @@ void Game::handleMenuInput() {
 void Game::displayGameOverScreen() {
     ui.clearScreenFull();
 
-    GameOverDisplayData data = session.getGameOverData(highScore);
+    int currentHighScore = scoreManager.loadHighScore();
+    GameOverDisplayData data = session.getGameOverData(currentHighScore);
 
     if (data.isNewRecord) {
-        highScore = data.finalScore;
+        scoreManager.saveHighScore(data.finalScore);
     }
 
     ui.renderGameOver(data);
