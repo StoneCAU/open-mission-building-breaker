@@ -6,6 +6,10 @@
 
 class Building {
 public:
+    static constexpr int WIDTH = 6;
+    static constexpr int MIN_HEIGHT = 5;
+    static constexpr int MAX_HEIGHT = 8;
+
     Building(int x, float y, int height);
 
     void applyPhysics();
@@ -28,6 +32,10 @@ public:
     std::vector<std::string> getRenderLines() const;
 
 private:
+    static constexpr float GRAVITY = 0.001f;
+    static constexpr float REBOUND_VELOCITY = -0.7f;
+    static constexpr float REBOUND_GRAVITY = 0.02f;
+
     int x;
     float y;
     float velocityY;

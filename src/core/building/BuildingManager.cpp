@@ -35,13 +35,13 @@ void BuildingManager::destroyAll() {
 }
 
 void BuildingManager::addRandomBuilding() {
-    int height = GameConfig::MIN_BUILDING_HEIGHT +
-                 (std::rand() % (GameConfig::MAX_BUILDING_HEIGHT - GameConfig::MIN_BUILDING_HEIGHT + 1));
+    int height = Building::MIN_HEIGHT +
+                 (std::rand() % (Building::MAX_HEIGHT - Building::MIN_HEIGHT + 1));
 
     int x = nextSpawnX;
-    nextSpawnX += GameConfig::BUILDING_WIDTH + SPAWN_X_SPACING;
+    nextSpawnX += Building::WIDTH + SPAWN_X_SPACING;
 
-    if (nextSpawnX + GameConfig::BUILDING_WIDTH > GameConfig::MAP_WIDTH) {
+    if (nextSpawnX + Building::WIDTH > GameConfig::MAP_WIDTH) {
         nextSpawnX = 0;
     }
 
@@ -161,7 +161,7 @@ bool BuildingManager::shouldRemoveBuilding(const Building& b) {
 }
 
 bool BuildingManager::isXInRange(const Building& b, int x) {
-    return x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH;
+    return x >= b.getX() && x < b.getX() + Building::WIDTH;
 }
 
 bool BuildingManager::isYInRange(float buildingBottom, float y, float range) {

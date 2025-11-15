@@ -25,7 +25,7 @@ void Building::applyPhysics() {
 }
 
 void Building::applyRebound() {
-    velocityY = GameConfig::BUILDING_REBOUND_VELOCITY;
+    velocityY = REBOUND_VELOCITY;
     rebounded = true;
 }
 
@@ -94,11 +94,11 @@ std::vector<std::string> Building::getRenderLines() const {
 
 void Building::applyGravity() {
     if (rebounded && velocityY < 0) {
-        velocityY += GameConfig::BUILDING_REBOUND_GRAVITY;
+        velocityY += REBOUND_GRAVITY;
         return;
     }
 
-    velocityY += GameConfig::BUILDING_GRAVITY;
+    velocityY += GRAVITY;
 
     if (rebounded && velocityY >= 0) {
         rebounded = false;
