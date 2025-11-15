@@ -37,7 +37,7 @@ void GameSession::handleInput(InputKey key) {
 
 void GameSession::executeUltimate() {
     int destroyedCount = buildingManager.getActiveCount();
-    buildingManager.destroyAll();
+    buildingManager.damageAllFloors();
 
     stats.resetGauge();
     stats.addScore(destroyedCount * GameConfig::SCORE_PER_ATTACK_HIT);
