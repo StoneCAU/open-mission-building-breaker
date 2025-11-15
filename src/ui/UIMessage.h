@@ -44,4 +44,10 @@ public:
     std::string getMessage() const {
         return currentMessage.format();
     }
+
+    void clear() {
+        displayFramesLeft = 0;
+        currentMessage = UIMessage();
+    }
+
 };
