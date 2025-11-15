@@ -10,12 +10,11 @@ GameSession::GameSession()
       combo(GameConfig::INITIAL_COMBO),
       gauge(GameConfig::INITIAL_GAUGE),
       life(GameConfig::INITIAL_LIFE),
-      maxCombo(0),
-      startTime(std::chrono::steady_clock::now()){}
+      maxCombo(0){}
 
 void GameSession::start() {
+    startTime = std::chrono::steady_clock::now();
     reset();
-    buildingManager.initBuildings();
 }
 
 void GameSession::reset() {
@@ -24,7 +23,10 @@ void GameSession::reset() {
     gauge = GameConfig::INITIAL_GAUGE;
     life = GameConfig::INITIAL_LIFE;
     maxCombo = 0;
-    startTime = std::chrono::steady_clock::now();
+
+    messageQueue.clear();
+    player.reset();
+    buildingManager.initBuildings();
 }
 
 void GameSession::handleInput(InputKey key) {
@@ -76,7 +78,7 @@ void GameSession::checkPhysicsCollision() {
     const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
 
     // 플레이어 위 3칸 범위에 빌딩 있는지 체크
-    Building* building = buildingManager.getBuildingAbove(px, playerTopY, 3.0f);
+    Building* building = buildingManager.getBuildingAbove(px, playerTopY, 1.0f);
 
     if (building == nullptr) {
         return;
@@ -108,8 +110,7 @@ void GameSession::checkActionCollision() {
         );
 
         if (attackBuilding) {
-            // 빌딩이 바닥에 있으면 공격 불가 (추가)
-            if (attackBuilding->isOnGround()) {
+            if (attackBuilding->getBottomY() > GameConfig::MAP_GROUND_Y) {
                 return;
             }
 
@@ -146,7 +147,7 @@ void GameSession::checkActionCollision() {
         }
     }
 
-    if (actionType == PlayerActionType::IDLE && !player.isDamaged()) {
+    if (!player.isDamaged()) {
         // 점프 중이거나 붙어있으면 데미지 X
         if (player.isJumping() || player.isAttachedToBuilding()) {
             return;
