@@ -1,9 +1,10 @@
 #include "Floor.h"
-
 #include "Building.h"
 
 Floor::Floor(FloorType type)
-    : type(type), destroyed(false) {
+    : type(type),
+      destroyed(false),
+      destructionFrame(0) {
 
     if (type == FloorType::NORMAL) {
         maxHp = NORMAL_HP;
@@ -29,12 +30,28 @@ void Floor::takeDamage(int damage) {
 
     hp -= damage;
     if (hp <= 0) {
-        destroyed = true;
+        startDestruction();
     }
+}
+
+void Floor::update() {
+    if (destructionFrame > 0) {
+        --destructionFrame;
+    }
+}
+
+void Floor::startDestruction() {
+    destroyed = true;
+    destructionFrame = DESTRUCTION_EFFECT_FRAMES;
+    visual = std::string(Building::WIDTH, DESTRUCTION_CHAR);
 }
 
 bool Floor::isDestroyed() const {
     return destroyed;
+}
+
+bool Floor::shouldRemove() const {
+    return destroyed && destructionFrame == 0;
 }
 
 int Floor::getHp() const {

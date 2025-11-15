@@ -20,16 +20,24 @@ public:
     explicit Floor(FloorType type);
 
     void takeDamage(int damage);
+    void update();
 
     bool isDestroyed() const;
+    bool shouldRemove() const;
     int getHp() const;
     FloorType getType() const;
     std::string getVisual() const;
 
 private:
+    static constexpr int DESTRUCTION_EFFECT_FRAMES = 5;
+    static constexpr char DESTRUCTION_CHAR = '*';
+
     FloorType type;
     int hp;
     int maxHp;
     bool destroyed;
+    int destructionFrame;
     std::string visual;
+
+    void startDestruction();
 };
