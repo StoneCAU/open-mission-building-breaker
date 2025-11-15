@@ -48,7 +48,7 @@ private:
 
     void drawLine(std::vector<std::string>& screen, int x, int y, const std::string& text) const;
     void drawCharacter(std::vector<std::string>& screen, int x, int y, char ch) const;
-    
+
     bool isInsideMap(int x, int y) const;
     bool isWithinDrawBounds(int x) const;
 
