@@ -10,34 +10,34 @@ public:
 
     void applyPhysics();
     void applyRebound();
-    void stopVerticalMovement();
-    bool isOnGround() const;
-    bool isRebounded() const;
 
     void removeBottomFloor();
-    Floor* getFloorAt(float worldY);
-    int getHeight() const;
-    bool isDestroyed() const;
 
-    std::vector<std::string> getRenderLines() const;
+    bool isDestroyed() const;
+    bool isRebounded() const;
+    bool isOnGround() const;
 
     int getX() const;
     float getY() const;
     float getBottomY() const;
     float getTopY() const;
-    int getGroundFrames() const;
+    int getHeight() const;
     float getVelocityY() const;
+    int getGroundFrames() const;
+
+    std::vector<std::string> getRenderLines() const;
 
 private:
     int x;
     float y;
     float velocityY;
-    std::vector<Floor> floors;
     bool destroyed;
     bool rebounded;
     int groundFrames;
 
+    std::vector<Floor> floors;
     std::vector<std::string> shape;
 
-    void initShape();
+    void applyGravity();
+    void updatePosition();
 };

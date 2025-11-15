@@ -1,11 +1,13 @@
 #include "Building.h"
-
-#include <iostream>
-
 #include "../game/GameConfig.h"
 
 Building::Building(int x, float y, int height)
-    : x(x), y(y), velocityY(0.0f), destroyed(false), groundFrames(0), rebounded(false) {
+    : x(x),
+      y(y),
+      velocityY(0.0f),
+      destroyed(false),
+      groundFrames(0),
+      rebounded(false) {
 
     floors.reserve(height);
     for (int i = 0; i < height; ++i) {
@@ -18,31 +20,13 @@ void Building::applyPhysics() {
         return;
     }
 
-    // rebound 중이고 위로 올라가는 중일 때만 빠른 중력
-    if (rebounded && velocityY < 0) {
-        velocityY += GameConfig::BUILDING_REBOUND_GRAVITY;  // 빠른 감속
-    } else {
-        velocityY += GameConfig::BUILDING_GRAVITY;  // 원래 중력
-        if (rebounded && velocityY >= 0) {  // 방향 전환되면 rebound 끝
-            rebounded = false;
-        }
-    }
-
-    y += velocityY;
-
+    applyGravity();
+    updatePosition();
 }
 
 void Building::applyRebound() {
     velocityY = GameConfig::BUILDING_REBOUND_VELOCITY;
     rebounded = true;
-}
-
-void Building::stopVerticalMovement() {
-    velocityY = 0.0f;
-}
-
-bool Building::isOnGround() const {
-    return y >= GameConfig::MAP_GROUND_Y - 0.1f;
 }
 
 void Building::removeBottomFloor() {
@@ -52,28 +36,7 @@ void Building::removeBottomFloor() {
     }
 
     floors.erase(floors.begin());
-
-    if (floors.empty()) {
-        destroyed = true;
-    }
-}
-
-Floor* Building::getFloorAt(float worldY) {
-    if (worldY < y || worldY > getTopY()) {
-        return nullptr;
-    }
-
-    int floorIndex = static_cast<int>(getTopY() - worldY);
-
-    if (floorIndex < 0 || floorIndex >= static_cast<int>(floors.size())) {
-        return nullptr;
-    }
-
-    return &floors[floorIndex];
-}
-
-int Building::getHeight() const {
-    return static_cast<int>(floors.size());
+    destroyed = floors.empty();
 }
 
 bool Building::isDestroyed() const {
@@ -84,17 +47,8 @@ bool Building::isRebounded() const {
     return rebounded;
 }
 
-std::vector<std::string> Building::getRenderLines() const {
-    std::vector<std::string> lines;
-    lines.reserve(floors.size());
-
-    for (const auto& floor : floors) {
-        if (!floor.isDestroyed()) {
-            lines.push_back(floor.getVisual());
-        }
-    }
-
-    return lines;
+bool Building::isOnGround() const {
+    return y >= GameConfig::MAP_GROUND_Y - 0.1f;
 }
 
 int Building::getX() const {
@@ -113,10 +67,44 @@ float Building::getTopY() const {
     return y + static_cast<float>(floors.size());
 }
 
-int Building::getGroundFrames() const {
-    return groundFrames;
+int Building::getHeight() const {
+    return static_cast<int>(floors.size());
 }
 
 float Building::getVelocityY() const {
     return velocityY;
+}
+
+int Building::getGroundFrames() const {
+    return groundFrames;
+}
+
+std::vector<std::string> Building::getRenderLines() const {
+    std::vector<std::string> lines;
+    lines.reserve(floors.size());
+
+    for (const auto& floor : floors) {
+        if (!floor.isDestroyed()) {
+            lines.push_back(floor.getVisual());
+        }
+    }
+
+    return lines;
+}
+
+void Building::applyGravity() {
+    if (rebounded && velocityY < 0) {
+        velocityY += GameConfig::BUILDING_REBOUND_GRAVITY;
+        return;
+    }
+
+    velocityY += GameConfig::BUILDING_GRAVITY;
+
+    if (rebounded && velocityY >= 0) {
+        rebounded = false;
+    }
+}
+
+void Building::updatePosition() {
+    y += velocityY;
 }
