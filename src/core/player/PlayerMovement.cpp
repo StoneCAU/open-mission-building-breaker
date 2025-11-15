@@ -1,5 +1,7 @@
 #include "PlayerMovement.h"
 #include <windows.h>
+
+#include "Player.h"
 #include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
@@ -53,7 +55,7 @@ void PlayerMovement::handleCollisionWith(float obstacleY) {
         // 속도 0으로 (더 이상 올라가지 못함)
         velocityY = 0.0f;
         // 위치는 장애물 바로 아래로
-        y = obstacleY + GameConfig::PLAYER_HEIGHT;
+        y = obstacleY + Player::HEIGHT;
     }
 }
 
@@ -84,7 +86,7 @@ bool PlayerMovement::tryJump(InputKey key) {
 
     if (jumpKey && canJump && !jumping && jumpCooldown == 0) {
         jump();
-        jumpCooldown = GameConfig::PLAYER_JUMP_COOLDOWN_MAX;
+        jumpCooldown = Player::JUMP_ACTION_COOLDOWN;
         return true;
     }
     return false;

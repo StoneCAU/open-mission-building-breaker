@@ -4,7 +4,6 @@ namespace GameConfig {
     inline constexpr float JUMP_VELOCITY = -1.0f;
 
     // ===== 플레이어 =====
-    inline constexpr float PLAYER_HEIGHT = 1.0f;
     inline constexpr float PLAYER_ATTACK_RANGE = 2.0f;
     inline constexpr float PLAYER_DEFENSE_RANGE = 0.5f;
 
@@ -28,7 +27,6 @@ namespace GameConfig {
 
     // ===== 점프 =====
     inline constexpr int PLAYER_JUMP_DURATION = 20;
-    inline constexpr int PLAYER_JUMP_COOLDOWN_MAX = 15;
     inline constexpr int PLAYER_START_X = MAP_WIDTH / 2;
 
     // ===== 필살기 =====

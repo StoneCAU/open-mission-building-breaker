@@ -12,47 +12,69 @@ void Player::reset() {
     movement.reset();
     action.reset();
     collision.reset();
-
-    if (attachedBuilding) {
-        attachedBuilding = nullptr;
-    }
+    attachment.detach();
 }
 
 void Player::handleInput(InputKey key) {
-    if (collision.isDamaged()) return;
+    if (collision.isDamaged()) {
+        return;
+    }
 
+    handleActionInput(key);
+    handleJumpInput(key);
+}
+
+void Player::handleActionInput(InputKey key) {
     action.handleInput(key);
+}
 
+void Player::handleJumpInput(InputKey key) {
     if (movement.handleInput(key)) {
-        action.setActionCooldown(GameConfig::PLAYER_JUMP_COOLDOWN_MAX);
+        action.setActionCooldown(JUMP_ACTION_COOLDOWN);
     }
 }
 
 void Player::update() {
-    // 1. 빌딩에 붙어있으면 빌딩 따라 이동
-    if (attachedBuilding) {
-        // 빌딩 파괴되었으면 떼어냄
-        if (attachedBuilding->isDestroyed()) {
-            detachFromBuilding();
-        }
-        // 빌딩이 지면 닿으면 피격 + 떼어냄 (추가!)
-        else if (attachedBuilding->isOnGround()) {
-            if (!collision.isDamaged()) {
-                collision.takeDamage();
-            }
-            detachFromBuilding();
-        }
-        // 정상: 빌딩 따라 이동
-        else {
-            float targetY = attachedBuilding->getBottomY() + GameConfig::PLAYER_HEIGHT;
-            float targetVelocityY = attachedBuilding->getVelocityY();
-            movement.followObject(targetY, targetVelocityY);
-        }
+    updateAttachedState();
+    updateComponents();
+}
+
+void Player::updateAttachedState() {
+    if (!attachment.isAttached()) {
+        return;
     }
 
+    Building* building = attachment.getBuilding();
+
+    if (shouldDetachFromBuilding(building)) {
+        handleBuildingDetachment(building);
+        return;
+    }
+
+    followAttachedBuilding(building);
+}
+
+bool Player::shouldDetachFromBuilding(Building* building) const {
+    return building->isDestroyed() || building->isOnGround();
+}
+
+void Player::handleBuildingDetachment(Building* building) {
+    if (building->isOnGround() && !collision.isDamaged()) {
+        collision.takeDamage();
+    }
+    attachment.detach();
+}
+
+void Player::followAttachedBuilding(Building* building) {
+    float targetY = building->getBottomY() + HEIGHT;
+    float targetVelocityY = building->getVelocityY();
+    movement.followObject(targetY, targetVelocityY);
+}
+
+void Player::updateComponents() {
     action.update();
 
-    if (!attachedBuilding) {
+    if (!attachment.isAttached()) {
         movement.update();
     }
 
@@ -96,13 +118,13 @@ void Player::handlePhysicsCollision(float obstacleY) {
 }
 
 void Player::attachToBuilding(Building* building) {
-    attachedBuilding = building;
+    attachment.attach(building);
 }
 
 void Player::detachFromBuilding() {
-    attachedBuilding = nullptr;
+    attachment.detach();
 }
 
 bool Player::isAttachedToBuilding() const {
-    return attachedBuilding != nullptr;
+    return attachment.isAttached();
 }

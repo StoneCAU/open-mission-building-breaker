@@ -34,6 +34,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/game/GameOverDisplayData.h
         src/core/game/GameStats.h
         src/core/game/GameStats.cpp
+        src/core/player/PlayerAttachment.cpp
+        src/core/player/PlayerAttachment.h
 )
 
 add_compile_options(/utf-8)

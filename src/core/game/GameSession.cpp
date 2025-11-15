@@ -191,7 +191,7 @@ void GameSession::detachPlayerIfAttached() {
 GameSession::PlayerPosition GameSession::getPlayerPosition() const {
     int x = player.getX();
     float y = player.getY();
-    return {x, y, y - GameConfig::PLAYER_HEIGHT};
+    return {x, y, y - Player::HEIGHT};
 }
 
 void GameSession::handleAttackHit() {
