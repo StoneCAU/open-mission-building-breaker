@@ -20,9 +20,6 @@ namespace GameConfig {
     inline constexpr int INITIAL_LIFE = 3;
     inline constexpr int SCORE_PER_ATTACK_HIT = 100;
 
-    // ===== 액션 =====
-    inline constexpr int PLAYER_INVINCIBILITY_FRAMES = 30;
-
     // ===== 점프 =====
     inline constexpr int PLAYER_JUMP_DURATION = 20;
     inline constexpr int PLAYER_START_X = MAP_WIDTH / 2;

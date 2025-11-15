@@ -5,8 +5,7 @@
 Player::Player()
     : x(GameConfig::PLAYER_START_X),
       y(static_cast<float>(GameConfig::MAP_GROUND_Y)),
-      movement(x, y),
-      collision(x, y, movement, action) {}
+      movement(x, y){}
 
 void Player::reset() {
     movement.reset();
