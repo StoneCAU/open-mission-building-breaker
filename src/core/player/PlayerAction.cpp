@@ -10,6 +10,11 @@ PlayerAction::PlayerAction()
       canAttack(true),
       canDefend(true) {}
 
+void PlayerAction::reset() {
+    action = PlayerActionType::IDLE;
+    actionFrame = 0;
+}
+
 void PlayerAction::handleInput(InputKey key) {
     if (key == InputKey::ATTACK) {
         tryAttack();

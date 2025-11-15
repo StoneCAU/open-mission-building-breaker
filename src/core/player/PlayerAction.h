@@ -6,6 +6,7 @@ class PlayerAction {
 public:
     PlayerAction();
 
+    void reset();
     void handleInput(InputKey key);
     void update();
 
