@@ -10,6 +10,11 @@ PlayerCollision::PlayerCollision(int& x, float& y,
       damaged(false),
       damageFrame(0) {}
 
+void PlayerCollision::reset() {
+    damaged = false;
+    damageFrame = 0;
+}
+
 void PlayerCollision::update() {
     if (damageFrame > 0) {
         --damageFrame;
