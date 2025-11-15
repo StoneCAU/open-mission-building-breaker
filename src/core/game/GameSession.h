@@ -2,10 +2,10 @@
 
 #include <chrono>
 
+#include "GameOverDisplayData.h"
 #include "../../ui/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
-#include "../player/CollisionResult.h"
 
 class GameSession {
 public:
@@ -29,6 +29,7 @@ public:
     int getGauge() const;
     int getLife() const;
     int getPlayTimeSeconds() const;
+    GameOverDisplayData getGameOverData(int currentHighScore) const;
 
 private:
     Player player;

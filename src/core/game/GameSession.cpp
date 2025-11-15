@@ -254,3 +254,13 @@ int GameSession::getPlayTimeSeconds() const {
     std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(now - startTime);
     return static_cast<int>(duration.count());
 }
+
+GameOverDisplayData GameSession::getGameOverData(int currentHighScore) const {
+    return {
+        score,
+        maxCombo,
+        getPlayTimeSeconds(),
+        currentHighScore,
+        score > currentHighScore
+    };
+}
