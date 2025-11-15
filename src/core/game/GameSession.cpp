@@ -1,16 +1,9 @@
 #include "GameSession.h"
 
-#include <iostream>
-
 #include "GameConfig.h"
 #include "../building/Building.h"
 
-GameSession::GameSession()
-    : score(GameConfig::INITIAL_SCORE),
-      combo(GameConfig::INITIAL_COMBO),
-      gauge(GameConfig::INITIAL_GAUGE),
-      life(GameConfig::INITIAL_LIFE),
-      maxCombo(0){}
+GameSession::GameSession() = default;
 
 void GameSession::start() {
     startTime = std::chrono::steady_clock::now();
@@ -18,19 +11,14 @@ void GameSession::start() {
 }
 
 void GameSession::reset() {
-    score = GameConfig::INITIAL_SCORE;
-    combo = GameConfig::INITIAL_COMBO;
-    gauge = GameConfig::INITIAL_GAUGE;
-    life = GameConfig::INITIAL_LIFE;
-    maxCombo = 0;
-
+    stats.reset();
     messageQueue.clear();
     player.reset();
     buildingManager.initBuildings();
 }
 
 void GameSession::handleInput(InputKey key) {
-    if (key == InputKey::ULTIMATE && gauge >= GameConfig::ULTIMATE_GAUGE_COST) {
+    if (key == InputKey::ULTIMATE && stats.canUseUltimate()) {
         executeUltimate();
         return;
     }
@@ -42,183 +30,193 @@ void GameSession::executeUltimate() {
     int destroyedCount = buildingManager.getActiveCount();
     buildingManager.destroyAll();
 
-    resetGauge();
-    addScore(destroyedCount * GameConfig::SCORE_PER_ATTACK_HIT);
+    stats.resetGauge();
+    stats.addScore(destroyedCount * GameConfig::SCORE_PER_ATTACK_HIT);
 
     messageQueue.push(MessageType::ULTIMATE_ACTIVATED, destroyedCount);
 }
 
 void GameSession::update() {
     hitThisFrame = false;
-
-    // 플레이어 업데이트 전 데미지 상태 기록
-    bool wasDamaged = player.isDamaged();
-
-    player.update();
-
-    // 방금 데미지 입었으면 라이프 감소
-    if (!wasDamaged && player.isDamaged()) {
-        decreaseLife();
-        resetCombo();
-        messageQueue.push(MessageType::PLAYER_DAMAGED);
-    }
-
-    checkPhysicsCollision();
-    checkActionCollision();
+    
+    updatePlayerState();
+    updateCollisions();
     buildingManager.updateAll();
 }
 
+void GameSession::updatePlayerState() {
+    bool wasDamaged = player.isDamaged();
+    player.update();
+    
+    if (!wasDamaged && player.isDamaged()) {
+        handlePlayerDamaged();
+    }
+}
+
+void GameSession::updateCollisions() {
+    checkPhysicsCollision();
+    checkAttackCollision();
+    checkDefendCollision();
+    checkDamageCollision();
+}
+
 void GameSession::checkPhysicsCollision() {
-    if (player.isAttachedToBuilding()) {
-        return;
-    }
+    if (player.isAttachedToBuilding()) return;
 
-    const int px = player.getX();
-    const float py = player.getY();
-    const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
+    PlayerPosition pos = getPlayerPosition();
+    Building* building = findBuildingForPhysics(pos);
 
-    // 플레이어 위 3칸 범위에 빌딩 있는지 체크
-    Building* building = buildingManager.getBuildingAbove(px, playerTopY, 1.0f);
+    if (!building) return;
+    if (!canAttachToBuilding(building, pos.topY)) return;
 
-    if (building == nullptr) {
-        return;
-    }
-
-    float buildingBottom = building->getBottomY();
-
-    // 위로 올라가는 중 + 충돌 예상
-    if (player.getVelocityY() < -0.1f && playerTopY <= buildingBottom + 1.0f) {
-        player.handlePhysicsCollision(buildingBottom);
-        player.attachToBuilding(building);
-    }
+    executePhysicsAttachment(building);
 }
 
-void GameSession::checkActionCollision() {
+Building* GameSession::findBuildingForPhysics(const PlayerPosition& pos) {
+    return buildingManager.getBuildingAbove(
+        pos.x,
+        pos.topY,
+        PHYSICS_COLLISION_RANGE
+    );
+}
+
+void GameSession::executePhysicsAttachment(Building* building) {
+    player.handlePhysicsCollision(building->getBottomY());
+    player.attachToBuilding(building);
+}
+
+bool GameSession::canAttachToBuilding(Building* building, float playerTopY) const {
+    bool isMovingUpward = player.getVelocityY() < UPWARD_VELOCITY_THRESHOLD;
+    bool isCloseEnough = playerTopY <= building->getBottomY() + PHYSICS_COLLISION_THRESHOLD;
+    return isMovingUpward && isCloseEnough;
+}
+
+void GameSession::checkAttackCollision() {
     if (hitThisFrame) return;
+    if (player.getAction() != PlayerActionType::ATTACK) return;
+    if (!player.isAttackActiveFrame()) return;
 
-    const PlayerActionType actionType = player.getAction();
-    const int px = player.getX();
-    const float py = player.getY();
-    const float playerTopY = py - GameConfig::PLAYER_HEIGHT;
+    PlayerPosition pos = getPlayerPosition();
+    Building* building = findBuildingForAttack(pos);
 
-    // 공격 체크
-    if (actionType == PlayerActionType::ATTACK && player.isAttackActiveFrame()) {
-        Building* attackBuilding = buildingManager.getBuildingInRange(
-            px,
-            playerTopY,
-            GameConfig::PLAYER_ATTACK_RANGE
-        );
+    if (!building) return;
+    if (!canAttackBuilding(building)) return;
 
-        if (attackBuilding) {
-            if (attackBuilding->getBottomY() > GameConfig::MAP_GROUND_Y) {
-                return;
-            }
-
-            hitThisFrame = true;
-            attackBuilding->removeBottomFloor();
-            onAttackHit();
-
-            if (player.isAttachedToBuilding()) {
-                player.detachFromBuilding();
-            }
-
-            return;
-        }
-    }
-
-    // 방어 체크
-    if (actionType == PlayerActionType::DEFEND) {
-        Building* defendBuilding = buildingManager.getBuildingInRange(
-            px,
-            playerTopY,
-            GameConfig::PLAYER_DEFENSE_RANGE
-        );
-
-        if (defendBuilding) {
-            defendBuilding->applyRebound();
-            onDefenseSuccess();
-
-            // 방어하면 떼어냄 (이미 있음!)
-            if (player.isAttachedToBuilding()) {
-                player.detachFromBuilding();
-            }
-
-            return;
-        }
-    }
-
-    if (!player.isDamaged()) {
-        // 점프 중이거나 붙어있으면 데미지 X
-        if (player.isJumping() || player.isAttachedToBuilding()) {
-            return;
-        }
-
-        Building* building = buildingManager.getBuildingAbovePlayer(px, playerTopY, 0.5f);
-
-        if (building && building->getVelocityY() > 0.01f) {
-            player.takeDamage();
-            building->applyRebound();
-            onPlayerDamaged();
-        }
-    }
-}
-void GameSession::checkGroundCollision() {
-    // 빌딩이 지면 닿으면 조용히 제거 (BuildingManager에서 처리 중)
-    // 추가 로직 필요 시 여기 작성
+    hitThisFrame = true;
+    executeAttack(building);
 }
 
-void GameSession::onAttackHit() {
-    addScore(GameConfig::SCORE_PER_ATTACK_HIT);
-    addCombo();
-    addGauge(10);
+Building* GameSession::findBuildingForAttack(const PlayerPosition& pos) {
+    return buildingManager.getBuildingInRange(
+        pos.x,
+        pos.topY,
+        GameConfig::PLAYER_ATTACK_RANGE
+    );
+}
+
+void GameSession::executeAttack(Building* building) {
+    building->removeBottomFloor();
+    handleAttackHit();
+    detachPlayerIfAttached();
+}
+
+bool GameSession::canAttackBuilding(Building* building) const {
+    return building->getBottomY() <= GameConfig::MAP_GROUND_Y;
+}
+
+void GameSession::checkDefendCollision() {
+    if (hitThisFrame) return;
+    if (player.getAction() != PlayerActionType::DEFEND) return;
+
+    PlayerPosition pos = getPlayerPosition();
+    Building* building = findBuildingForDefend(pos);
+
+    if (!building) return;
+
+    executeDefend(building);
+}
+
+Building* GameSession::findBuildingForDefend(const PlayerPosition& pos) {
+    return buildingManager.getBuildingInRange(
+        pos.x,
+        pos.topY,
+        GameConfig::PLAYER_DEFENSE_RANGE
+    );
+}
+
+void GameSession::executeDefend(Building* building) {
+    building->applyRebound();
+    handleDefenseSuccess();
+    detachPlayerIfAttached();
+}
+
+void GameSession::checkDamageCollision() {
+    if (hitThisFrame) return;
+    if (player.isDamaged()) return;
+    if (player.isJumping() || player.isAttachedToBuilding()) return;
+
+    PlayerPosition pos = getPlayerPosition();
+    Building* building = findBuildingForDamage(pos);
+
+    if (!building) return;
+    if (!canDamagePlayer(building)) return;
+
+    executeDamage(building);
+}
+
+Building* GameSession::findBuildingForDamage(const PlayerPosition& pos) {
+    return buildingManager.getBuildingAbovePlayer(
+        pos.x,
+        pos.topY,
+        DAMAGE_COLLISION_RANGE
+    );
+}
+
+void GameSession::executeDamage(Building* building) {
+    player.takeDamage();
+    building->applyRebound();
+    handlePlayerDamaged();
+}
+
+bool GameSession::canDamagePlayer(Building* building) const {
+    return building->getVelocityY() > FALLING_VELOCITY_THRESHOLD;
+}
+
+void GameSession::detachPlayerIfAttached() {
+    if (player.isAttachedToBuilding()) {
+        player.detachFromBuilding();
+    }
+}
+
+GameSession::PlayerPosition GameSession::getPlayerPosition() const {
+    int x = player.getX();
+    float y = player.getY();
+    return {x, y, y - GameConfig::PLAYER_HEIGHT};
+}
+
+void GameSession::handleAttackHit() {
+    stats.addScore(GameConfig::SCORE_PER_ATTACK_HIT);
+    stats.addCombo();
+    stats.addGauge(ATTACK_GAUGE_REWARD);
     messageQueue.push(MessageType::ATTACK_HIT, 1);
 }
 
-void GameSession::onDefenseSuccess() {
+void GameSession::handleDefenseSuccess() {
     messageQueue.push(MessageType::DEFENSE_SUCCESS);
 }
 
-void GameSession::onPlayerDamaged() {
-    decreaseLife();
-    resetCombo();
+void GameSession::handlePlayerDamaged() {
+    stats.decreaseLife();
+    stats.resetCombo();
     messageQueue.push(MessageType::PLAYER_DAMAGED);
 }
 
-void GameSession::addScore(int value) {
-    score += value;
-}
-
-void GameSession::addCombo() {
-    ++combo;
-    if (combo > maxCombo) {
-        maxCombo = combo;
-    }
-}
-
-void GameSession::resetCombo() {
-    combo = 0;
-}
-
-void GameSession::decreaseLife() {
-    if (life > 0) {
-        --life;
-    }
-}
-
 bool GameSession::isGameOver() const {
-    return life <= 0;
+    return !stats.isAlive();
 }
 
 const Player& GameSession::getPlayer() const {
     return player;
-}
-
-void GameSession::addGauge(int value) {
-    gauge = std::min(100, gauge + value);
-}
-
-void GameSession::resetGauge() {
-    gauge = 0;
 }
 
 BuildingManager& GameSession::getBuildingManager() {
@@ -230,23 +228,23 @@ const BuildingManager& GameSession::getBuildingManager() const {
 }
 
 int GameSession::getScore() const {
-    return score;
+    return stats.getScore();
 }
 
 int GameSession::getCombo() const {
-    return combo;
+    return stats.getCombo();
 }
 
 int GameSession::getGauge() const {
-    return gauge;
+    return stats.getGauge();
 }
 
 int GameSession::getLife() const {
-    return life;
+    return stats.getLife();
 }
 
 int GameSession::getMaxCombo() const {
-    return maxCombo;
+    return stats.getMaxCombo();
 }
 
 int GameSession::getPlayTimeSeconds() const {
@@ -257,10 +255,10 @@ int GameSession::getPlayTimeSeconds() const {
 
 GameOverDisplayData GameSession::getGameOverData(int currentHighScore) const {
     return {
-        score,
-        maxCombo,
+        stats.getScore(),
+        stats.getMaxCombo(),
         getPlayTimeSeconds(),
         currentHighScore,
-        score > currentHighScore
+        stats.getScore() > currentHighScore
     };
 }

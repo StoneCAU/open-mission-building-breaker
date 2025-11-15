@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "GameOverDisplayData.h"
+#include "GameStats.h"
 #include "../../ui/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
@@ -32,37 +33,52 @@ public:
     GameOverDisplayData getGameOverData(int currentHighScore) const;
 
 private:
+    static constexpr float PHYSICS_COLLISION_RANGE = 1.0f;
+    static constexpr float PHYSICS_COLLISION_THRESHOLD = 1.0f;
+    static constexpr float UPWARD_VELOCITY_THRESHOLD = -0.1f;
+    static constexpr float DAMAGE_COLLISION_RANGE = 0.5f;
+    static constexpr float FALLING_VELOCITY_THRESHOLD = 0.01f;
+    static constexpr int ATTACK_GAUGE_REWARD = 10;
+
     Player player;
     BuildingManager buildingManager;
-
-    int score;
-    int combo;
-    int maxCombo;
-    int gauge;
-    int life;
+    GameStats stats;
     std::chrono::steady_clock::time_point startTime;
 
-    // 충돌 처리
-    void checkAndHandleCollision();
+    bool hitThisFrame = false;
+
+    void updatePlayerState();
+    void updateCollisions();
+
     void checkPhysicsCollision();
-    void checkActionCollision();
-    void checkGroundCollision();
+    void checkAttackCollision();
+    void checkDefendCollision();
+    void checkDamageCollision();
 
-    // 게임 이벤트 처리
-    void onAttackHit();
-    void onDefenseSuccess();
-    void onPlayerDamaged();
+    struct PlayerPosition {
+        int x;
+        float y;
+        float topY;
+    };
+    PlayerPosition getPlayerPosition() const;
 
-    // 점수/상태 관리
-    void addScore(int value);
-    void addCombo();
-    void resetCombo();
-    void decreaseLife();
-    void addGauge(int value);
-    void resetGauge();
+    Building* findBuildingForPhysics(const PlayerPosition& pos);
+    Building* findBuildingForAttack(const PlayerPosition& pos);
+    Building* findBuildingForDefend(const PlayerPosition& pos);
+    Building* findBuildingForDamage(const PlayerPosition& pos);
+
+    void executePhysicsAttachment(Building* building);
+    void executeAttack(Building* building);
+    void executeDefend(Building* building);
+    void executeDamage(Building* building);
+
+    bool canAttachToBuilding(Building* building, float playerTopY) const;
+    bool canAttackBuilding(Building* building) const;
+    bool canDamagePlayer(Building* building) const;
+    void detachPlayerIfAttached();
 
     void executeUltimate();
-
-    Building* lastHitBuilding = nullptr;
-    bool hitThisFrame = false;
+    void handlePlayerDamaged();
+    void handleAttackHit();
+    void handleDefenseSuccess();
 };

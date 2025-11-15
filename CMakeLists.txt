@@ -32,6 +32,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/building/Floor.cpp
         src/core/building/Floor.h
         src/core/game/GameOverDisplayData.h
+        src/core/game/GameStats.h
+        src/core/game/GameStats.cpp
 )
 
 add_compile_options(/utf-8)
