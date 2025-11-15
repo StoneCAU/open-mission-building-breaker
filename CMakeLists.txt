@@ -1,47 +1,97 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.22)
 project(open_mission_building_breaker)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(open_mission_building_breaker src/main.cpp
-        src/core/game/Game.h
-        src/core/game/Game.cpp
-        src/platform/console/ConsoleInputHandler.h
-        src/platform/console/ConsoleInputHandler.cpp
-        src/platform/console/ConsoleRenderer.h
-        src/platform/console/ConsoleRenderer.cpp
-        src/core/game/GameSession.cpp
-        src/core/game/GameSession.h
-        src/core/player/Player.cpp
-        src/core/player/Player.h
-        src/core/game/GameConfig.h
-        src/core/building/Building.cpp
-        src/core/building/Building.h
-        src/core/building/BuildingManager.cpp
-        src/core/building/BuildingManager.h
-        src/core/player/CollisionResult.h
-        src/core/player/PlayerMovement.cpp
-        src/core/player/PlayerMovement.h
-        src/core/player/PlayerAction.cpp
-        src/core/player/PlayerAction.h
-        src/core/player/PlayerCollision.cpp
-        src/core/player/PlayerCollision.h
-        src/core/player/PlayerActionType.h
-        src/platform/console/UIMessage.h
-        src/platform/console/UIMessage.cpp
-        src/core/building/Floor.cpp
-        src/core/building/Floor.h
-        src/core/game/GameOverDisplayData.h
-        src/core/game/GameStats.h
-        src/core/game/GameStats.cpp
-        src/core/player/PlayerAttachment.cpp
-        src/core/player/PlayerAttachment.h
-        src/platform/console/UIStrings.h
-        src/core/game/ScoreManager.cpp
-        src/core/game/ScoreManager.h
-        src/interfaces/InputKey.h
-        src/interfaces/IInputHandler.h
-        src/interfaces/IRenderer.h
+# SDL2 경로 설정
+set(SDL2_DIR "${CMAKE_SOURCE_DIR}/libs/SDL2")
+set(SDL2_IMAGE_DIR "${CMAKE_SOURCE_DIR}/libs/SDL2_image")
+set(SDL2_MIXER_DIR "${CMAKE_SOURCE_DIR}/libs/SDL2_mixer")
+set(SDL2_TTF_DIR "${CMAKE_SOURCE_DIR}/libs/SDL2_ttf")
+
+# Include 디렉토리
+include_directories(
+        ${SDL2_DIR}/include
+        ${SDL2_IMAGE_DIR}/include
+        ${SDL2_MIXER_DIR}/include
+        ${SDL2_TTF_DIR}/include
 )
 
-add_compile_options(/utf-8)
+# 링크 디렉토리
+link_directories(
+        ${SDL2_DIR}/lib
+        ${SDL2_IMAGE_DIR}/lib
+        ${SDL2_MIXER_DIR}/lib
+        ${SDL2_TTF_DIR}/lib
+)
+
+# 소스 파일들
+set(SOURCES
+        src/main.cpp
+
+        # Core - Game
+        src/core/game/Game.cpp
+        src/core/game/GameSession.cpp
+        src/core/game/GameStats.cpp
+        src/core/game/ScoreManager.cpp
+
+        # Core - Player
+        src/core/player/Player.cpp
+        src/core/player/PlayerMovement.cpp
+        src/core/player/PlayerAction.cpp
+        src/core/player/PlayerCollision.cpp
+        src/core/player/PlayerAttachment.cpp
+
+        # Core - Building
+        src/core/building/Building.cpp
+        src/core/building/BuildingManager.cpp
+        src/core/building/Floor.cpp
+
+        # Platform - Console
+        src/platform/console/ConsoleRenderer.cpp
+        src/platform/console/ConsoleInputHandler.cpp
+        src/platform/console/UIMessage.cpp
+        src/platform/sdl/SDLRenderer.cpp
+        src/platform/sdl/SDLRenderer.h
+        src/platform/sdl/SDLInputHandler.cpp
+        src/platform/sdl/SDLInputHandler.h
+)
+
+# SDL 사용 시 소스 추가
+if(USE_SDL)
+    list(APPEND SOURCES
+            src/platform/sdl/SDLRenderer.cpp
+            src/platform/sdl/SDLInputHandler.cpp
+    )
+    add_compile_definitions(USE_SDL)
+endif()
+
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+# SDL2 링크 (USE_SDL 옵션과 관계없이 항상 링크)
+if(USE_SDL)
+    target_link_libraries(${PROJECT_NAME}
+            mingw32
+            SDL2main
+            SDL2
+            SDL2_image
+            SDL2_mixer
+            SDL2_ttf
+    )
+
+    # DLL 복사 (실행 시 필요)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SDL2_DIR}/bin/SDL2.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SDL2_IMAGE_DIR}/bin/SDL2_image.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SDL2_MIXER_DIR}/bin/SDL2_mixer.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SDL2_TTF_DIR}/bin/SDL2_ttf.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+endif()
