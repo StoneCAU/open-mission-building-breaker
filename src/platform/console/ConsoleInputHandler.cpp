@@ -1,7 +1,7 @@
-#include "InputHandler.h"
+#include "ConsoleInputHandler.h"
 #include <windows.h>
 
-InputKey InputHandler::getInput() {
+InputKey ConsoleInputHandler::getInput() {
     InputKey key = getCombinedInput();
     if (key != InputKey::NONE) {
         return key;
@@ -15,11 +15,11 @@ InputKey InputHandler::getInput() {
     return getGeneralInput();
 }
 
-bool InputHandler::isKeyReleased(int vkCode) {
+bool ConsoleInputHandler::isKeyReleased(int vkCode) {
     return !isVirtualKeyPressed(vkCode);
 }
 
-InputKey InputHandler::getCombinedInput() {
+InputKey ConsoleInputHandler::getCombinedInput() {
     const bool left = isVirtualKeyPressed(VK_LEFT);
     const bool right = isVirtualKeyPressed(VK_RIGHT);
     const bool up = isVirtualKeyPressed(VK_UP);
@@ -35,7 +35,7 @@ InputKey InputHandler::getCombinedInput() {
     return InputKey::NONE;
 }
 
-InputKey InputHandler::getDirectionalInput() {
+InputKey ConsoleInputHandler::getDirectionalInput() {
     if (isVirtualKeyPressed(VK_UP)) {
         return InputKey::JUMP;
     }
@@ -55,7 +55,7 @@ InputKey InputHandler::getDirectionalInput() {
     return InputKey::NONE;
 }
 
-InputKey InputHandler::getGeneralInput() {
+InputKey ConsoleInputHandler::getGeneralInput() {
     if (isCharKeyPressed('Z')) {
         return InputKey::ATTACK;
     }
@@ -79,14 +79,14 @@ InputKey InputHandler::getGeneralInput() {
     return InputKey::NONE;
 }
 
-bool InputHandler::isVirtualKeyPressed(int vkCode) {
+bool ConsoleInputHandler::isVirtualKeyPressed(int vkCode) {
     return (GetAsyncKeyState(vkCode) & KEY_PRESSED_MASK) != 0;
 }
 
-bool InputHandler::isCharKeyPressed(char key) {
+bool ConsoleInputHandler::isCharKeyPressed(char key) {
     return (GetAsyncKeyState(static_cast<int>(key)) & KEY_PRESSED_MASK) != 0;
 }
 
-bool InputHandler::isVirtualKeyReleased(int vkCode) {
+bool ConsoleInputHandler::isVirtualKeyReleased(int vkCode) {
     return (GetAsyncKeyState(vkCode) & KEY_PRESSED_MASK) == 0;
 }

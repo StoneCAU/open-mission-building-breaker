@@ -1,29 +1,35 @@
-#include "UIRenderer.h"
+#include "ConsoleRenderer.h"
 #include <iostream>
 #include <windows.h>
-#include "../core/game/GameConfig.h"
 #include "UIStrings.h"
 
-UIRenderer::UIRenderer()
+#include "../../core/game/GameConfig.h"
+#include "../../core/game/GameSession.h"
+#include "../../core/game/GameOverDisplayData.h"
+#include "../../core/player/Player.h"
+#include "../../core/player/PlayerActionType.h"
+#include "../../core/building/Building.h"
+
+ConsoleRenderer::ConsoleRenderer()
     : mapMinX(GameConfig::MAP_MIN_X),
       mapMaxX(GameConfig::MAP_MAX_X),
       mapGroundY(GameConfig::MAP_GROUND_Y) {
     initializeActionIcons();
 }
 
-void UIRenderer::initializeActionIcons() {
+void ConsoleRenderer::initializeActionIcons() {
     actionIcons[PlayerActionType::IDLE] = "";
     actionIcons[PlayerActionType::ATTACK] = UIStrings::ICON_ATTACK;
     actionIcons[PlayerActionType::DEFEND] = UIStrings::ICON_DEFEND;
     actionIcons[PlayerActionType::ULTIMATE] = UIStrings::ICON_ATTACK;
 }
 
-void UIRenderer::clearScreen() const {
+void ConsoleRenderer::clearScreen() {
     COORD coord = {0, 0};
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void UIRenderer::clearScreenFull() const {
+void ConsoleRenderer::clearScreenFull() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD coordScreen = {0, 0};
     DWORD cCharsWritten;
@@ -39,38 +45,38 @@ void UIRenderer::clearScreenFull() const {
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-void UIRenderer::printBorder() const {
+void ConsoleRenderer::printBorder() {
     printLine(UIStrings::BORDER);
 }
 
-void UIRenderer::printEmptyLine() const {
+void ConsoleRenderer::printEmptyLine() {
     std::cout << "\n";
 }
 
-void UIRenderer::printLine(const std::string& text) const {
+void ConsoleRenderer::printLine(const std::string& text) {
     std::cout << text << "\n";
 }
 
-void UIRenderer::flushOutput() const {
+void ConsoleRenderer::flushOutput() {
     std::cout.flush();
 }
 
-bool UIRenderer::isInsideMap(int x, int y) const {
+bool ConsoleRenderer::isInsideMap(int x, int y) {
     return x >= mapMinX && x <= mapMaxX && y >= 0 && y <= mapGroundY;
 }
 
-bool UIRenderer::isWithinDrawBounds(int x) const {
+bool ConsoleRenderer::isWithinDrawBounds(int x) {
     return x < mapMaxX - ICON_DRAW_MARGIN;
 }
 
-void UIRenderer::drawCharacter(std::vector<std::string>& screen, int x, int y, char ch) const {
+void ConsoleRenderer::drawCharacter(std::vector<std::string>& screen, int x, int y, char ch) {
     if (!isInsideMap(x, y)) return;
     if (ch == ' ') return;
 
     screen[y][x] = ch;
 }
 
-void UIRenderer::drawLine(std::vector<std::string>& screen, int x, int y, const std::string& text) const {
+void ConsoleRenderer::drawLine(std::vector<std::string>& screen, int x, int y, const std::string& text) {
     if (!isInsideMap(x, y)) return;
 
     for (size_t j = 0; j < text.size(); ++j) {
@@ -82,7 +88,7 @@ void UIRenderer::drawLine(std::vector<std::string>& screen, int x, int y, const 
     }
 }
 
-void UIRenderer::renderMenu(int highScore) const {
+void ConsoleRenderer::renderMenu(int highScore) {
     printBorder();
     printLine(UIStrings::TITLE);
     printBorder();
@@ -94,7 +100,7 @@ void UIRenderer::renderMenu(int highScore) const {
     printBorder();
 }
 
-std::string UIRenderer::buildGaugeBar(int gauge) const {
+std::string ConsoleRenderer::buildGaugeBar(int gauge) {
     int filled = (gauge * GAUGE_BAR_LENGTH) / 100;
     std::string bar;
     bar.reserve(GAUGE_BAR_LENGTH);
@@ -105,7 +111,7 @@ std::string UIRenderer::buildGaugeBar(int gauge) const {
     return bar;
 }
 
-std::string UIRenderer::buildLifeDisplay(int currentLife) const {
+std::string ConsoleRenderer::buildLifeDisplay(int currentLife) {
     std::string display;
 
     for (int i = 0; i < currentLife; ++i) {
@@ -121,7 +127,7 @@ std::string UIRenderer::buildLifeDisplay(int currentLife) const {
     return display;
 }
 
-void UIRenderer::renderHUD(const GameSession& session) const {
+void ConsoleRenderer::renderHUD(const GameSession& session) {
     printBorder();
 
     std::string hudLine = UIStrings::HUD_SCORE + std::to_string(session.getScore()) +
@@ -136,7 +142,7 @@ void UIRenderer::renderHUD(const GameSession& session) const {
     printEmptyLine();
 }
 
-void UIRenderer::composeBuildingFloor(const Building& building, int floorIndex, std::vector<std::string>& screen) const {
+void ConsoleRenderer::composeBuildingFloor(const Building& building, int floorIndex, std::vector<std::string>& screen) {
     int drawY = building.getY() - floorIndex;
 
     if (drawY < 0) return;
@@ -149,7 +155,7 @@ void UIRenderer::composeBuildingFloor(const Building& building, int floorIndex, 
     drawLine(screen, building.getX(), drawY, lines[floorIndex]);
 }
 
-void UIRenderer::composeBuilding(const Building& building, std::vector<std::string>& screen) const {
+void ConsoleRenderer::composeBuilding(const Building& building, std::vector<std::string>& screen) {
     if (building.isDestroyed()) return;
 
     for (int i = 0; i < building.getHeight(); ++i) {
@@ -157,7 +163,7 @@ void UIRenderer::composeBuilding(const Building& building, std::vector<std::stri
     }
 }
 
-void UIRenderer::composeBuildings(const GameSession& session, std::vector<std::string>& screen) const {
+void ConsoleRenderer::composeBuildings(const GameSession& session, std::vector<std::string>& screen) {
     const auto& buildings = session.getBuildingManager().getAll();
 
     for (const auto& building : buildings) {
@@ -165,7 +171,7 @@ void UIRenderer::composeBuildings(const GameSession& session, std::vector<std::s
     }
 }
 
-std::string UIRenderer::buildActionIcon(const Player& player) const {
+std::string ConsoleRenderer::buildActionIcon(const Player& player) {
     auto it = actionIcons.find(player.getAction());
 
     if (it == actionIcons.end()) {
@@ -175,7 +181,7 @@ std::string UIRenderer::buildActionIcon(const Player& player) const {
     return it->second;
 }
 
-std::string UIRenderer::buildPlayerIcon(const Player& player) const {
+std::string ConsoleRenderer::buildPlayerIcon(const Player& player) {
     if (player.isDamaged()) {
         return UIStrings::ICON_DAMAGED;
     }
@@ -183,7 +189,7 @@ std::string UIRenderer::buildPlayerIcon(const Player& player) const {
     return UIStrings::ICON_PLAYER + buildActionIcon(player);
 }
 
-void UIRenderer::composePlayer(const Player& player, std::vector<std::string>& screen) const {
+void ConsoleRenderer::composePlayer(const Player& player, std::vector<std::string>& screen) {
     const int px = player.getX();
     const int py = static_cast<int>(player.getY());
 
@@ -192,7 +198,7 @@ void UIRenderer::composePlayer(const Player& player, std::vector<std::string>& s
     drawLine(screen, px, py, buildPlayerIcon(player));
 }
 
-void UIRenderer::renderBody(const GameSession& session) const {
+void ConsoleRenderer::renderBody(const GameSession& session) {
     std::vector<std::string> screen(
         mapGroundY + 1,
         std::string(mapMaxX + 1, ' ')
@@ -206,18 +212,18 @@ void UIRenderer::renderBody(const GameSession& session) const {
     }
 }
 
-void UIRenderer::renderGuide() const {
+void ConsoleRenderer::renderGuide() {
     printLine(UIStrings::UNDERLINE);
     printLine(UIStrings::CONTROL_GUIDE);
 }
 
-void UIRenderer::renderMessage(const GameSession& session) const {
+void ConsoleRenderer::renderMessage(const GameSession& session) {
     if (!session.messageQueue.hasMessage()) return;
 
     printLine(session.messageQueue.getMessage());
 }
 
-void UIRenderer::renderPlaying(const GameSession& session) const {
+void ConsoleRenderer::renderPlaying(const GameSession& session) {
     clearScreen();
     renderHUD(session);
     renderBody(session);
@@ -226,7 +232,7 @@ void UIRenderer::renderPlaying(const GameSession& session) const {
     flushOutput();
 }
 
-std::string UIRenderer::buildGameTimeDisplay(int totalSeconds) const {
+std::string ConsoleRenderer::buildGameTimeDisplay(int totalSeconds) {
     int minutes = totalSeconds / 60;
     int seconds = totalSeconds % 60;
 
@@ -234,7 +240,7 @@ std::string UIRenderer::buildGameTimeDisplay(int totalSeconds) const {
            std::to_string(seconds) + UIStrings::UNIT_SECOND;
 }
 
-void UIRenderer::renderGameOver(const GameOverDisplayData& data) const {
+void ConsoleRenderer::renderGameOver(const GameOverDisplayData& data) {
     clearScreenFull();
 
     printBorder();
