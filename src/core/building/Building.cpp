@@ -1,5 +1,6 @@
 #include "Building.h"
 #include "../game/GameConfig.h"
+#include <algorithm>
 
 Building::Building(int x, float y, int height)
     : x(x),
@@ -29,14 +30,40 @@ void Building::applyRebound() {
     rebounded = true;
 }
 
+void Building::updateFloors() {
+    for (auto& floor : floors) {
+        floor.update();
+    }
+
+    removeDestroyedFloors();
+}
+
 void Building::removeBottomFloor() {
     if (floors.empty()) {
         destroyed = true;
         return;
     }
 
-    floors.erase(floors.begin());
-    destroyed = floors.empty();
+    floors.front().takeDamage(1);
+}
+
+void Building::damageAllFloors() {
+    for (auto& floor : floors) {
+        floor.takeDamage(999);
+    }
+}
+
+void Building::removeDestroyedFloors() {
+    auto it = std::remove_if(floors.begin(), floors.end(),
+        [](const Floor& f) {
+            return f.shouldRemove();
+        });
+
+    floors.erase(it, floors.end());
+
+    if (floors.empty()) {
+        destroyed = true;
+    }
 }
 
 bool Building::isDestroyed() const {
@@ -84,9 +111,7 @@ std::vector<std::string> Building::getRenderLines() const {
     lines.reserve(floors.size());
 
     for (const auto& floor : floors) {
-        if (!floor.isDestroyed()) {
-            lines.push_back(floor.getVisual());
-        }
+        lines.push_back(floor.getVisual());
     }
 
     return lines;

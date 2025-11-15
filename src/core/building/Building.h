@@ -14,8 +14,10 @@ public:
 
     void applyPhysics();
     void applyRebound();
+    void updateFloors();
 
     void removeBottomFloor();
+    void damageAllFloors();
 
     bool isDestroyed() const;
     bool isRebounded() const;
@@ -44,8 +46,8 @@ private:
     int groundFrames;
 
     std::vector<Floor> floors;
-    std::vector<std::string> shape;
 
     void applyGravity();
     void updatePosition();
+    void removeDestroyedFloors();
 };
