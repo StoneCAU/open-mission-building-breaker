@@ -248,7 +248,11 @@ void UIRenderer::renderGameOver(const GameOverDisplayData& data) const {
 
     if (data.isNewRecord) {
         printLine(UIStrings::GAMEOVER_NEW_RECORD);
-        printLine(UIStrings::GAMEOVER_PREV_RECORD + std::to_string(data.highScore) + UIStrings::UNIT_POINT);
+
+        if (data.highScore > 0) {
+            printLine(UIStrings::GAMEOVER_PREV_RECORD + std::to_string(data.highScore) + UIStrings::UNIT_POINT);
+        }
+
         printEmptyLine();
     }
 
