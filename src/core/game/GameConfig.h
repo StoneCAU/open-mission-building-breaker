@@ -3,15 +3,6 @@ namespace GameConfig {
     inline constexpr float GRAVITY = 0.1f;
     inline constexpr float JUMP_VELOCITY = -1.0f;
 
-    // ===== 층 타입별 속성 =====
-    inline constexpr int FLOOR_NORMAL_HP = 1;
-    inline constexpr int FLOOR_STRONG_HP = 2;
-    inline constexpr int FLOOR_WEAK_HP = 1;
-
-    inline constexpr char FLOOR_NORMAL_CHAR = '#';
-    inline constexpr char FLOOR_STRONG_CHAR = '=';
-    inline constexpr char FLOOR_WEAK_CHAR = '-';
-
     // ===== 플레이어 =====
     inline constexpr float PLAYER_HEIGHT = 1.0f;
     inline constexpr float PLAYER_ATTACK_RANGE = 2.0f;

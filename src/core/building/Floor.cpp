@@ -1,24 +1,26 @@
 #include "Floor.h"
-#include "../game/GameConfig.h"
+
+#include "Building.h"
 
 Floor::Floor(FloorType type)
     : type(type), destroyed(false) {
 
     if (type == FloorType::NORMAL) {
-        maxHp = GameConfig::FLOOR_NORMAL_HP;
-        visual = std::string(GameConfig::BUILDING_WIDTH, GameConfig::FLOOR_NORMAL_CHAR);
+        maxHp = NORMAL_HP;
+        visual = std::string(Building::WIDTH, NORMAL_CHAR);
+        hp = maxHp;
+        return;
     }
 
     if (type == FloorType::STRONG) {
-        maxHp = GameConfig::FLOOR_STRONG_HP;
-        visual = std::string(GameConfig::BUILDING_WIDTH, GameConfig::FLOOR_STRONG_CHAR);
+        maxHp = STRONG_HP;
+        visual = std::string(Building::WIDTH, STRONG_CHAR);
+        hp = maxHp;
+        return;
     }
 
-    if (type == FloorType::WEAK) {
-        maxHp = GameConfig::FLOOR_WEAK_HP;
-        visual = std::string(GameConfig::BUILDING_WIDTH, GameConfig::FLOOR_WEAK_CHAR);
-    }
-
+    maxHp = WEAK_HP;
+    visual = std::string(Building::WIDTH, WEAK_CHAR);
     hp = maxHp;
 }
 
