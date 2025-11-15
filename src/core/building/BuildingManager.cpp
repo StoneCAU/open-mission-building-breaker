@@ -2,9 +2,14 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
-#include <iostream>
 
 #include "../game/GameConfig.h"
+
+namespace {
+    constexpr int SPAWN_X_SPACING = 2;
+    constexpr int OFFSCREEN_BOTTOM_THRESHOLD = 3;
+    constexpr int OFFSCREEN_TOP_THRESHOLD = -10;
+}
 
 BuildingManager::BuildingManager() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
@@ -25,56 +30,17 @@ void BuildingManager::updateAll() {
     handleSpawn();
 }
 
-void BuildingManager::applyPhysicsAll() {
-    for (auto& b : buildings) {
-        if (!b.isDestroyed()) {
-            b.applyPhysics();
-        }
-    }
-}
-
-void BuildingManager::removeOffscreenBuildings() {
-    auto it = std::remove_if(buildings.begin(), buildings.end(),
-        [](const Building& b) {
-            // 파괴된 빌딩 제거
-            if (b.isDestroyed()) {
-                return true;
-            }
-
-            // 화면 아래로 충분히 내려가면 제거 (바닥 관통)
-            bool tooFarDown = b.getBottomY() > GameConfig::MAP_GROUND_Y + 3;
-
-            // 화면 위로 올라갔는데, rebound 아니면 제거
-            bool tooFarUp = b.getTopY() < -10 && !b.isRebounded();
-
-            return tooFarDown || tooFarUp;
-        });
-
-    buildings.erase(it, buildings.end());
-}
-
-void BuildingManager::handleSpawn() {
-    if (spawnCooldown > 0) {
-        --spawnCooldown;
-        return;
-    }
-
-    if (buildings.size() < GameConfig::MAX_ONSCREEN_BUILDINGS) {
-        addRandomBuilding();
-    }
-
-    spawnCooldown = GameConfig::BUILDING_SPAWN_COOLDOWN;
+void BuildingManager::destroyAll() {
+    buildings.clear();
 }
 
 void BuildingManager::addRandomBuilding() {
     int height = GameConfig::MIN_BUILDING_HEIGHT +
                  (std::rand() % (GameConfig::MAX_BUILDING_HEIGHT - GameConfig::MIN_BUILDING_HEIGHT + 1));
 
-    // X 좌표를 순차적으로 배치 (겹침 절대 없음)
     int x = nextSpawnX;
-    nextSpawnX += GameConfig::BUILDING_WIDTH + 2;  // 간격 2칸
+    nextSpawnX += GameConfig::BUILDING_WIDTH + SPAWN_X_SPACING;
 
-    // 화면 끝 넘으면 처음으로
     if (nextSpawnX + GameConfig::BUILDING_WIDTH > GameConfig::MAP_WIDTH) {
         nextSpawnX = 0;
     }
@@ -83,36 +49,13 @@ void BuildingManager::addRandomBuilding() {
     buildings.emplace_back(x, y, height);
 }
 
-bool BuildingManager::isOverlapping(int newX) const {
-    for (const auto& b : buildings) {
-        // 화면 밖 위쪽 빌딩은 겹침 체크 안 함
-        if (b.getY() < 0) {
-            continue;
-        }
-
-        int leftA = newX;
-        int rightA = newX + GameConfig::BUILDING_WIDTH - 1;
-        int leftB = b.getX();
-        int rightB = b.getX() + GameConfig::BUILDING_WIDTH - 1;
-
-        if (rightA < leftB || leftA > rightB) {
-            continue;
-        }
-
-        return true;
-    }
-    return false;
-}
-
 Building* BuildingManager::getBuildingAt(int x, float y) {
     for (auto& b : buildings) {
         if (b.isDestroyed()) continue;
 
-        // 빌딩 범위 체크 (x 범위 + y 범위)
-        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
-        bool yInRange = (y >= b.getBottomY() && y <= b.getTopY());
+        if (!isXInRange(b, x)) continue;
 
-        if (xInRange && yInRange) {
+        if (isYContains(b, y)) {
             return &b;
         }
     }
@@ -123,13 +66,9 @@ Building* BuildingManager::getBuildingInRange(int x, float y, float range) {
     for (auto& b : buildings) {
         if (b.isDestroyed()) continue;
 
-        // X 범위 체크
-        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
+        if (!isXInRange(b, x)) continue;
 
-        // Y 범위 체크 (y 기준으로 range 내)
-        bool yInRange = (b.getBottomY() >= y - range && b.getBottomY() <= y + range);
-
-        if (xInRange && yInRange) {
+        if (isYInRange(b.getBottomY(), y, range)) {
             return &b;
         }
     }
@@ -140,14 +79,9 @@ Building* BuildingManager::getBuildingAbove(int x, float y, float range) {
     for (auto& b : buildings) {
         if (b.isDestroyed()) continue;
 
-        // X 범위 체크
-        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
+        if (!isXInRange(b, x)) continue;
 
-        // Y 범위: 플레이어 위쪽 range 범위 안에 빌딩 밑면이 있으면
-        float buildingBottom = b.getBottomY();
-        bool yInRange = (buildingBottom >= y && buildingBottom <= y + range);
-
-        if (xInRange && yInRange) {
+        if (isYAboveTarget(b.getBottomY(), y, range)) {
             return &b;
         }
     }
@@ -158,22 +92,13 @@ Building* BuildingManager::getBuildingAbovePlayer(int x, float y, float threshol
     for (auto& b : buildings) {
         if (b.isDestroyed()) continue;
 
-        bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
+        if (!isXInRange(b, x)) continue;
 
-        float buildingBottom = b.getBottomY();
-
-        // 빌딩 밑면이 플레이어 머리보다 위에 있고 + threshold 이내
-        bool nearBottom = (buildingBottom >= y && buildingBottom <= y + threshold);
-
-        if (xInRange && nearBottom) {
+        if (isYAboveTarget(b.getBottomY(), y, threshold)) {
             return &b;
         }
     }
     return nullptr;
-}
-
-void BuildingManager::destroyAll() {
-    buildings.clear();
 }
 
 int BuildingManager::getActiveCount() const {
@@ -192,4 +117,61 @@ std::vector<Building>& BuildingManager::getAll() {
 
 const std::vector<Building>& BuildingManager::getAll() const {
     return buildings;
+}
+
+void BuildingManager::applyPhysicsAll() {
+    for (auto& b : buildings) {
+        if (!b.isDestroyed()) {
+            b.applyPhysics();
+        }
+    }
+}
+
+void BuildingManager::removeOffscreenBuildings() {
+    auto it = std::remove_if(buildings.begin(), buildings.end(),
+        [this](const Building& b) {
+            return shouldRemoveBuilding(b);
+        });
+
+    buildings.erase(it, buildings.end());
+}
+
+void BuildingManager::handleSpawn() {
+    if (spawnCooldown > 0) {
+        --spawnCooldown;
+        return;
+    }
+
+    if (buildings.size() < GameConfig::MAX_ONSCREEN_BUILDINGS) {
+        addRandomBuilding();
+    }
+
+    spawnCooldown = GameConfig::BUILDING_SPAWN_COOLDOWN;
+}
+
+bool BuildingManager::shouldRemoveBuilding(const Building& b) {
+    if (b.isDestroyed()) {
+        return true;
+    }
+
+    bool tooFarDown = b.getBottomY() > GameConfig::MAP_GROUND_Y + OFFSCREEN_BOTTOM_THRESHOLD;
+    bool tooFarUp = b.getTopY() < OFFSCREEN_TOP_THRESHOLD && !b.isRebounded();
+
+    return tooFarDown || tooFarUp;
+}
+
+bool BuildingManager::isXInRange(const Building& b, int x) {
+    return x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH;
+}
+
+bool BuildingManager::isYInRange(float buildingBottom, float y, float range) {
+    return buildingBottom >= y - range && buildingBottom <= y + range;
+}
+
+bool BuildingManager::isYAboveTarget(float buildingBottom, float targetY, float range) {
+    return buildingBottom >= targetY && buildingBottom <= targetY + range;
+}
+
+bool BuildingManager::isYContains(const Building& b, float y) const {
+    return y >= b.getBottomY() && y <= b.getTopY();
 }
