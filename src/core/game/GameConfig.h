@@ -1,9 +1,10 @@
 namespace GameConfig {
     // ===== 물리 =====
     inline constexpr float GRAVITY = 0.1f;
-    inline constexpr float BUILDING_GRAVITY = 0.001f;
     inline constexpr float JUMP_VELOCITY = -1.0f;
-    inline constexpr float BUILDING_REBOUND_VELOCITY = -0.1f;
+    inline constexpr float BUILDING_GRAVITY = 0.001f;
+    inline constexpr float BUILDING_REBOUND_VELOCITY = -0.7f;
+    inline constexpr float BUILDING_REBOUND_GRAVITY = 0.02f;
 
     // ===== 빌딩/층 =====
     inline constexpr int BUILDING_WIDTH = 6;
