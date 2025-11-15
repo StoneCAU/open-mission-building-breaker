@@ -1,59 +1,23 @@
 #include "UIRenderer.h"
 #include <iostream>
 #include <windows.h>
-
 #include "../core/game/GameConfig.h"
-#include "../core/game/GameSession.h"
+#include "UIStrings.h"
 
-namespace {
-    // ====== 공통 UI 상수 ======
-    constexpr const char *BORDER = "==================================================";
-    constexpr const char *TITLE = "        BUILDING BREAKER v1.0";
-    constexpr const char *SEPARATOR = " | ";
-
-    // ====== HUD 관련 ======
-    constexpr const char *HUD_SCORE = "점수: ";
-    constexpr const char *HUD_COMBO = "콤보: x";
-    constexpr const char *HUD_GAUGE = "게이지: ";
-    constexpr const char *HUD_GAUGE_ICON_FILLED = "█";
-    constexpr const char *HUD_GAUGE_ICON_EMPTY = "░";
-    constexpr const char *HUD_GAUGE_UNIT = "%";
-    constexpr const char *HUD_LIFE_ICON_FILLED = "❤";
-    constexpr const char *HUD_LIFE_ICON_EMPTY = "♡";
-
-    // ====== 단위 및 구분자 ======
-    constexpr const char *UNIT_POINT = "점";
-    constexpr const char *SPACE = " ";
-    constexpr const char *NEW_LINE = "\n";
-
-    // ====== 캐릭터 관련 아이콘 ======
-    constexpr const char *ICON_PLAYER = "@";
-    constexpr const char *ICON_ATTACK = "⚔️";
-    constexpr const char *ICON_DEFEND = "🛡️";
-    constexpr const char *ICON_DAMAGED = "💥";
-
-    // ====== 메뉴 관련 ======
-    constexpr const char *MENU_TITLE = "최고 기록: ";
-    constexpr const char *MENU_ENTER = "[ENTER] 게임 시작";
-    constexpr const char *MENU_QUIT = "[Q] 종료";
-
-    // ====== 하단 가이드 ======
-    constexpr const char *UNDERLINE = "_________________________________________________";
-    constexpr const char *CONTROL_GUIDE = "조작: [←→]이동 [Z]공격 [↓]방어 [↑]점프 [X]필살기";
-
-    // ====== 게임오버 관련 ======
-    constexpr const char *GAMEOVER_TITLE = "           GAME OVER";
-    constexpr const char *GAMEOVER_FINAL_SCORE = "최종 점수: ";
-    constexpr const char *GAMEOVER_MAX_COMBO = "최고 콤보: x";
-    constexpr const char *GAMEOVER_NEW_RECORD = "★ 새로운 최고 기록 달성! ★";
-    constexpr const char *GAMEOVER_PREV_RECORD = "이전 기록: ";
-    constexpr const char *GAMEOVER_RESTART = "[R] 재시작";
-    constexpr const char *GAMEOVER_PLAY_TIME = "플레이 시간: ";
-    constexpr const char *UNIT_MINUTE = "분 ";
-    constexpr const char *UNIT_SECOND = "초";
+UIRenderer::UIRenderer()
+    : mapMinX(GameConfig::MAP_MIN_X),
+      mapMaxX(GameConfig::MAP_MAX_X),
+      mapGroundY(GameConfig::MAP_GROUND_Y) {
+    initializeActionIcons();
 }
 
-/** ===================== 공통 유틸 ===================== **/
+void UIRenderer::initializeActionIcons() {
+    actionIcons[PlayerActionType::IDLE] = "";
+    actionIcons[PlayerActionType::ATTACK] = UIStrings::ICON_ATTACK;
+    actionIcons[PlayerActionType::DEFEND] = UIStrings::ICON_DEFEND;
+    actionIcons[PlayerActionType::ULTIMATE] = UIStrings::ICON_ATTACK;
+}
+
 void UIRenderer::clearScreen() const {
     COORD coord = {0, 0};
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
@@ -76,190 +40,220 @@ void UIRenderer::clearScreenFull() const {
 }
 
 void UIRenderer::printBorder() const {
-    std::cout << BORDER << NEW_LINE;
+    printLine(UIStrings::BORDER);
 }
 
-bool UIRenderer::isInside(int x, int y) const {
-    return x >= GameConfig::MAP_MIN_X && x <= GameConfig::MAP_MAX_X &&
-           y >= 0 && y <= GameConfig::MAP_GROUND_Y;
+void UIRenderer::printEmptyLine() const {
+    std::cout << "\n";
+}
+
+void UIRenderer::printLine(const std::string& text) const {
+    std::cout << text << "\n";
+}
+
+void UIRenderer::flushOutput() const {
+    std::cout.flush();
+}
+
+bool UIRenderer::isInsideMap(int x, int y) const {
+    return x >= mapMinX && x <= mapMaxX && y >= 0 && y <= mapGroundY;
+}
+
+bool UIRenderer::isWithinDrawBounds(int x) const {
+    return x < mapMaxX - ICON_DRAW_MARGIN;
+}
+
+void UIRenderer::drawCharacter(std::vector<std::string>& screen, int x, int y, char ch) const {
+    if (!isInsideMap(x, y)) return;
+    if (ch == ' ') return;
+
+    screen[y][x] = ch;
 }
 
 void UIRenderer::drawLine(std::vector<std::string>& screen, int x, int y, const std::string& text) const {
-    if (!isInside(x, y)) return;
+    if (!isInsideMap(x, y)) return;
 
-    for (int j = 0; j < static_cast<int>(text.size()); ++j) {
-        int drawX = x + j;
+    for (size_t j = 0; j < text.size(); ++j) {
+        int drawX = x + static_cast<int>(j);
 
-        // 콘솔 경계 넘어가면 중단 (▩ 문자 깨짐 방지)
-        if (drawX >= GameConfig::MAP_MAX_X - 2) break;
+        if (!isWithinDrawBounds(drawX)) break;
 
-        const char ch = text[j];
-        if (ch == *SPACE) continue;  // 공백은 건너뜀
-
-        screen[y][drawX] = ch;
+        drawCharacter(screen, drawX, y, text[j]);
     }
 }
 
-/** ===================== 메뉴 ===================== **/
 void UIRenderer::renderMenu(int highScore) const {
     printBorder();
-    std::cout << TITLE << NEW_LINE;
+    printLine(UIStrings::TITLE);
     printBorder();
-    std::cout << MENU_TITLE << highScore << UNIT_POINT << NEW_LINE << NEW_LINE;
-    std::cout << MENU_ENTER << NEW_LINE;
-    std::cout << MENU_QUIT << NEW_LINE << NEW_LINE;
+    printLine(UIStrings::MENU_TITLE + std::to_string(highScore) + UIStrings::UNIT_POINT);
+    printEmptyLine();
+    printLine(UIStrings::MENU_ENTER);
+    printLine(UIStrings::MENU_QUIT);
+    printEmptyLine();
     printBorder();
 }
 
-/** ===================== HUD ===================== **/
-std::string UIRenderer::getGaugeBar(int gauge) const {
-    constexpr int BAR_LENGTH = 10;
-    int filled = (gauge * BAR_LENGTH) / 100;
+std::string UIRenderer::buildGaugeBar(int gauge) const {
+    int filled = (gauge * GAUGE_BAR_LENGTH) / 100;
     std::string bar;
-    bar.reserve(BAR_LENGTH);
+    bar.reserve(GAUGE_BAR_LENGTH);
 
-    for (int i = 0; i < BAR_LENGTH; ++i) {
-        bar += (i < filled) ? HUD_GAUGE_ICON_FILLED : HUD_GAUGE_ICON_EMPTY;
+    for (int i = 0; i < GAUGE_BAR_LENGTH; ++i) {
+        bar += (i < filled) ? UIStrings::HUD_GAUGE_ICON_FILLED : UIStrings::HUD_GAUGE_ICON_EMPTY;
     }
     return bar;
 }
 
-void UIRenderer::renderHUD(const GameSession& s) const {
-    printBorder();
-    std::cout << HUD_SCORE << s.getScore()
-              << SEPARATOR << HUD_COMBO << s.getCombo()
-              << SEPARATOR << HUD_GAUGE << getGaugeBar(s.getGauge())
-              << SPACE << s.getGauge() << HUD_GAUGE_UNIT
-              << SEPARATOR;
-
-    int currentLife = s.getLife();
-    int maxLife = GameConfig::INITIAL_LIFE;
+std::string UIRenderer::buildLifeDisplay(int currentLife) const {
+    std::string display;
 
     for (int i = 0; i < currentLife; ++i) {
-        std::cout << HUD_LIFE_ICON_FILLED << SPACE;
+        display += UIStrings::HUD_LIFE_ICON_FILLED;
+        display += " ";
     }
 
-    for (int i = currentLife; i < maxLife; ++i) {
-        std::cout << HUD_LIFE_ICON_EMPTY << SPACE;
+    for (int i = currentLife; i < MAX_LIFE; ++i) {
+        display += UIStrings::HUD_LIFE_ICON_EMPTY;
+        display += " ";
     }
 
-    std::cout << NEW_LINE;
+    return display;
+}
+
+void UIRenderer::renderHUD(const GameSession& session) const {
     printBorder();
-    std::cout << NEW_LINE << NEW_LINE;
+
+    std::string hudLine = UIStrings::HUD_SCORE + std::to_string(session.getScore()) +
+                          UIStrings::SEPARATOR + UIStrings::HUD_COMBO + std::to_string(session.getCombo()) +
+                          UIStrings::SEPARATOR + UIStrings::HUD_GAUGE + buildGaugeBar(session.getGauge()) +
+                          " " + std::to_string(session.getGauge()) + UIStrings::HUD_GAUGE_UNIT +
+                          UIStrings::SEPARATOR + buildLifeDisplay(session.getLife());
+
+    printLine(hudLine);
+    printBorder();
+    printEmptyLine();
+    printEmptyLine();
 }
 
-/** ===================== 빌딩 합성 ===================== **/
-void UIRenderer::composeBuildings(const GameSession& s, std::vector<std::string>& screen) const {
-    const auto& buildings = s.getBuildingManager().getAll();
+void UIRenderer::composeBuildingFloor(const Building& building, int floorIndex, std::vector<std::string>& screen) const {
+    int drawY = building.getY() - floorIndex;
 
-    for (const auto& b : buildings) {
-        if (b.isDestroyed()) continue;
+    if (drawY < 0) return;
+    if (drawY > mapGroundY) return;
 
-        const int bottomY = b.getY();
-        const int height = b.getHeight();
-        const int x = b.getX();
-        const auto& lines = b.getRenderLines();
+    const auto& lines = building.getRenderLines();
+    int lineIndex = building.getHeight() - 1 - floorIndex;
 
-        for (int i = 0; i < height; ++i) {
-            int drawY = bottomY - i;
-            if (drawY < 0 || drawY > GameConfig::MAP_GROUND_Y) continue;
+    drawLine(screen, building.getX(), drawY, lines[lineIndex]);
+}
 
-            const std::string& blockLine = lines[height - 1 - i];
-            drawLine(screen, x, drawY, blockLine);
-        }
+void UIRenderer::composeBuilding(const Building& building, std::vector<std::string>& screen) const {
+    if (building.isDestroyed()) return;
+
+    for (int i = 0; i < building.getHeight(); ++i) {
+        composeBuildingFloor(building, i, screen);
     }
 }
 
-/** ===================== 플레이어 합성 ===================== **/
-void UIRenderer::composePlayer(const Player& p, const GameSession& s, std::vector<std::string>& screen) const {
-    const int px = p.getX();
-    const int py = static_cast<int>(p.getY());
-    if (!isInside(px, py)) return;
+void UIRenderer::composeBuildings(const GameSession& session, std::vector<std::string>& screen) const {
+    const auto& buildings = session.getBuildingManager().getAll();
 
-    std::string motion = ICON_PLAYER;
-
-    if (p.isDamaged()) {
-        motion = ICON_DAMAGED;
+    for (const auto& building : buildings) {
+        composeBuilding(building, screen);
     }
-
-    if (!p.isDamaged() && p.getAction() == PlayerActionType::ATTACK) {
-        motion += ICON_ATTACK;
-    }
-
-    if (!p.isDamaged() && p.getAction() == PlayerActionType::DEFEND) {
-        motion += ICON_DEFEND;
-    }
-
-    drawLine(screen, px, py, motion);
 }
 
+std::string UIRenderer::buildActionIcon(const Player& player) const {
+    auto it = actionIcons.find(player.getAction());
 
-/** ===================== 본문 출력 (빌딩 + 플레이어) ===================== **/
-void UIRenderer::renderBody(const GameSession& s) const {
+    if (it == actionIcons.end()) {
+        return "";
+    }
+
+    return it->second;
+}
+
+std::string UIRenderer::buildPlayerIcon(const Player& player) const {
+    if (player.isDamaged()) {
+        return UIStrings::ICON_DAMAGED;
+    }
+
+    return UIStrings::ICON_PLAYER + buildActionIcon(player);
+}
+
+void UIRenderer::composePlayer(const Player& player, std::vector<std::string>& screen) const {
+    const int px = player.getX();
+    const int py = static_cast<int>(player.getY());
+
+    if (!isInsideMap(px, py)) return;
+
+    drawLine(screen, px, py, buildPlayerIcon(player));
+}
+
+void UIRenderer::renderBody(const GameSession& session) const {
     std::vector<std::string> screen(
-        GameConfig::MAP_GROUND_Y + 1,
-        std::string(GameConfig::MAP_MAX_X + 1, *SPACE)
+        mapGroundY + 1,
+        std::string(mapMaxX + 1, ' ')
     );
 
-    composeBuildings(s, screen);
-    composePlayer(s.getPlayer(), s, screen);
+    composeBuildings(session, screen);
+    composePlayer(session.getPlayer(), screen);
 
-    for (int y = 0; y <= GameConfig::MAP_GROUND_Y; ++y) {
-        std::cout << screen[y] << NEW_LINE;
+    for (int y = 0; y <= mapGroundY; ++y) {
+        printLine(screen[y]);
     }
 }
 
-/** ===================== 가이드 ===================== **/
 void UIRenderer::renderGuide() const {
-    std::cout << UNDERLINE << NEW_LINE;
-    std::cout << CONTROL_GUIDE << NEW_LINE;
+    printLine(UIStrings::UNDERLINE);
+    printLine(UIStrings::CONTROL_GUIDE);
 }
 
-/** ===================== 메시지 ===================== **/
 void UIRenderer::renderMessage(const GameSession& session) const {
-    const UIMessageQueue& msgQueue = session.messageQueue;
+    if (!session.messageQueue.hasMessage()) return;
 
-    if (msgQueue.hasMessage()) {
-        std::cout << msgQueue.getMessage() << NEW_LINE;
-    }
+    printLine(session.messageQueue.getMessage());
 }
 
-
-/** ===================== 전체 출력 ===================== **/
-void UIRenderer::renderPlaying(const GameSession& s) const {
+void UIRenderer::renderPlaying(const GameSession& session) const {
     clearScreen();
-    renderHUD(s);
-    renderBody(s);
+    renderHUD(session);
+    renderBody(session);
     renderGuide();
-    renderMessage(s);
-    std::cout.flush();
+    renderMessage(session);
+    flushOutput();
 }
 
-void UIRenderer::renderGameOver(GameOverDisplayData data) const {
+std::string UIRenderer::buildGameTimeDisplay(int totalSeconds) const {
+    int minutes = totalSeconds / 60;
+    int seconds = totalSeconds % 60;
+
+    return std::to_string(minutes) + UIStrings::UNIT_MINUTE +
+           std::to_string(seconds) + UIStrings::UNIT_SECOND;
+}
+
+void UIRenderer::renderGameOver(const GameOverDisplayData& data) const {
     clearScreenFull();
 
     printBorder();
-    std::cout << GAMEOVER_TITLE << NEW_LINE;
+    printLine(UIStrings::GAMEOVER_TITLE);
     printBorder();
-    std::cout << NEW_LINE;
+    printEmptyLine();
 
-    std::cout << GAMEOVER_FINAL_SCORE << data.finalScore << UNIT_POINT << NEW_LINE;
-    std::cout << GAMEOVER_MAX_COMBO << data.maxCombo << NEW_LINE;
-
-    // 플레이 시간 표시
-    int minutes = data.playTimeSeconds / 60;
-    int seconds = data.playTimeSeconds % 60;
-    std::cout << GAMEOVER_PLAY_TIME << minutes << UNIT_MINUTE << seconds << UNIT_SECOND << NEW_LINE;
-    std::cout << NEW_LINE;
+    printLine(UIStrings::GAMEOVER_FINAL_SCORE + std::to_string(data.finalScore) + UIStrings::UNIT_POINT);
+    printLine(UIStrings::GAMEOVER_MAX_COMBO + std::to_string(data.maxCombo));
+    printLine(UIStrings::GAMEOVER_PLAY_TIME + buildGameTimeDisplay(data.playTimeSeconds));
+    printEmptyLine();
 
     if (data.isNewRecord) {
-        std::cout << GAMEOVER_NEW_RECORD << NEW_LINE;
-        std::cout << GAMEOVER_PREV_RECORD << data.highScore << UNIT_POINT << NEW_LINE;
-        std::cout << NEW_LINE;
+        printLine(UIStrings::GAMEOVER_NEW_RECORD);
+        printLine(UIStrings::GAMEOVER_PREV_RECORD + std::to_string(data.highScore) + UIStrings::UNIT_POINT);
+        printEmptyLine();
     }
 
     printBorder();
-    std::cout << GAMEOVER_RESTART << NEW_LINE;
-    std::cout << MENU_QUIT << NEW_LINE;
+    printLine(UIStrings::GAMEOVER_RESTART);
+    printLine(UIStrings::MENU_QUIT);
     printBorder();
 }
