@@ -3,6 +3,15 @@
 #include "GameConfig.h"
 #include "../building/Building.h"
 
+namespace {
+    constexpr float PHYSICS_COLLISION_RANGE = 1.0f;
+    constexpr float PHYSICS_COLLISION_THRESHOLD = 1.0f;
+    constexpr float UPWARD_VELOCITY_THRESHOLD = -0.1f;
+    constexpr float DAMAGE_COLLISION_RANGE = 0.5f;
+    constexpr float FALLING_VELOCITY_THRESHOLD = 0.01f;
+    constexpr int ATTACK_GAUGE_REWARD = 10;
+}
+
 GameSession::GameSession() = default;
 
 void GameSession::start() {
@@ -110,7 +119,7 @@ Building* GameSession::findBuildingForAttack(const PlayerPosition& pos) {
     return buildingManager.getBuildingInRange(
         pos.x,
         pos.topY,
-        GameConfig::PLAYER_ATTACK_RANGE
+        Player::ATTACK_RANGE
     );
 }
 
@@ -140,7 +149,7 @@ Building* GameSession::findBuildingForDefend(const PlayerPosition& pos) {
     return buildingManager.getBuildingInRange(
         pos.x,
         pos.topY,
-        GameConfig::PLAYER_DEFENSE_RANGE
+        Player::DEFENSE_RANGE
     );
 }
 

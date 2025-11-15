@@ -33,13 +33,6 @@ public:
     GameOverDisplayData getGameOverData(int currentHighScore) const;
 
 private:
-    static constexpr float PHYSICS_COLLISION_RANGE = 1.0f;
-    static constexpr float PHYSICS_COLLISION_THRESHOLD = 1.0f;
-    static constexpr float UPWARD_VELOCITY_THRESHOLD = -0.1f;
-    static constexpr float DAMAGE_COLLISION_RANGE = 0.5f;
-    static constexpr float FALLING_VELOCITY_THRESHOLD = 0.01f;
-    static constexpr int ATTACK_GAUGE_REWARD = 10;
-
     Player player;
     BuildingManager buildingManager;
     GameStats stats;
