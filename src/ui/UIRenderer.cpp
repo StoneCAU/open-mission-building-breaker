@@ -143,9 +143,10 @@ void UIRenderer::composeBuildingFloor(const Building& building, int floorIndex, 
     if (drawY > mapGroundY) return;
 
     const auto& lines = building.getRenderLines();
-    int lineIndex = building.getHeight() - 1 - floorIndex;
 
-    drawLine(screen, building.getX(), drawY, lines[lineIndex]);
+    if (floorIndex >= lines.size()) return;
+
+    drawLine(screen, building.getX(), drawY, lines[floorIndex]);
 }
 
 void UIRenderer::composeBuilding(const Building& building, std::vector<std::string>& screen) const {
