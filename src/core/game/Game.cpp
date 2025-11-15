@@ -1,11 +1,11 @@
 #include "Game.h"
 #include <windows.h>
-
 #include "GameConfig.h"
-#include "../../ui/InputHandler.h"
 
-Game::Game()
-    : state(GameState::MENU),
+Game::Game(std::unique_ptr<IRenderer> r, std::unique_ptr<IInputHandler> i)
+    : renderer(std::move(r)),
+      inputHandler(std::move(i)),
+      state(GameState::MENU),
       isRunning(true),
       highScore(0) {}
 
@@ -28,21 +28,21 @@ void Game::run() {
 }
 
 void Game::runMenu() {
-    ui.renderMenu(scoreManager.loadHighScore());
+    renderer->renderMenu(scoreManager.loadHighScore());
     handleMenuInput();
 }
 
 void Game::runGame() {
     session.start();
-    ui.clearScreenFull();
-    ui.renderPlaying(session);
+    renderer->clearScreenFull();
+    renderer->renderPlaying(session);
 
     while (isRunning && state == GameState::PLAYING) {
         processGameFrame();
     }
 
     if (state == GameState::GAME_OVER) {
-        ui.clearScreen();
+        renderer->clearScreen();
     }
 }
 
@@ -59,7 +59,7 @@ void Game::processGameFrame() {
 }
 
 void Game::handleFrameInput() {
-    InputKey key = InputHandler::getInput();
+    InputKey key = inputHandler->getInput();
     if (key == InputKey::NONE) {
         return;
     }
@@ -68,7 +68,7 @@ void Game::handleFrameInput() {
 }
 
 void Game::updateFrameState() {
-    session.update();
+    session.update(inputHandler.get());
 
     if (session.isGameOver()) {
         onGameOver();
@@ -76,13 +76,13 @@ void Game::updateFrameState() {
 }
 
 void Game::renderFrame() {
-    ui.clearScreen();
-    ui.renderPlaying(session);
+    renderer->clearScreen();
+    renderer->renderPlaying(session);
 }
 
 void Game::handleMenuInput() {
     while (isRunning && state == GameState::MENU) {
-        InputKey key = InputHandler::getInput();
+        InputKey key = inputHandler->getInput();
 
         if (key == InputKey::NONE) {
             continue;
@@ -90,7 +90,7 @@ void Game::handleMenuInput() {
 
         if (key == InputKey::ENTER) {
             state = GameState::PLAYING;
-            ui.clearScreen();
+            renderer->clearScreen();
             return;
         }
 
@@ -102,7 +102,7 @@ void Game::handleMenuInput() {
 }
 
 void Game::displayGameOverScreen() {
-    ui.clearScreenFull();
+    renderer->clearScreenFull();
 
     int currentHighScore = scoreManager.loadHighScore();
     GameOverDisplayData data = session.getGameOverData(currentHighScore);
@@ -111,12 +111,12 @@ void Game::displayGameOverScreen() {
         scoreManager.saveHighScore(data.finalScore);
     }
 
-    ui.renderGameOver(data);
+    renderer->renderGameOver(data);
 }
 
 void Game::handleGameOverInput() {
     while (isRunning && state == GameState::GAME_OVER) {
-        InputKey key = InputHandler::getInput();
+        InputKey key = inputHandler->getInput();
 
         if (key == InputKey::NONE) {
             continue;
@@ -124,7 +124,7 @@ void Game::handleGameOverInput() {
 
         if (key == InputKey::RESTART) {
             state = GameState::PLAYING;
-            ui.clearScreen();
+            renderer->clearScreen();
             return;
         }
 

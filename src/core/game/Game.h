@@ -1,7 +1,10 @@
 #pragma once
+
+#include <memory>
 #include "GameSession.h"
 #include "ScoreManager.h"
-#include "../../ui/UIRenderer.h"
+#include "../../interfaces/IRenderer.h"
+#include "../../interfaces/IInputHandler.h"
 
 enum class GameState {
     MENU,
@@ -11,7 +14,7 @@ enum class GameState {
 
 class Game {
 public:
-    Game();
+    Game(std::unique_ptr<IRenderer> renderer, std::unique_ptr<IInputHandler> inputHandler);
     ~Game();
 
     void run();
@@ -22,8 +25,10 @@ private:
     int highScore;
 
     GameSession session;
-    UIRenderer ui;
     ScoreManager scoreManager;
+
+    std::unique_ptr<IRenderer> renderer;
+    std::unique_ptr<IInputHandler> inputHandler;
 
     void runMenu();
     void runGame();
