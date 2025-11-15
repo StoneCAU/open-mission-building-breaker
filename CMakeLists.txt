@@ -37,6 +37,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/player/PlayerAttachment.cpp
         src/core/player/PlayerAttachment.h
         src/ui/UIStrings.h
+        src/core/game/ScoreManager.cpp
+        src/core/game/ScoreManager.h
 )
 
 add_compile_options(/utf-8)
