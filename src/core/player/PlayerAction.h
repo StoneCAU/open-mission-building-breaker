@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PlayerActionType.h"
-#include "../../ui/InputHandler.h"
+#include "../../interfaces/InputKey.h"
 
 class PlayerAction {
 public:
@@ -9,7 +9,7 @@ public:
 
     void reset();
     void handleInput(InputKey key);
-    void update();
+    void update(bool defendKeyReleased);
 
     PlayerActionType getType() const;
     int getActionCooldown() const;
@@ -32,13 +32,10 @@ private:
 
     void updateActionFrame();
     void updateCooldown();
-    void updateDefendRelease();
 
     bool canStartAttack() const;
     bool canStartDefend() const;
     void startAttack();
     void startDefend();
     void endAction();
-
-    bool isDefendKeyReleased() const;
 };

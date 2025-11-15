@@ -4,7 +4,8 @@
 #include "PlayerAction.h"
 #include "PlayerCollision.h"
 #include "PlayerAttachment.h"
-#include "../../ui/InputHandler.h"
+#include "../../interfaces/InputKey.h"
+#include "../../interfaces/IInputHandler.h"
 
 class Building;
 
@@ -19,7 +20,8 @@ public:
 
     void reset();
     void handleInput(InputKey key);
-    void update();
+    void update(IInputHandler* inputHandler);
+
     void takeDamage();
 
     int getX() const;
@@ -47,7 +49,7 @@ private:
     PlayerAttachment attachment;
 
     void updateAttachedState();
-    void updateComponents();
+    void updateComponents(IInputHandler* inputHandler);
     void handleJumpInput(InputKey key);
     void handleActionInput(InputKey key);
 

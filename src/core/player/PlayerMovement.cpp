@@ -1,16 +1,13 @@
 #include "PlayerMovement.h"
-#include <windows.h>
-
 #include "Player.h"
-#include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
 PlayerMovement::PlayerMovement(int& x, float& y)
-    : x(x), 
-      y(y), 
+    : x(x),
+      y(y),
       velocityY(0.0f),
-      jumping(false), 
-      canJump(true), 
+      jumping(false),
+      canJump(true),
       jumpCooldown(0),
       startX(Player::START_X),
       groundY(static_cast<float>(GameConfig::MAP_GROUND_Y)),
@@ -36,10 +33,13 @@ bool PlayerMovement::handleInput(InputKey key) {
     return jumped;
 }
 
-void PlayerMovement::update() {
+void PlayerMovement::update(bool jumpKeyReleased) {
     applyPhysics();
     updateJumpCooldown();
-    updateJumpRelease();
+
+    if (!jumping && jumpKeyReleased) {
+        canJump = true;
+    }
 }
 
 void PlayerMovement::applyPhysics() {
@@ -117,16 +117,6 @@ void PlayerMovement::updateJumpCooldown() {
     if (jumpCooldown > 0) {
         --jumpCooldown;
     }
-}
-
-void PlayerMovement::updateJumpRelease() {
-    if (!jumping && isJumpKeyReleased()) {
-        canJump = true;
-    }
-}
-
-bool PlayerMovement::isJumpKeyReleased() const {
-    return InputHandler::isKeyReleased(VK_UP);
 }
 
 bool PlayerMovement::canMoveLeft() const {

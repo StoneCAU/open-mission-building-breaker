@@ -1,6 +1,5 @@
 #pragma once
-
-#include "../../ui/InputHandler.h"
+#include "../../interfaces/InputKey.h"
 
 class PlayerMovement {
 public:
@@ -8,7 +7,7 @@ public:
 
     void reset();
     bool handleInput(InputKey key);
-    void update();
+    void update(bool jumpKeyReleased);
 
     void applyPhysics();
     void handleCollisionWith(float obstacleY, float playerHeight);
