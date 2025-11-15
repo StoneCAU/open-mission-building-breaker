@@ -41,21 +41,17 @@ void BuildingManager::removeOffscreenBuildings() {
                 return true;
             }
 
-            // 지면 닿고 오래 있으면 제거
-            bool onGroundTooLong = b.getGroundFrames() > 100;
+            // 화면 아래로 충분히 내려가면 제거 (바닥 관통)
+            bool tooFarDown = b.getBottomY() > GameConfig::MAP_GROUND_Y + 3;
 
-            // 화면 밑으로 내려가면 제거
-            bool tooFarDown = b.getBottomY() > GameConfig::MAP_GROUND_Y + 5;
-
-            // 화면 위로 올라갔는데, rebound 상태가 아니면 제거 (추가!)
+            // 화면 위로 올라갔는데, rebound 아니면 제거
             bool tooFarUp = b.getTopY() < -10 && !b.isRebounded();
 
-            return onGroundTooLong || tooFarDown || tooFarUp;
+            return tooFarDown || tooFarUp;
         });
 
     buildings.erase(it, buildings.end());
 }
-
 
 void BuildingManager::handleSpawn() {
     if (spawnCooldown > 0) {
@@ -162,12 +158,12 @@ Building* BuildingManager::getBuildingAbovePlayer(int x, float y, float threshol
     for (auto& b : buildings) {
         if (b.isDestroyed()) continue;
 
-        // X 범위
         bool xInRange = (x >= b.getX() && x < b.getX() + GameConfig::BUILDING_WIDTH);
 
-        // 빌딩 밑면이 플레이어 y 바로 위
         float buildingBottom = b.getBottomY();
-        bool nearBottom = (buildingBottom < y && buildingBottom >= y - threshold);
+
+        // 빌딩 밑면이 플레이어 머리보다 위에 있고 + threshold 이내
+        bool nearBottom = (buildingBottom >= y && buildingBottom <= y + threshold);
 
         if (xInRange && nearBottom) {
             return &b;
