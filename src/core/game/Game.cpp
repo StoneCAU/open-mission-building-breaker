@@ -1,4 +1,6 @@
 #include "Game.h"
+
+#include <iostream>
 #include <windows.h>
 
 #include "GameConfig.h"
@@ -128,7 +130,7 @@ void Game::runGameOver() {
         highScore = finalScore;
     }
 
-    ui.renderGameOver(finalScore, maxCombo, highScore, isNewRecord, playTime);
+    ui.renderGameOver(finalScore, maxCombo, playTime, highScore, isNewRecord);
 
     while (isRunning && state == GameState::GAME_OVER) {
         InputKey key = InputHandler::getInput();
