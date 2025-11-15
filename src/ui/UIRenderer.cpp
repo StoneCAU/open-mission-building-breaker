@@ -234,8 +234,7 @@ void UIRenderer::renderPlaying(const GameSession& s) const {
     std::cout.flush();
 }
 
-void UIRenderer::renderGameOver(int finalScore, int maxCombo, int playTimeSeconds,
-                                  int highScore, bool isNewRecord) const {
+void UIRenderer::renderGameOver(GameOverDisplayData data) const {
     clearScreenFull();
 
     printBorder();
@@ -243,18 +242,18 @@ void UIRenderer::renderGameOver(int finalScore, int maxCombo, int playTimeSecond
     printBorder();
     std::cout << NEW_LINE;
 
-    std::cout << GAMEOVER_FINAL_SCORE << finalScore << UNIT_POINT << NEW_LINE;
-    std::cout << GAMEOVER_MAX_COMBO << maxCombo << NEW_LINE;
+    std::cout << GAMEOVER_FINAL_SCORE << data.finalScore << UNIT_POINT << NEW_LINE;
+    std::cout << GAMEOVER_MAX_COMBO << data.maxCombo << NEW_LINE;
 
     // 플레이 시간 표시
-    int minutes = playTimeSeconds / 60;
-    int seconds = playTimeSeconds % 60;
+    int minutes = data.playTimeSeconds / 60;
+    int seconds = data.playTimeSeconds % 60;
     std::cout << GAMEOVER_PLAY_TIME << minutes << UNIT_MINUTE << seconds << UNIT_SECOND << NEW_LINE;
     std::cout << NEW_LINE;
 
-    if (isNewRecord) {
+    if (data.isNewRecord) {
         std::cout << GAMEOVER_NEW_RECORD << NEW_LINE;
-        std::cout << GAMEOVER_PREV_RECORD << highScore << UNIT_POINT << NEW_LINE;
+        std::cout << GAMEOVER_PREV_RECORD << data.highScore << UNIT_POINT << NEW_LINE;
         std::cout << NEW_LINE;
     }
 

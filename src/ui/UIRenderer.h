@@ -9,7 +9,7 @@ public:
     void clearScreenFull() const;
     void renderMenu(int highScore) const;
     void renderPlaying(const GameSession& session) const;
-    void renderGameOver(int finalScore, int maxCombo, int playTimeSeconds, int highScore, bool isNewRecord) const;
+    void renderGameOver(GameOverDisplayData data) const;
 private:
     void printBorder() const;
     bool isInside(int x, int y) const;
