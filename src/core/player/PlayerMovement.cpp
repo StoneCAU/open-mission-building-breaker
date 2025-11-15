@@ -1,5 +1,7 @@
 #include "PlayerMovement.h"
 #include <windows.h>
+
+#include "Player.h"
 #include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
@@ -10,7 +12,7 @@ PlayerMovement::PlayerMovement(int& x, float& y)
       jumping(false), 
       canJump(true), 
       jumpCooldown(0),
-      startX(GameConfig::PLAYER_START_X),
+      startX(Player::START_X),
       groundY(static_cast<float>(GameConfig::MAP_GROUND_Y)),
       mapMinX(GameConfig::MAP_MIN_X),
       mapMaxX(GameConfig::MAP_MAX_X) {}
