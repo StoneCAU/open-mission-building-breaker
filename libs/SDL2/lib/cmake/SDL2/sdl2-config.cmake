@@ -18,9 +18,9 @@ get_filename_component(CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_DIR} REALPATH
 get_filename_component(prefix "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 
 set(exec_prefix "${prefix}")
-set(bindir "/tmp/tardir/SDL2-2.30.10/build-mingw/install-i686-w64-mingw32/bin")
-set(libdir "/tmp/tardir/SDL2-2.30.10/build-mingw/install-i686-w64-mingw32/lib")
-set(includedir "/tmp/tardir/SDL2-2.30.10/build-mingw/install-i686-w64-mingw32/include")
+set(bindir "/tmp/tardir/SDL2-2.30.10/build-mingw/install-x86_64-w64-mingw32/bin")
+set(libdir "/tmp/tardir/SDL2-2.30.10/build-mingw/install-x86_64-w64-mingw32/lib")
+set(includedir "/tmp/tardir/SDL2-2.30.10/build-mingw/install-x86_64-w64-mingw32/include")
 
 set_and_check(SDL2_PREFIX         "${prefix}")
 set_and_check(SDL2_EXEC_PREFIX    "${exec_prefix}")
@@ -41,7 +41,7 @@ unset(libdir)
 unset(includedir)
 
 set(_sdl2_libraries_in "-lmingw32 -lSDL2main -lSDL2 -mwindows")
-set(_sdl2_static_private_libs_in " -Wl,--dynamicbase -Wl,--nxcompat -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion -luuid")
+set(_sdl2_static_private_libs_in " -Wl,--dynamicbase -Wl,--nxcompat -Wl,--high-entropy-va -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion -luuid")
 
 # Convert _sdl2_libraries to list and keep only libraries + library directories
 string(REGEX MATCHALL "-[lm]([-a-zA-Z0-9._]+)" _sdl2_libraries "${_sdl2_libraries_in}")
