@@ -18,20 +18,18 @@ void Building::applyPhysics() {
         return;
     }
 
-    if (isOnGround()) {
-        velocityY = 0.0f;
-        ++groundFrames;
-        return;  // 여기서 리턴하면 중력 안 받음!
+    // rebound 중이고 위로 올라가는 중일 때만 빠른 중력
+    if (rebounded && velocityY < 0) {
+        velocityY += GameConfig::BUILDING_REBOUND_GRAVITY;  // 빠른 감속
+    } else {
+        velocityY += GameConfig::BUILDING_GRAVITY;  // 원래 중력
+        if (rebounded && velocityY >= 0) {  // 방향 전환되면 rebound 끝
+            rebounded = false;
+        }
     }
 
-    // 중력 적용 (rebounded 빌딩도 여기서 중력 받아야 함)
-    velocityY += GameConfig::BUILDING_GRAVITY;
     y += velocityY;
 
-    if (y >= GameConfig::MAP_GROUND_Y) {
-        y = static_cast<float>(GameConfig::MAP_GROUND_Y);
-        velocityY = 0.0f;
-    }
 }
 
 void Building::applyRebound() {
