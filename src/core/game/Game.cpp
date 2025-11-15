@@ -1,8 +1,5 @@
 #include "Game.h"
-
-#include <iostream>
 #include <windows.h>
-
 #include "GameConfig.h"
 #include "../../ui/InputHandler.h"
 
@@ -13,38 +10,76 @@ Game::Game()
 
 Game::~Game() = default;
 
-void Game::init() {
-    // TODO: 초기화 로직 (필요 시 추가)
-}
-
 void Game::run() {
-    init();
-
     while (isRunning) {
         if (state == GameState::MENU) {
             runMenu();
-            continue;
         }
 
         if (state == GameState::PLAYING) {
             runGame();
-            continue;
         }
 
         if (state == GameState::GAME_OVER) {
             runGameOver();
-            continue;
         }
-
-
-        isRunning = false;
     }
 }
 
-/** ===================== [MENU LOOP] ===================== **/
 void Game::runMenu() {
     ui.renderMenu(highScore);
+    handleMenuInput();
+}
 
+void Game::runGame() {
+    session.start();
+    ui.clearScreenFull();
+    ui.renderPlaying(session);
+
+    while (isRunning && state == GameState::PLAYING) {
+        processGameFrame();
+    }
+
+    if (state == GameState::GAME_OVER) {
+        ui.clearScreen();
+    }
+}
+
+void Game::runGameOver() {
+    displayGameOverScreen();
+    handleGameOverInput();
+}
+
+void Game::processGameFrame() {
+    handleFrameInput();
+    updateFrameState();
+    renderFrame();
+    Sleep(GameConfig::FRAME_DELAY_MS);
+}
+
+void Game::handleFrameInput() {
+    InputKey key = InputHandler::getInput();
+    if (key == InputKey::NONE) {
+        return;
+    }
+
+    session.handleInput(key);
+}
+
+void Game::updateFrameState() {
+    session.update();
+
+    if (session.isGameOver()) {
+        onGameOver();
+    }
+}
+
+void Game::renderFrame() {
+    ui.clearScreen();
+    ui.renderPlaying(session);
+}
+
+void Game::handleMenuInput() {
     while (isRunning && state == GameState::MENU) {
         InputKey key = InputHandler::getInput();
 
@@ -65,73 +100,19 @@ void Game::runMenu() {
     }
 }
 
-/** ===================== [GAME LOOP] ===================== **/
-void Game::runGame() {
-    session.start();
-    ui.clearScreenFull();
-    ui.renderPlaying(session);
-
-    while (isRunning && state == GameState::PLAYING) {
-        processGameFrame();
-    }
-
-    if (state == GameState::GAME_OVER) {
-        ui.clearScreen();
-    }
-}
-
-/** ===================== [FRAME CYCLE] ===================== **/
-void Game::processGameFrame() {
-    handleFrameInput();
-    updateFrameState();
-    renderFrame();
-    Sleep(GameConfig::FRAME_DELAY_MS);
-}
-
-/** ===== 입력 처리 ===== **/
-void Game::handleFrameInput() {
-    InputKey key = InputHandler::getInput();
-    if (key == InputKey::NONE) {
-        return;
-    }
-
-    session.handleInput(key);
-}
-
-/** ===== 상태 갱신 ===== **/
-void Game::updateFrameState() {
-    session.update();
-
-    if (session.isGameOver()) {
-        onGameOver();
-    }
-}
-
-/** ===== 렌더링 ===== **/
-void Game::renderFrame() {
-    ui.clearScreen();
-    ui.renderPlaying(session);
-}
-
-/** ===== 게임 종료 처리 ===== **/
-void Game::onGameOver() {
-    state = GameState::GAME_OVER;
-}
-
-void Game::runGameOver() {
+void Game::displayGameOverScreen() {
     ui.clearScreenFull();
 
-    int finalScore = session.getScore();
-    int maxCombo = session.getMaxCombo();
-    int playTime = session.getPlayTimeSeconds();
-    bool isNewRecord = finalScore > highScore;
+    GameOverDisplayData data = session.getGameOverData(highScore);
 
-    if (isNewRecord) {
-        highScore = finalScore;
+    if (data.isNewRecord) {
+        highScore = data.finalScore;
     }
 
-    ui.renderGameOver(finalScore, maxCombo, playTime, highScore, isNewRecord);
+    ui.renderGameOver(data);
+}
 
+void Game::handleGameOverInput() {
     while (isRunning && state == GameState::GAME_OVER) {
         InputKey key = InputHandler::getInput();
 
@@ -150,4 +131,8 @@ void Game::runGameOver() {
             return;
         }
     }
+}
+
+void Game::onGameOver() {
+    state = GameState::GAME_OVER;
 }

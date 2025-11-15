@@ -16,22 +16,24 @@ public:
     void run();
 
 private:
-    void init();
-    void runMenu();
-    void runGame();
-
-    void processGameFrame();
-    void handleFrameInput();
-    void updateFrameState();
-    void renderFrame();
-
-    void onGameOver();
-    void runGameOver();
-
     GameState state;
     bool isRunning;
     int highScore;
 
     GameSession session;
     UIRenderer ui;
+
+    void runMenu();
+    void runGame();
+    void runGameOver();
+
+    void processGameFrame();
+    void handleFrameInput();
+    void updateFrameState();
+    void renderFrame();
+
+    void handleMenuInput();
+    void displayGameOverScreen();
+    void handleGameOverInput();
+    void onGameOver();
 };
