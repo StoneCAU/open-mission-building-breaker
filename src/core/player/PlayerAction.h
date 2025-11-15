@@ -1,4 +1,5 @@
 #pragma once
+
 #include "PlayerActionType.h"
 #include "../../ui/InputHandler.h"
 
@@ -13,21 +14,31 @@ public:
     PlayerActionType getType() const;
     int getActionCooldown() const;
     void setActionCooldown(int value);
-    bool isAttackFirstFrame() const;
     bool isAttackActiveFrame() const;
-    bool tryUltimate();
 
 private:
+    static constexpr int ACTION_DURATION = 10;
+    static constexpr int ATTACK_COOLDOWN = 10;
+    static constexpr int ATTACK_ACTIVE_START_FRAME = 5;
+    static constexpr int ATTACK_ACTIVE_END_FRAME = 7;
+
     PlayerActionType action;
     int actionFrame;
     int actionCooldown;
-
     bool canAttack;
-    bool canDefend;
 
     bool tryAttack();
     bool tryDefend();
 
     void updateActionFrame();
-    void updateKeyRelease();
+    void updateCooldown();
+    void updateDefendRelease();
+
+    bool canStartAttack() const;
+    bool canStartDefend() const;
+    void startAttack();
+    void startDefend();
+    void endAction();
+
+    bool isDefendKeyReleased() const;
 };

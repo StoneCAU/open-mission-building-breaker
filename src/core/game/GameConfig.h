@@ -21,8 +21,6 @@ namespace GameConfig {
     inline constexpr int SCORE_PER_ATTACK_HIT = 100;
 
     // ===== 액션 =====
-    inline constexpr int PLAYER_ACTION_DURATION = 10;
-    inline constexpr int PLAYER_ATTACK_COOLDOWN = 10;
     inline constexpr int PLAYER_INVINCIBILITY_FRAMES = 30;
 
     // ===== 점프 =====
