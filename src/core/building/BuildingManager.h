@@ -23,16 +23,16 @@ public:
 
 private:
     std::vector<Building> buildings;
-    int spawnCooldown{};
+    int spawnCooldown;
     int nextSpawnX;
 
     void applyPhysicsAll();
     void removeOffscreenBuildings();
     void handleSpawn();
 
-    bool shouldRemoveBuilding(const Building& b);
-    bool isXInRange(const Building& b, int x);
-    bool isYInRange(float buildingBottom, float y, float range);
-    bool isYAboveTarget(float buildingBottom, float targetY, float range);
+    bool shouldRemoveBuilding(const Building& b) const;
+    bool isXInRange(const Building& b, int x) const;
+    bool isYInRange(float buildingBottom, float y, float range) const;
+    bool isYAboveTarget(float buildingBottom, float targetY, float range) const;
     bool isYContains(const Building& b, float y) const;
 };

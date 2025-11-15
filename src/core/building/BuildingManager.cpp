@@ -149,7 +149,7 @@ void BuildingManager::handleSpawn() {
     spawnCooldown = GameConfig::BUILDING_SPAWN_COOLDOWN;
 }
 
-bool BuildingManager::shouldRemoveBuilding(const Building& b) {
+bool BuildingManager::shouldRemoveBuilding(const Building& b) const {
     if (b.isDestroyed()) {
         return true;
     }
@@ -160,15 +160,15 @@ bool BuildingManager::shouldRemoveBuilding(const Building& b) {
     return tooFarDown || tooFarUp;
 }
 
-bool BuildingManager::isXInRange(const Building& b, int x) {
+bool BuildingManager::isXInRange(const Building& b, int x) const {
     return x >= b.getX() && x < b.getX() + Building::WIDTH;
 }
 
-bool BuildingManager::isYInRange(float buildingBottom, float y, float range) {
+bool BuildingManager::isYInRange(float buildingBottom, float y, float range) const {
     return buildingBottom >= y - range && buildingBottom <= y + range;
 }
 
-bool BuildingManager::isYAboveTarget(float buildingBottom, float targetY, float range) {
+bool BuildingManager::isYAboveTarget(float buildingBottom, float targetY, float range) const {
     return buildingBottom >= targetY && buildingBottom <= targetY + range;
 }
 
