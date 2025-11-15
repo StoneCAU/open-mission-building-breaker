@@ -45,17 +45,17 @@ void GameSession::executeUltimate() {
     messageQueue.push(MessageType::ULTIMATE_ACTIVATED, destroyedCount);
 }
 
-void GameSession::update() {
+void GameSession::update(IInputHandler* inputHandler) {
     hitThisFrame = false;
-    
-    updatePlayerState();
+
+    updatePlayerState(inputHandler);
     updateCollisions();
     buildingManager.updateAll();
 }
 
-void GameSession::updatePlayerState() {
+void GameSession::updatePlayerState(IInputHandler* inputHandler) {
     bool wasDamaged = player.isDamaged();
-    player.update();
+    player.update(inputHandler);
     
     if (!wasDamaged && player.isDamaged()) {
         handlePlayerDamaged();

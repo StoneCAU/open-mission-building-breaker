@@ -4,9 +4,11 @@
 
 #include "GameOverDisplayData.h"
 #include "GameStats.h"
-#include "../../ui/UIMessage.h"
+#include "../../platform/console/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
+#include "../../interfaces/InputKey.h"
+#include "../../interfaces/IInputHandler.h"
 
 class GameSession {
 public:
@@ -15,7 +17,7 @@ public:
     void start();
     void reset();
     void handleInput(InputKey key);
-    void update();
+    void update(IInputHandler* inputHandler);
 
     bool isGameOver() const;
 
@@ -40,7 +42,7 @@ private:
 
     bool hitThisFrame = false;
 
-    void updatePlayerState();
+    void updatePlayerState(IInputHandler* inputHandler);
     void updateCollisions();
 
     void checkPhysicsCollision();
