@@ -7,6 +7,13 @@ PlayerMovement::PlayerMovement(int& x, float& y)
     : x(x), y(y), velocityY(0.0f),
       jumping(false), canJump(true), jumpCooldown(0) {}
 
+void PlayerMovement::reset() {
+    x = GameConfig::PLAYER_START_X;
+    y = static_cast<float>(GameConfig::MAP_GROUND_Y);
+    velocityY = 0.0f;
+    jumping = false;
+}
+
 bool PlayerMovement::handleInput(InputKey key) {
     bool jumped = tryJump(key);
 

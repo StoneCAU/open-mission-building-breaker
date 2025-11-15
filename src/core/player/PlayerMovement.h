@@ -7,6 +7,7 @@ class PlayerMovement {
 public:
     PlayerMovement(int& x, float& y);
 
+    void reset();
     bool handleInput(InputKey key);
     void update();
 
