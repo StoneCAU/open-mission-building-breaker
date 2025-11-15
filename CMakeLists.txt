@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(open_mission_building_breaker src/main.cpp
         src/core/game/Game.h
         src/core/game/Game.cpp
-        src/ui/InputHandler.h
-        src/ui/InputHandler.cpp
-        src/ui/UIRenderer.h
-        src/ui/UIRenderer.cpp
+        src/platform/console/ConsoleInputHandler.h
+        src/platform/console/ConsoleInputHandler.cpp
+        src/platform/console/ConsoleRenderer.h
+        src/platform/console/ConsoleRenderer.cpp
         src/core/game/GameSession.cpp
         src/core/game/GameSession.h
         src/core/player/Player.cpp
@@ -27,8 +27,8 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/player/PlayerCollision.cpp
         src/core/player/PlayerCollision.h
         src/core/player/PlayerActionType.h
-        src/ui/UIMessage.h
-        src/ui/UIMessage.cpp
+        src/platform/console/UIMessage.h
+        src/platform/console/UIMessage.cpp
         src/core/building/Floor.cpp
         src/core/building/Floor.h
         src/core/game/GameOverDisplayData.h
@@ -36,9 +36,12 @@ add_executable(open_mission_building_breaker src/main.cpp
         src/core/game/GameStats.cpp
         src/core/player/PlayerAttachment.cpp
         src/core/player/PlayerAttachment.h
-        src/ui/UIStrings.h
+        src/platform/console/UIStrings.h
         src/core/game/ScoreManager.cpp
         src/core/game/ScoreManager.h
+        src/interfaces/InputKey.h
+        src/interfaces/IInputHandler.h
+        src/interfaces/IRenderer.h
 )
 
 add_compile_options(/utf-8)
