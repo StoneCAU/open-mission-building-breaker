@@ -31,6 +31,13 @@ private:
     void renderText(const std::string& text, int x, int y, SDL_Color color);
     void renderTextCentered(const std::string& text, int centerX, int y, SDL_Color color);
     void renderRect(int x, int y, int w, int h, SDL_Color color);
+    void renderHUDPanel();
+    void renderScore(int score);
+    void renderCombo(int combo);
+    void renderSpecialGauge(int gauge);
+    void renderLives(int lives);
+    void renderNumberImages(const std::string& numberStr, int startX, int y);
+    void renderFallbackBackground();
     
     int gameToScreenX(int gameX) const;
     int gameToScreenY(float gameY) const;
