@@ -5,6 +5,8 @@
 #include "PixelSpriteRenderer.h"
 #include <memory>
 
+#include "../../core/player/Player.h"
+
 class GameSession;
 
 class GameRenderer {
@@ -22,6 +24,10 @@ private:
     SDL_Renderer* renderer;
     AssetManager* assets;
     std::unique_ptr<PixelSpriteRenderer> spriteRenderer;
+
+    std::string getPlayerSpriteName(const Player& player);
+    bool isPlayerMoving(const Player& player);
+    bool isPlayerFacingLeft(const Player& player);
 
     void renderBackground();
     void renderHUD(const GameSession& session);

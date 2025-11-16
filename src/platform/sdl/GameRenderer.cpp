@@ -156,21 +156,42 @@ void GameRenderer::renderPlayer(const GameSession& session) {
     int screenX = gameToScreenX(player.getX()) - 8;
     int screenY = gameToScreenY(player.getY() + 1) - 16;
 
-    if (player.isDamaged()) {
-        spriteRenderer->renderSprite(spriteRenderer->getDamagedSprite(), screenX, screenY, 2);
-        return;
-    }
+    // 프레임 카운터 (static으로 유지)
+    static int frameCounter = 0;
+    frameCounter++;
 
-    if (player.getAction() == PlayerActionType::ATTACK && player.isAttackActiveFrame()) {
-        spriteRenderer->renderSprite(spriteRenderer->getAttackSprite(), screenX, screenY, 2);
-        return;
-    }
+    std::vector<std::pair<std::function<bool()>, std::string>> stateCheckers = {
+        {[&]() { return player.isDamaged(); }, "player_hit"},
+        {[&]() { return player.getAction() == PlayerActionType::DEFEND; },
+         [&]() {
+             int frame = (frameCounter / 30) % 2 + 1; // 30프레임마다 전환
+             return "player_defence_" + std::to_string(frame);
+        }()},
+       {[&]() { return player.isMovingLeft() || player.isMovingRight(); },
+        [&]() {
+            int frame = (frameCounter / 15) % 3 + 1; // 15프레임마다 전환 (더 빠름)
+            return "player_move_" + std::to_string(frame);
+       }()},
+      {[&]() { return player.getAction() == PlayerActionType::ATTACK; },
+       [&]() {
+           int frame = (frameCounter / 20) % 2 + 1; // 20프레임마다 전환
+           return "player_attack_" + std::to_string(frame);
+      }()}
+    };
 
-    spriteRenderer->renderSprite(spriteRenderer->getPlayerSprite(), screenX, screenY, 2);
+    std::string spriteName = "player_idle";
+    std::for_each(stateCheckers.begin(), stateCheckers.end(),
+        [&](const auto& checker) {
+            checker.first() && (spriteName = checker.second, true);
+        });
 
-    if (player.getAction() == PlayerActionType::DEFEND) {
-        renderRect(screenX - 6, screenY + 8, 4, 12, {139, 69, 19, 255});
-    }
+    bool shouldFlip = player.isMovingLeft();
+    SDL_Texture* sprite = assets->getTexture(spriteName);
+
+    SDL_Rect destRect = {screenX, screenY, 32, 32};
+    SDL_RendererFlip flip = shouldFlip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+    sprite && (SDL_RenderCopyEx(renderer, sprite, nullptr, &destRect, 0.0, nullptr, flip), true);
 }
 
 void GameRenderer::renderBuildings(const GameSession& session) {
