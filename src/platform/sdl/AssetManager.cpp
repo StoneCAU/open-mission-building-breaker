@@ -37,6 +37,28 @@ bool AssetManager::loadTextures() {
     std::pmr::vector<std::pair<std::string, std::string>> textureList = {
         {"title", "assets/images/title_samurai.png"},
         {"dojo_bg", "assets/images/dojo_background.png"},
+        {"game_bg", "assets/images/samurai_game_background.png"},
+
+        {"ui_panel", "assets/images/ui_top_panel.png"},
+        {"score_frame", "assets/images/score_frame.png"},
+        {"combo_medal", "assets/images/combo_medal.png"},
+        {"special_gauge", "assets/images/special_gauge_frame.png"},
+        {"gauge_empty", "assets/images/gauge_empty.png"},
+        {"gauge_fill", "assets/images/gauge_fill.png"},
+        {"life_active", "assets/images/life_active.png"},
+        {"life_inactive", "assets/images/life_inactive.png"},
+
+
+        {"number_0", "assets/images/number_0.png"},
+        {"number_1", "assets/images/number_1.png"},
+        {"number_2", "assets/images/number_2.png"},
+        {"number_3", "assets/images/number_3.png"},
+        {"number_4", "assets/images/number_4.png"},
+        {"number_5", "assets/images/number_5.png"},
+        {"number_6", "assets/images/number_6.png"},
+        {"number_7", "assets/images/number_7.png"},
+        {"number_8", "assets/images/number_8.png"},
+        {"number_9", "assets/images/number_9.png"}
     };
 
     for (const auto& [key, path] : textureList) {
