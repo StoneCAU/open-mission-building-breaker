@@ -1,0 +1,37 @@
+#pragma once
+
+#include <SDL2/SDL.h>
+#include "AssetManager.h"
+#include "PixelSpriteRenderer.h"
+#include <memory>
+
+class GameSession;
+
+class GameRenderer {
+public:
+    GameRenderer(SDL_Renderer* renderer, AssetManager* assets);
+
+    void render(const GameSession& session);
+
+private:
+    static constexpr int WINDOW_WIDTH = 800;
+    static constexpr int WINDOW_HEIGHT = 600;
+    static constexpr int TILE_SIZE = 20;
+    static constexpr int HUD_HEIGHT = 80;
+
+    SDL_Renderer* renderer;
+    AssetManager* assets;
+    std::unique_ptr<PixelSpriteRenderer> spriteRenderer;
+
+    void renderBackground();
+    void renderHUD(const GameSession& session);
+    void renderGameArea(const GameSession& session);
+    void renderPlayer(const GameSession& session);
+    void renderBuildings(const GameSession& session);
+    void renderText(const std::string& text, int x, int y, SDL_Color color);
+    void renderTextCentered(const std::string& text, int centerX, int y, SDL_Color color);
+    void renderRect(int x, int y, int w, int h, SDL_Color color);
+    
+    int gameToScreenX(int gameX) const;
+    int gameToScreenY(float gameY) const;
+};
