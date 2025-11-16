@@ -11,15 +11,24 @@
     #include "platform/console/ConsoleInputHandler.h"
 #endif
 
+#include <windows.h>
+
 #include "core/game/Game.h"
 
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+    // 윈도우 콘솔 UTF-8 설정
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    std::locale::global(std::locale(""));
+#endif
+
 #ifdef USE_SDL
-    std::cout << "🎮 SDL2 버전으로 실행합니다!" << std::endl;
+    std::cout << "SDL2 버전으로 실행합니다!" << std::endl;
 
     auto sdlRenderer = std::make_unique<SDLRenderer>();
     if (!sdlRenderer->initialize()) {
-        std::cerr << "❌ SDL2 초기화 실패!" << std::endl;
+        std::cerr << "SDL2 초기화 실패!" << std::endl;
         return 1;
     }
 
@@ -30,7 +39,7 @@ int main(int argc, char* argv[]) {
     game.run();
 
 #else
-    std::cout << "💻 콘솔 버전으로 실행합니다!" << std::endl;
+    std::cout << "콘솔 버전으로 실행합니다!" << std::endl;
 
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
