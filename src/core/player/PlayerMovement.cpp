@@ -1,4 +1,7 @@
 #include "PlayerMovement.h"
+
+#include <iostream>
+
 #include "Player.h"
 #include "../game/GameConfig.h"
 
@@ -12,7 +15,9 @@ PlayerMovement::PlayerMovement(int& x, float& y)
       startX(Player::START_X),
       groundY(static_cast<float>(GameConfig::MAP_GROUND_Y)),
       mapMinX(GameConfig::MAP_MIN_X),
-      mapMaxX(GameConfig::MAP_MAX_X) {}
+      mapMaxX(GameConfig::MAP_MAX_X),
+      movingLeft(false),
+      movingRight(false) {}
 
 void PlayerMovement::reset() {
     x = startX;
@@ -75,10 +80,15 @@ void PlayerMovement::jump() {
 }
 
 void PlayerMovement::handleMovement(InputKey key) {
+    movingLeft = false;
+    movingRight = false;
+
     if (key == InputKey::LEFT && canMoveLeft()) {
+        movingLeft = true;
         --x;
     }
     if (key == InputKey::RIGHT && canMoveRight()) {
+        movingRight = true;
         ++x;
     }
 }
@@ -133,4 +143,12 @@ bool PlayerMovement::isJumping() const {
 
 float PlayerMovement::getVelocityY() const {
     return velocityY;
+}
+
+bool PlayerMovement::isMovingRight() const {
+    return movingRight;
+}
+
+bool PlayerMovement::isMovingLeft() const {
+    return movingLeft;
 }

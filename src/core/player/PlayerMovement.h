@@ -13,10 +13,14 @@ public:
     void handleCollisionWith(float obstacleY, float playerHeight);
     void followObject(float targetY, float targetVelocityY);
     void stopVerticalMovement();
+    void handleMovement(InputKey key);
 
     bool isOnGround() const;
     bool isJumping() const;
     float getVelocityY() const;
+
+    bool isMovingLeft() const;
+    bool isMovingRight() const;
 
 private:
     static constexpr float GRAVITY = 0.1f;
@@ -38,9 +42,11 @@ private:
     int mapMinX;
     int mapMaxX;
 
+    bool movingLeft;
+    bool movingRight;
+
     void jump();
     bool tryJump(InputKey key);
-    void handleMovement(InputKey key);
     void updateJumpCooldown();
     void updateJumpRelease();
 
