@@ -58,7 +58,17 @@ bool AssetManager::loadTextures() {
         {"number_6", "assets/images/number_6.png"},
         {"number_7", "assets/images/number_7.png"},
         {"number_8", "assets/images/number_8.png"},
-        {"number_9", "assets/images/number_9.png"}
+        {"number_9", "assets/images/number_9.png"},
+
+        {"player_idle", "assets/sprites/player/idle.png"},
+        {"player_move_1", "assets/sprites/player/move_1.png"},
+        {"player_move_2", "assets/sprites/player/move_2.png"},
+        {"player_move_3", "assets/sprites/player/move_3.png"},
+        {"player_attack_1", "assets/sprites/player/attack_1.png"},
+        {"player_attack_2", "assets/sprites/player/attack_2.png"},
+        {"player_defence_1", "assets/sprites/player/defence_1.png"},
+        {"player_defence_2", "assets/sprites/player/defence_2.png"},
+        {"player_hit", "assets/sprites/player/hit.png"}
     };
 
     for (const auto& [key, path] : textureList) {
