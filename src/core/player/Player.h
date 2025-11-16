@@ -31,6 +31,8 @@ public:
     bool isDamaged() const;
     bool isAttackActiveFrame() const;
     bool isJumping() const;
+    bool isMovingLeft() const;
+    bool isMovingRight() const;
 
     void handlePhysicsCollision(float obstacleY);
     void attachToBuilding(Building* building);

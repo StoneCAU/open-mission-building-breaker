@@ -131,3 +131,11 @@ void Player::detachFromBuilding() {
 bool Player::isAttachedToBuilding() const {
     return attachment.isAttached();
 }
+
+bool Player::isMovingLeft() const {
+    return movement.isMovingLeft();
+}
+
+bool Player::isMovingRight() const {
+    return movement.isMovingRight();
+}
