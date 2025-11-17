@@ -1,8 +1,6 @@
 #include "SDLInputHandler.h"
 #include <windows.h>
 
-#include "SoundManager.h"
-
 SDLInputHandler::SDLInputHandler()
     : quitRequested(false) {
     initializeKeyMap();
@@ -10,28 +8,31 @@ SDLInputHandler::SDLInputHandler()
 }
 
 void SDLInputHandler::initializeKeyMap() {
-    keyMap[SDL_SCANCODE_LEFT] = InputKey::LEFT;
-    keyMap[SDL_SCANCODE_RIGHT] = InputKey::RIGHT;
-    keyMap[SDL_SCANCODE_UP] = InputKey::JUMP;
-    keyMap[SDL_SCANCODE_DOWN] = InputKey::DEFEND;
-    keyMap[SDL_SCANCODE_Z] = InputKey::ATTACK;
-    keyMap[SDL_SCANCODE_X] = InputKey::ULTIMATE;
-    keyMap[SDL_SCANCODE_RETURN] = InputKey::ENTER;
-    keyMap[SDL_SCANCODE_Q] = InputKey::QUIT;
-    keyMap[SDL_SCANCODE_R] = InputKey::RESTART;
+    keyMap[KEY_LEFT] = InputKey::LEFT;
+    keyMap[KEY_RIGHT] = InputKey::RIGHT;
+    keyMap[KEY_UP] = InputKey::JUMP;
+    keyMap[KEY_DOWN] = InputKey::DEFEND;
+    keyMap[KEY_ATTACK] = InputKey::ATTACK;
+    keyMap[KEY_ULTIMATE] = InputKey::ULTIMATE;
+    keyMap[KEY_ENTER] = InputKey::ENTER;
+    keyMap[KEY_QUIT] = InputKey::QUIT;
+    keyMap[KEY_RESTART] = InputKey::RESTART;
 }
 
 bool SDLInputHandler::pollEvents() {
     SDL_Event event;
+
+    const auto processEvent = [&]() {
+        (event.type == SDL_QUIT) && (quitRequested = true, true);
+        return event.type != SDL_QUIT;
+    };
+
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            quitRequested = true;
-            return false;
-        }
+        !processEvent() && (false, true);
     }
-    
+
     keyboardState = SDL_GetKeyboardState(nullptr);
-    return true;
+    return !quitRequested;
 }
 
 bool SDLInputHandler::shouldQuit() const {
@@ -40,54 +41,65 @@ bool SDLInputHandler::shouldQuit() const {
 
 InputKey SDLInputHandler::getInput() {
     InputKey key = checkCombinedInput();
-    if (key != InputKey::NONE) return key;
-    
-    key = checkDirectionalInput();
-    if (key != InputKey::NONE) return key;
-    
-    return checkGeneralInput();
+    key != InputKey::NONE && (key, true);
+
+    key == InputKey::NONE && (key = checkDirectionalInput(), true);
+    key == InputKey::NONE && (key = checkGeneralInput(), true);
+
+    return key;
 }
 
 InputKey SDLInputHandler::checkCombinedInput() {
-    bool left = keyboardState[SDL_SCANCODE_LEFT];
-    bool right = keyboardState[SDL_SCANCODE_RIGHT];
-    bool up = keyboardState[SDL_SCANCODE_UP];
-    
-    if (left && up) return InputKey::MOVE_LEFT_JUMP;
-    if (right && up) return InputKey::MOVE_RIGHT_JUMP;
-    
-    return InputKey::NONE;
+    InputKey result = InputKey::NONE;
+
+    isCombinationPressed(KEY_LEFT, KEY_UP) && (result = InputKey::MOVE_LEFT_JUMP, true);
+    result == InputKey::NONE && isCombinationPressed(KEY_RIGHT, KEY_UP) && (result = InputKey::MOVE_RIGHT_JUMP, true);
+
+    return result;
 }
 
 InputKey SDLInputHandler::checkDirectionalInput() {
-    if (keyboardState[SDL_SCANCODE_UP]) return InputKey::JUMP;
-    if (keyboardState[SDL_SCANCODE_DOWN]) return InputKey::DEFEND;
-    if (keyboardState[SDL_SCANCODE_LEFT]) return InputKey::LEFT;
-    if (keyboardState[SDL_SCANCODE_RIGHT]) return InputKey::RIGHT;
-    
-    return InputKey::NONE;
+    InputKey result = InputKey::NONE;
+
+    isKeyPressed(KEY_UP) && (result = InputKey::JUMP, true);
+    result == InputKey::NONE && isKeyPressed(KEY_DOWN) && (result = InputKey::DEFEND, true);
+    result == InputKey::NONE && isKeyPressed(KEY_LEFT) && (result = InputKey::LEFT, true);
+    result == InputKey::NONE && isKeyPressed(KEY_RIGHT) && (result = InputKey::RIGHT, true);
+
+    return result;
 }
 
 InputKey SDLInputHandler::checkGeneralInput() {
-    if (keyboardState[SDL_SCANCODE_Z]) return InputKey::ATTACK;
-    if (keyboardState[SDL_SCANCODE_X]) return InputKey::ULTIMATE;
-    if (keyboardState[SDL_SCANCODE_Q]) return InputKey::QUIT;
-    if (keyboardState[SDL_SCANCODE_RETURN]) return InputKey::ENTER;
-    if (keyboardState[SDL_SCANCODE_R]) return InputKey::RESTART;
-    
-    return InputKey::NONE;
+    InputKey result = InputKey::NONE;
+
+    isKeyPressed(KEY_ATTACK) && (result = InputKey::ATTACK, true);
+    result == InputKey::NONE && isKeyPressed(KEY_ULTIMATE) && (result = InputKey::ULTIMATE, true);
+    result == InputKey::NONE && isKeyPressed(KEY_QUIT) && (result = InputKey::QUIT, true);
+    result == InputKey::NONE && isKeyPressed(KEY_ENTER) && (result = InputKey::ENTER, true);
+    result == InputKey::NONE && isKeyPressed(KEY_RESTART) && (result = InputKey::RESTART, true);
+
+    return result;
+}
+
+bool SDLInputHandler::isKeyPressed(SDL_Scancode scancode) const {
+    return keyboardState[scancode];
+}
+
+bool SDLInputHandler::isCombinationPressed(SDL_Scancode key1, SDL_Scancode key2) const {
+    return isKeyPressed(key1) && isKeyPressed(key2);
 }
 
 bool SDLInputHandler::isKeyReleased(int vkCode) {
-    SDL_Scancode scancode;
-    
-    if (vkCode == VK_UP) scancode = SDL_SCANCODE_UP;
-    else if (vkCode == VK_DOWN) scancode = SDL_SCANCODE_DOWN;
-    else return true;
-    
-    return !keyboardState[scancode];
+    SDL_Scancode scancode = mapVirtualKeyToScancode(vkCode);
+
+    return scancode != SDL_SCANCODE_UNKNOWN && !isKeyPressed(scancode);
 }
 
-void SDLInputHandler::playMenuSelectSound() const {
-    SoundManager::playImmediate("menu_select");
+SDL_Scancode SDLInputHandler::mapVirtualKeyToScancode(int vkCode) const {
+    SDL_Scancode result = SDL_SCANCODE_UNKNOWN;
+
+    (vkCode == VK_UP) && (result = KEY_UP, true);
+    (vkCode == VK_DOWN) && (result = KEY_DOWN, true);
+
+    return result;
 }
