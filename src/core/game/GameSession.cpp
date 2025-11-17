@@ -10,7 +10,7 @@ namespace {
     constexpr float UPWARD_VELOCITY_THRESHOLD = -0.1f;
     constexpr float DAMAGE_COLLISION_RANGE = 0.5f;
     constexpr float FALLING_VELOCITY_THRESHOLD = 0.01f;
-    constexpr int ATTACK_GAUGE_REWARD = 10;
+    constexpr int ATTACK_GAUGE_REWARD = 5;
 }
 
 GameSession::GameSession() = default;
