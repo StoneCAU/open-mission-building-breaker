@@ -43,11 +43,12 @@ set(SOURCES
         src/platform/sdl/MenuRenderer.cpp
         src/platform/sdl/GameRenderer.cpp
         src/platform/sdl/GameOverRenderer.cpp
-        src/platform/sdl/PixelSpriteRenderer.cpp
         src/platform/sdl/PlayerAnimationRenderer.cpp
         src/platform/sdl/PlayerAnimationRenderer.h
         src/platform/sdl/HUDRenderer.cpp
         src/platform/sdl/HUDRenderer.h
+        src/platform/sdl/BuildingRenderer.cpp
+        src/platform/sdl/BuildingRenderer.h
 )
 
 if(USE_SDL)
