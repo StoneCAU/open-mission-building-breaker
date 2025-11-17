@@ -44,14 +44,22 @@ private:
 
     static constexpr int SCREEN_HEIGHT = 600;
 
+    static constexpr int GAUGE_MAX_VALUE = 100;
+    static constexpr char DIGIT_MIN = '0';
+    static constexpr char DIGIT_MAX = '9';
+
     void renderScore(int score);
     void renderCombo(int combo);
     void renderSpecialGauge(int gauge);
     void renderLives(int lives);
     void renderNumberImages(const std::string& numberStr, int startX, int y);
+    void renderSingleLifeIcon(int index, int lives, int livesY);
 
     SDL_Rect calculateScoreFrameRect() const;
     SDL_Rect calculateComboMedalRect() const;
     int calculateGaugeY() const;
     int calculateLivesY() const;
+    int calculateGaugeFillWidth(int gauge) const;
+    bool isValidDigit(char c) const;
+    SDL_Texture* getLifeTexture(int index, int lives);
 };

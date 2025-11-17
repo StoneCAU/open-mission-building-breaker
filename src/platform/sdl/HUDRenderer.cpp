@@ -1,4 +1,5 @@
 #include "HUDRenderer.h"
+#include "AssetConfig.h"
 #include "../../core/game/GameSession.h"
 #include "AssetManager.h"
 
@@ -13,7 +14,7 @@ void HUDRenderer::render(const GameSession& session) {
 }
 
 void HUDRenderer::renderScore(int score) {
-    SDL_Texture* scoreFrame = assets->getTexture("score_frame");
+    SDL_Texture* scoreFrame = assets->getTexture(AssetConfig::TEXTURE_SCORE_FRAME);
 
     const auto renderScoreFrame = [&]() {
         SDL_Rect frameRect = calculateScoreFrameRect();
@@ -30,7 +31,7 @@ void HUDRenderer::renderScore(int score) {
 }
 
 void HUDRenderer::renderCombo(int combo) {
-    SDL_Texture* comboMedal = assets->getTexture("combo_medal");
+    SDL_Texture* comboMedal = assets->getTexture(AssetConfig::TEXTURE_COMBO_MEDAL);
 
     const auto renderComboMedal = [&]() {
         SDL_Rect medalRect = calculateComboMedalRect();
@@ -47,8 +48,8 @@ void HUDRenderer::renderCombo(int combo) {
 }
 
 void HUDRenderer::renderSpecialGauge(int gauge) {
-    SDL_Texture* emptyGauge = assets->getTexture("gauge_empty");
-    SDL_Texture* fillGauge = assets->getTexture("gauge_fill");
+    SDL_Texture* emptyGauge = assets->getTexture(AssetConfig::TEXTURE_GAUGE_EMPTY);
+    SDL_Texture* fillGauge = assets->getTexture(AssetConfig::TEXTURE_GAUGE_FILL);
 
     int gaugeY = calculateGaugeY();
 
@@ -58,7 +59,7 @@ void HUDRenderer::renderSpecialGauge(int gauge) {
     };
 
     const auto renderFillGauge = [&]() {
-        int fillWidth = (gauge * GAUGE_WIDTH) / 100;
+        int fillWidth = calculateGaugeFillWidth(gauge);
         SDL_Rect srcRect{0, 0, fillWidth, GAUGE_HEIGHT};
         SDL_Rect dstRect{GAUGE_X, gaugeY, fillWidth, GAUGE_HEIGHT};
         SDL_RenderCopy(renderer, fillGauge, &srcRect, &dstRect);
@@ -69,29 +70,34 @@ void HUDRenderer::renderSpecialGauge(int gauge) {
 }
 
 void HUDRenderer::renderLives(int lives) {
-    SDL_Texture* activeLife = assets->getTexture("life_active");
-    SDL_Texture* inactiveLife = assets->getTexture("life_inactive");
-
     int livesY = calculateLivesY();
 
-    const auto renderAllLives = [&]() {
-        for (int i = 0; i < MAX_LIVES; ++i) {
-            const auto selectTexture = [&]() { return (i < lives) ? activeLife : inactiveLife; };
-            SDL_Texture* lifeTexture = selectTexture();
-            SDL_Rect lifeRect{LIVES_START_X + i * LIVES_SPACING, livesY, LIFE_ICON_SIZE, LIFE_ICON_SIZE};
-            SDL_RenderCopy(renderer, lifeTexture, nullptr, &lifeRect);
-        }
-    };
+    for (int i = 0; i < MAX_LIVES; ++i) {
+        renderSingleLifeIcon(i, lives, livesY);
+    }
+}
 
-    activeLife && inactiveLife && (renderAllLives(), true);
+void HUDRenderer::renderSingleLifeIcon(int index, int lives, int livesY) {
+    SDL_Texture* lifeTexture = getLifeTexture(index, lives);
+
+    lifeTexture && ([&]() {
+        SDL_Rect lifeRect{LIVES_START_X + index * LIVES_SPACING, livesY, LIFE_ICON_SIZE, LIFE_ICON_SIZE};
+        SDL_RenderCopy(renderer, lifeTexture, nullptr, &lifeRect);
+    }(), true);
+}
+
+SDL_Texture* HUDRenderer::getLifeTexture(int index, int lives) {
+    const auto isActiveLife = [&]() { return index < lives; };
+
+    return isActiveLife() ?
+        assets->getTexture(AssetConfig::TEXTURE_LIFE_ACTIVE) :
+        assets->getTexture(AssetConfig::TEXTURE_LIFE_INACTIVE);
 }
 
 void HUDRenderer::renderNumberImages(const std::string& numberStr, int startX, int y) {
     for (int i = 0; i < numberStr.length(); ++i) {
-        const auto isDigit = [&]() { return numberStr[i] >= '0' && numberStr[i] <= '9'; };
-
         const auto renderDigit = [&]() {
-            int digit = numberStr[i] - '0';
+            int digit = numberStr[i] - DIGIT_MIN;
             SDL_Texture* numberTexture = assets->getTexture("number_" + std::to_string(digit));
 
             const auto renderNumberTexture = [&]() {
@@ -102,8 +108,16 @@ void HUDRenderer::renderNumberImages(const std::string& numberStr, int startX, i
             numberTexture && (renderNumberTexture(), true);
         };
 
-        isDigit() && (renderDigit(), true);
+        isValidDigit(numberStr[i]) && (renderDigit(), true);
     }
+}
+
+bool HUDRenderer::isValidDigit(char c) const {
+    return c >= DIGIT_MIN && c <= DIGIT_MAX;
+}
+
+int HUDRenderer::calculateGaugeFillWidth(int gauge) const {
+    return (gauge * GAUGE_WIDTH) / GAUGE_MAX_VALUE;
 }
 
 SDL_Rect HUDRenderer::calculateScoreFrameRect() const {
