@@ -1,4 +1,5 @@
 #include "GameRenderer.h"
+#include "AssetConfig.h"
 #include "PlayerAnimationRenderer.h"
 #include "HUDRenderer.h"
 #include "BuildingRenderer.h"
@@ -21,35 +22,24 @@ GameRenderer::GameRenderer(SDL_Renderer* r, AssetManager* a)
 GameRenderer::~GameRenderer() = default;
 
 void GameRenderer::render(const GameSession& session) {
-    SoundManager::playBGM("game");
+    SoundManager::playBGM(AssetConfig::MUSIC_GAME);
 
     ultimateRenderer->update(session);
     const_cast<GameSession&>(session).clearUltimateFlag();
 
     renderBackground();
     renderGameArea(session);
-
-    const Player& player = session.getPlayer();
-    int centerX = gameToScreenX(player.getX());
-    int centerY = gameToScreenY(player.getY());
-    ultimateRenderer->render(renderer, centerX, centerY);
+    renderUltimateEffect(session);
 
     hudRenderer->render(session);
-
-    const auto renderMessage = [&]() {
-        std::string message = session.messageQueue.getMessage();
-        int messageY = WINDOW_HEIGHT - MESSAGE_Y_OFFSET;
-        renderText(message, MESSAGE_X, messageY, {255, 255, 100, 255});
-    };
-
-    session.messageQueue.hasMessage() && (renderMessage(), true);
+    renderGameMessage(session);
 
     SoundManager::nextFrame();
     SDL_RenderPresent(renderer);
 }
 
 void GameRenderer::renderBackground() {
-    SDL_Texture* bgTexture = assets->getTexture("game_bg");
+    SDL_Texture* bgTexture = assets->getTexture(AssetConfig::TEXTURE_GAME_BG);
 
     const auto renderGameBackground = [&]() {
         SDL_Rect fullScreen{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
@@ -60,9 +50,11 @@ void GameRenderer::renderBackground() {
 }
 
 void GameRenderer::renderFallbackBackground() {
-    SDL_SetRenderDrawColor(renderer, 25, 25, 40, 255);
+    SDL_SetRenderDrawColor(renderer, FALLBACK_BG_COLOR.r, FALLBACK_BG_COLOR.g,
+                           FALLBACK_BG_COLOR.b, FALLBACK_BG_COLOR.a);
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    SDL_SetRenderDrawColor(renderer, GROUND_LINE_COLOR.r, GROUND_LINE_COLOR.g,
+                           GROUND_LINE_COLOR.b, GROUND_LINE_COLOR.a);
     int groundY = gameToScreenY(GameConfig::MAP_GROUND_Y);
     SDL_RenderDrawLine(renderer, 0, groundY, WINDOW_WIDTH, groundY);
 }
@@ -70,6 +62,23 @@ void GameRenderer::renderFallbackBackground() {
 void GameRenderer::renderGameArea(const GameSession& session) {
     renderPlayer(session);
     renderBuildings(session);
+}
+
+void GameRenderer::renderUltimateEffect(const GameSession& session) {
+    const Player& player = session.getPlayer();
+    int centerX = gameToScreenX(player.getX());
+    int centerY = gameToScreenY(player.getY());
+    ultimateRenderer->render(renderer, centerX, centerY);
+}
+
+void GameRenderer::renderGameMessage(const GameSession& session) {
+    const auto renderMessage = [&]() {
+        std::string message = session.messageQueue.getMessage();
+        int messageY = WINDOW_HEIGHT - MESSAGE_Y_OFFSET;
+        renderText(message, MESSAGE_X, messageY, MESSAGE_COLOR);
+    };
+
+    session.messageQueue.hasMessage() && (renderMessage(), true);
 }
 
 void GameRenderer::renderPlayer(const GameSession& session) {
@@ -102,15 +111,15 @@ void GameRenderer::processPlayerActionSounds(const Player& player) {
 
     const auto playAttackSound = [&]() {
         (currentAction == PlayerActionType::ATTACK) &&
-            (SoundManager::playWithCooldown("attack", 15), true);
+            (SoundManager::playWithCooldown(AssetConfig::SOUND_ATTACK, ATTACK_SOUND_COOLDOWN), true);
     };
 
     (currentAction != lastAction) && (playAttackSound(), lastAction = currentAction, true);
 }
 
 void GameRenderer::processPlayerHitSound(const Player& player) {
-    player.isDamaged() && (SoundManager::blockSound("defend", 35),
-                           SoundManager::playWithCooldown("hit", 50), true);
+    player.isDamaged() && (SoundManager::blockSound(AssetConfig::SOUND_DEFEND, DEFEND_BLOCK_FRAMES),
+                           SoundManager::playWithCooldown(AssetConfig::SOUND_HIT, HIT_SOUND_COOLDOWN), true);
 }
 
 void GameRenderer::processBuildingDestroySounds(const GameSession& session) {
@@ -118,7 +127,7 @@ void GameRenderer::processBuildingDestroySounds(const GameSession& session) {
 
     for (const auto& building : buildings) {
         building.isDestroyed() &&
-            (SoundManager::playOnce("building_collapse"), true);
+            (SoundManager::playOnce(AssetConfig::SOUND_BUILDING_COLLAPSE), true);
     }
 }
 
@@ -127,7 +136,7 @@ void GameRenderer::processBuildingReboundSounds(const GameSession& session) {
 
     for (const auto& building : buildings) {
         building.isRebounded() &&
-            (SoundManager::playWithCooldown("defend", 38), true);
+            (SoundManager::playWithCooldown(AssetConfig::SOUND_DEFEND, DEFEND_SOUND_COOLDOWN), true);
     }
 }
 
@@ -164,32 +173,48 @@ int GameRenderer::gameToScreenY(float gameY) const {
 }
 
 void GameRenderer::renderText(const std::string& text, int x, int y, SDL_Color color) {
-    TTF_Font* font = assets->getFont("game");
+    TTF_Font* font = assets->getFont(AssetConfig::FONT_GAME);
 
-    const auto createAndRenderTexture = [&]() {
-        SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+    const auto createAndRenderText = [&]() {
+        SDL_Surface* surface = createTextSurface(text, color, font);
 
-        const auto renderSurface = [&]() {
-            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        const auto processTextSurface = [&]() {
+            SDL_Texture* texture = createTextTexture(surface);
 
-            const auto copyTexture = [&]() {
-                SDL_Rect rect{x, y, surface->w, surface->h};
-                SDL_RenderCopy(renderer, texture, nullptr, &rect);
-                SDL_DestroyTexture(texture);
+            const auto renderAndCleanup = [&]() {
+                renderTextTexture(texture, x, y, surface->w, surface->h);
+                cleanupTextResources(surface, texture);
             };
 
-            texture && (copyTexture(), true);
-            SDL_FreeSurface(surface);
+            texture && (renderAndCleanup(), true);
         };
 
-        surface && (renderSurface(), true);
+        surface && (processTextSurface(), true);
     };
 
-    font && (createAndRenderTexture(), true);
+    font && (createAndRenderText(), true);
+}
+
+SDL_Surface* GameRenderer::createTextSurface(const std::string& text, SDL_Color color, TTF_Font* font) {
+    return TTF_RenderUTF8_Solid(font, text.c_str(), color);
+}
+
+SDL_Texture* GameRenderer::createTextTexture(SDL_Surface* surface) {
+    return SDL_CreateTextureFromSurface(renderer, surface);
+}
+
+void GameRenderer::renderTextTexture(SDL_Texture* texture, int x, int y, int width, int height) {
+    SDL_Rect rect{x, y, width, height};
+    SDL_RenderCopy(renderer, texture, nullptr, &rect);
+}
+
+void GameRenderer::cleanupTextResources(SDL_Surface* surface, SDL_Texture* texture) {
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
 
 void GameRenderer::renderTextCentered(const std::string& text, int centerX, int y, SDL_Color color) {
-    TTF_Font* font = assets->getFont("game");
+    TTF_Font* font = assets->getFont(AssetConfig::FONT_GAME);
 
     const auto calculateAndRender = [&]() {
         int textWidth = 0;

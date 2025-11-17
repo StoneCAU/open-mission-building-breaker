@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <memory>
+#include <SDL_ttf.h>
 
 class AssetManager;
 class PlayerAnimationRenderer;
@@ -38,11 +39,22 @@ private:
     static constexpr int PLAYER_SPRITE_OFFSET_Y = 16;
     static constexpr int GAME_AREA_OFFSET_X = 50;
 
+    static constexpr SDL_Color FALLBACK_BG_COLOR = {25, 25, 40, 255};
+    static constexpr SDL_Color GROUND_LINE_COLOR = {100, 100, 100, 255};
+    static constexpr SDL_Color MESSAGE_COLOR = {255, 255, 100, 255};
+
+    static constexpr int ATTACK_SOUND_COOLDOWN = 15;
+    static constexpr int HIT_SOUND_COOLDOWN = 50;
+    static constexpr int DEFEND_BLOCK_FRAMES = 35;
+    static constexpr int DEFEND_SOUND_COOLDOWN = 38;
+
     void renderBackground();
     void renderFallbackBackground();
     void renderGameArea(const GameSession& session);
     void renderPlayer(const GameSession& session);
     void renderBuildings(const GameSession& session);
+    void renderGameMessage(const GameSession& session);
+    void renderUltimateEffect(const GameSession& session);
 
     void handlePlayerSounds(const Player& player);
     void handleBuildingSounds(const GameSession& session);
@@ -65,5 +77,9 @@ private:
 
     void renderText(const std::string& text, int x, int y, SDL_Color color);
     void renderTextCentered(const std::string& text, int centerX, int y, SDL_Color color);
+    SDL_Surface* createTextSurface(const std::string& text, SDL_Color color, TTF_Font* font);
+    SDL_Texture* createTextTexture(SDL_Surface* surface);
+    void renderTextTexture(SDL_Texture* texture, int x, int y, int width, int height);
+    void cleanupTextResources(SDL_Surface* surface, SDL_Texture* texture);
     void renderRect(int x, int y, int w, int h, SDL_Color color);
 };
