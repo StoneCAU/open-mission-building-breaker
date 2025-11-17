@@ -1,8 +1,8 @@
 #pragma once
 #include <SDL2/SDL.h>
-#include "AssetManager.h"
 #include <string>
 #include "../../interfaces/InputKey.h"
+#include "assets/AssetManager.h"
 
 class MenuRenderer {
 public:

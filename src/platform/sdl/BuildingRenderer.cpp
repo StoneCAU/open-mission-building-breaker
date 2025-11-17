@@ -1,8 +1,7 @@
 #include "BuildingRenderer.h"
-
-#include "AssetConfig.h"
 #include "../../core/building/Building.h"
-#include "AssetManager.h"
+#include "assets/AssetConfig.h"
+#include "assets/AssetManager.h"
 
 BuildingRenderer::BuildingRenderer(SDL_Renderer* renderer, AssetManager* assets)
     : renderer(renderer), assets(assets) {}

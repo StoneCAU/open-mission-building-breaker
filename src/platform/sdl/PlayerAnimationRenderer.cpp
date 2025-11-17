@@ -1,6 +1,6 @@
 #include "PlayerAnimationRenderer.h"
 #include "../../core/player/Player.h"
-#include "AssetManager.h"
+#include "assets/AssetManager.h"
 
 PlayerAnimationRenderer::PlayerAnimationRenderer(AssetManager* assets) : assets(assets) {}
 

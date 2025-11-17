@@ -39,7 +39,7 @@ set(SOURCES
         # Platform - SDL (새로 추가된 파일들)
         src/platform/sdl/SDLRenderer.cpp
         src/platform/sdl/SDLInputHandler.cpp
-        src/platform/sdl/AssetManager.cpp
+        src/platform/sdl/assets/AssetManager.cpp
         src/platform/sdl/MenuRenderer.cpp
         src/platform/sdl/GameRenderer.cpp
         src/platform/sdl/GameOverRenderer.cpp
@@ -49,11 +49,11 @@ set(SOURCES
         src/platform/sdl/HUDRenderer.h
         src/platform/sdl/BuildingRenderer.cpp
         src/platform/sdl/BuildingRenderer.h
-        src/platform/sdl/SoundManager.cpp
-        src/platform/sdl/SoundManager.h
+        src/platform/sdl/assets/SoundManager.cpp
+        src/platform/sdl/assets/SoundManager.h
         src/platform/sdl/UltimateEffectRenderer.cpp
         src/platform/sdl/UltimateEffectRenderer.h
-        src/platform/sdl/AssetConfig.h
+        src/platform/sdl/assets/AssetConfig.h
 )
 
 if(USE_SDL)

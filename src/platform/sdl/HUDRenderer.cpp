@@ -1,7 +1,7 @@
 #include "HUDRenderer.h"
-#include "AssetConfig.h"
 #include "../../core/game/GameSession.h"
-#include "AssetManager.h"
+#include "assets/AssetConfig.h"
+#include "assets/AssetManager.h"
 
 HUDRenderer::HUDRenderer(SDL_Renderer* renderer, AssetManager* assets)
     : renderer(renderer), assets(assets) {}

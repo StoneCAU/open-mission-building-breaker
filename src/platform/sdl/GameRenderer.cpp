@@ -1,15 +1,15 @@
 #include "GameRenderer.h"
-#include "AssetConfig.h"
 #include "PlayerAnimationRenderer.h"
 #include "HUDRenderer.h"
 #include "BuildingRenderer.h"
 #include "UltimateEffectRenderer.h"
-#include "AssetManager.h"
-#include "SoundManager.h"
 #include "../../core/game/GameSession.h"
 #include "../../core/game/GameConfig.h"
 #include "../../core/player/Player.h"
 #include "../../core/building/Building.h"
+#include "assets/AssetConfig.h"
+#include "assets/AssetManager.h"
+#include "assets/SoundManager.h"
 
 GameRenderer::GameRenderer(SDL_Renderer* r, AssetManager* a)
     : renderer(r), assets(a) {
