@@ -19,10 +19,6 @@ private:
     const Uint8* keyboardState;
     bool quitRequested;
 
-    mutable bool enterPressed = false;
-    mutable bool qPressed = false;
-    mutable bool rPressed = false;
-    
     void initializeKeyMap();
     InputKey checkCombinedInput();
     InputKey checkDirectionalInput();

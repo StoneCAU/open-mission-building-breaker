@@ -69,46 +69,11 @@ InputKey SDLInputHandler::checkDirectionalInput() {
 }
 
 InputKey SDLInputHandler::checkGeneralInput() {
-    bool enterCurrent = keyboardState[SDL_SCANCODE_RETURN];
-    bool quitCurrent = keyboardState[SDL_SCANCODE_Q];
-    bool restartCurrent = keyboardState[SDL_SCANCODE_R];
-
-    const auto playEnterSound = [&]() {
-        !enterPressed && (SoundManager::playImmediate("menu_select"), enterPressed = true, true);
-    };
-
-    const auto playQuitSound = [&]() {
-        !qPressed && (SoundManager::playImmediate("menu_select"), qPressed = true, true);
-    };
-
-    const auto playRestartSound = [&]() {
-        !rPressed && (SoundManager::playImmediate("menu_select"), rPressed = true, true);
-    };
-
-    // 키 해제시 플래그 리셋
-    !enterCurrent && (enterPressed = false, true);
-    !quitCurrent && (qPressed = false, true);
-    !restartCurrent && (rPressed = false, true);
-
-    // 키가 눌렸을 때 사운드 재생 및 InputKey 반환
-    if (enterCurrent) {
-        playEnterSound();
-        return InputKey::ENTER;
-    }
-
-    if (quitCurrent) {
-        playQuitSound();
-        return InputKey::QUIT;
-    }
-
-    if (restartCurrent) {
-        playRestartSound();
-        return InputKey::RESTART;
-    }
-
-    // 효과음 없는 게임 키들
     if (keyboardState[SDL_SCANCODE_Z]) return InputKey::ATTACK;
     if (keyboardState[SDL_SCANCODE_X]) return InputKey::ULTIMATE;
+    if (keyboardState[SDL_SCANCODE_Q]) return InputKey::QUIT;
+    if (keyboardState[SDL_SCANCODE_RETURN]) return InputKey::ENTER;
+    if (keyboardState[SDL_SCANCODE_R]) return InputKey::RESTART;
     
     return InputKey::NONE;
 }
