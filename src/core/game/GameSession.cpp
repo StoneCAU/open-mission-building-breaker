@@ -2,6 +2,7 @@
 
 #include "GameConfig.h"
 #include "../building/Building.h"
+#include "../ui/UIMessage.h"
 
 namespace {
     constexpr float PHYSICS_COLLISION_RANGE = 1.0f;

@@ -4,11 +4,11 @@
 
 #include "GameOverDisplayData.h"
 #include "GameStats.h"
-#include "../../platform/console/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
 #include "../../interfaces/InputKey.h"
 #include "../../interfaces/IInputHandler.h"
+#include "../ui/UIMessage.h"
 
 class GameSession {
 public:

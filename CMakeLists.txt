@@ -34,7 +34,7 @@ set(SOURCES
         # Platform - Console
         src/platform/console/ConsoleRenderer.cpp
         src/platform/console/ConsoleInputHandler.cpp
-        src/platform/console/UIMessage.cpp
+        src/core/ui/UIMessage.cpp
 
         # Platform - SDL (새로 추가된 파일들)
         src/platform/sdl/base/SDLRenderer.cpp

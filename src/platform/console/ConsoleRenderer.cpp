@@ -1,7 +1,7 @@
 #include "ConsoleRenderer.h"
 #include <iostream>
 #include <windows.h>
-#include "UIStrings.h"
+#include "../../core//ui/UIStrings.h"
 
 #include "../../core/game/GameConfig.h"
 #include "../../core/game/GameSession.h"
