@@ -6,6 +6,9 @@ MenuRenderer::MenuRenderer(SDL_Renderer* r, AssetManager* a)
     : renderer(r), assets(a) {}
 
 void MenuRenderer::render(int highScore) {
+    static bool menuMusicStarted = false;
+    menuMusicStarted || (Mix_PlayMusic(assets->getMusic("menu"), -1), menuMusicStarted = true);
+
     renderBackground();
     renderTitle();
     renderButtons();
