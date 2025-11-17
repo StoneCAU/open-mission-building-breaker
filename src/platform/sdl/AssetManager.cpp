@@ -64,8 +64,7 @@ bool AssetManager::loadTextures() {
         {"player_move_1", "assets/sprites/player/move_1.png"},
         {"player_move_2", "assets/sprites/player/move_2.png"},
         {"player_move_3", "assets/sprites/player/move_3.png"},
-        {"player_attack_1", "assets/sprites/player/attack_1.png"},
-        {"player_attack_2", "assets/sprites/player/attack_2.png"},
+        {"player_attack", "assets/sprites/player/attack.png"},
         {"player_defence_1", "assets/sprites/player/defence_1.png"},
         {"player_defence_2", "assets/sprites/player/defence_2.png"},
         {"player_hit", "assets/sprites/player/hit.png"}
