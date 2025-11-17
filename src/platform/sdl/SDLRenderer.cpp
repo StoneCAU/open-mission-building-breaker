@@ -120,3 +120,11 @@ void SDLRenderer::shutdown() {
     TTF_Quit();
     SDL_Quit();
 }
+
+void SDLRenderer::handleMenuInput(InputKey key) {
+    menuRenderer->handleInput(key);
+}
+
+void SDLRenderer::handleGameOverInput(InputKey key) {
+    gameOverRenderer->handleInput(key);
+}

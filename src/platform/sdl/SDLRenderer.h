@@ -24,6 +24,9 @@ public:
     void clearScreenFull() override;
     void flushOutput() override;
 
+    void handleMenuInput(InputKey key) override;
+    void handleGameOverInput(InputKey key) override;
+
 private:
     static constexpr int WINDOW_WIDTH = 800;
     static constexpr int WINDOW_HEIGHT = 600;
