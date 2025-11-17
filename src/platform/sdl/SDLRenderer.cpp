@@ -20,6 +20,13 @@ bool SDLRenderer::initialize() {
         return false;
     }
 
+    // 오디오 로딩 확인
+    if (!assetManager->loadAudio()) {
+        std::cerr << "오디오 로딩 실패!" << std::endl;
+        return false;
+    }
+    std::cout << "오디오 로딩 성공!" << std::endl;
+
     menuRenderer = std::make_unique<MenuRenderer>(renderer, assetManager.get());
     gameRenderer = std::make_unique<GameRenderer>(renderer, assetManager.get());
     gameOverRenderer = std::make_unique<GameOverRenderer>(renderer, assetManager.get());
@@ -29,7 +36,7 @@ bool SDLRenderer::initialize() {
 }
 
 bool SDLRenderer::initSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         std::cerr << "SDL 초기화 실패: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -38,6 +45,13 @@ bool SDLRenderer::initSDL() {
         std::cerr << "TTF 초기화 실패: " << TTF_GetError() << std::endl;
         return false;
     }
+
+    // SDL_mixer 초기화 (여기가 핵심!)
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "SDL_mixer 초기화 실패: " << Mix_GetError() << std::endl;
+        return false;
+    }
+    std::cout << "SDL_mixer 초기화 성공!" << std::endl;
 
     window = SDL_CreateWindow("Building Breaker - Pixel Art Edition",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -100,6 +114,7 @@ void SDLRenderer::shutdown() {
         window = nullptr;
     }
 
+    Mix_Quit();
     TTF_Quit();
     SDL_Quit();
 }
