@@ -58,8 +58,8 @@ void GameRenderer::renderFallbackBackground() {
 }
 
 void GameRenderer::renderGameArea(const GameSession& session) {
-    renderBuildings(session);
     renderPlayer(session);
+    renderBuildings(session);
 }
 
 void GameRenderer::renderPlayer(const GameSession& session) {
@@ -77,7 +77,7 @@ void GameRenderer::renderPlayer(const GameSession& session) {
 
     (currentAction != lastAction) && (playAttackSound(), lastAction = currentAction, true);
 
-    player.isDamaged() && (SoundManager::blockSound("defend"),
+    player.isDamaged() && (SoundManager::blockSound("defend", 35),
                            SoundManager::playWithCooldown("hit", 50), true);
 
     playerRenderer->render(renderer, player, screenX, screenY);
@@ -99,7 +99,7 @@ void GameRenderer::renderBuildings(const GameSession& session) {
         };
 
         building.isRebounded() &&
-            (SoundManager::playWithCooldown("defend", 40), true);
+            (SoundManager::playWithCooldown("defend", 38), true);
 
         building.isDestroyed() || (renderSingleBuilding(), true);
     }
