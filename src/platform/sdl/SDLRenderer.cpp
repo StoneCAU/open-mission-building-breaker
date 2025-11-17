@@ -1,8 +1,9 @@
 #include "SDLRenderer.h"
-#include "MenuRenderer.h"
-#include "GameRenderer.h"
-#include "GameOverRenderer.h"
+#include "assets/AssetManager.h"
 #include "assets/SoundManager.h"
+#include "rendering/GameOverRenderer.h"
+#include "rendering/GameRenderer.h"
+#include "rendering/MenuRenderer.h"
 
 SDLRenderer::SDLRenderer()
     : window(nullptr), renderer(nullptr) {}

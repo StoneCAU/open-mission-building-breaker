@@ -1,8 +1,8 @@
 #include "UltimateEffectRenderer.h"
-#include "../../core/game/GameSession.h"
-#include "assets/AssetConfig.h"
-#include "assets/AssetManager.h"
-#include "assets/SoundManager.h"
+#include "../../../core/game/GameSession.h"
+#include "../assets/AssetConfig.h"
+#include "../assets/AssetManager.h"
+#include "../assets/SoundManager.h"
 
 UltimateEffectRenderer::UltimateEffectRenderer(AssetManager* a)
     : assets(a) {}

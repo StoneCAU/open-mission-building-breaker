@@ -1,8 +1,9 @@
 #include "GameOverRenderer.h"
-#include "../../core/game/GameOverDisplayData.h"
-#include "assets/AssetConfig.h"
-#include "assets/AssetManager.h"
-#include "assets/SoundManager.h"
+#include "../../../core/game/GameOverDisplayData.h"
+#include "../../../interfaces/InputKey.h"
+#include "../assets/AssetConfig.h"
+#include "../assets/AssetManager.h"
+#include "../assets/SoundManager.h"
 
 GameOverRenderer::GameOverRenderer(SDL_Renderer* r, AssetManager* a)
     : renderer(r), assets(a) {}

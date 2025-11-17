@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
-#include "../../interfaces/IInputHandler.h"
+#include "../../../interfaces/IInputHandler.h"
 
 class AssetManager;
 struct GameOverDisplayData;

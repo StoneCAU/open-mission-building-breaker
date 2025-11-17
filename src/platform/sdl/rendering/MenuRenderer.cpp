@@ -1,8 +1,9 @@
 #include "MenuRenderer.h"
 
-#include "assets/AssetConfig.h"
-#include "assets/AssetManager.h"
-#include "assets/SoundManager.h"
+#include "../../../interfaces/InputKey.h"
+#include "../assets/AssetConfig.h"
+#include "../assets/AssetManager.h"
+#include "../assets/SoundManager.h"
 
 
 MenuRenderer::MenuRenderer(SDL_Renderer* r, AssetManager* a)

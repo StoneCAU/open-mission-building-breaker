@@ -40,19 +40,19 @@ set(SOURCES
         src/platform/sdl/SDLRenderer.cpp
         src/platform/sdl/SDLInputHandler.cpp
         src/platform/sdl/assets/AssetManager.cpp
-        src/platform/sdl/MenuRenderer.cpp
-        src/platform/sdl/GameRenderer.cpp
-        src/platform/sdl/GameOverRenderer.cpp
-        src/platform/sdl/PlayerAnimationRenderer.cpp
-        src/platform/sdl/PlayerAnimationRenderer.h
-        src/platform/sdl/HUDRenderer.cpp
-        src/platform/sdl/HUDRenderer.h
-        src/platform/sdl/BuildingRenderer.cpp
-        src/platform/sdl/BuildingRenderer.h
+        src/platform/sdl/rendering/MenuRenderer.cpp
+        src/platform/sdl/rendering/GameRenderer.cpp
+        src/platform/sdl/rendering/GameOverRenderer.cpp
+        src/platform/sdl/rendering/PlayerAnimationRenderer.cpp
+        src/platform/sdl/rendering/PlayerAnimationRenderer.h
+        src/platform/sdl/rendering/HUDRenderer.cpp
+        src/platform/sdl/rendering/HUDRenderer.h
+        src/platform/sdl/rendering/BuildingRenderer.cpp
+        src/platform/sdl/rendering/BuildingRenderer.h
         src/platform/sdl/assets/SoundManager.cpp
         src/platform/sdl/assets/SoundManager.h
-        src/platform/sdl/UltimateEffectRenderer.cpp
-        src/platform/sdl/UltimateEffectRenderer.h
+        src/platform/sdl/rendering/UltimateEffectRenderer.cpp
+        src/platform/sdl/rendering/UltimateEffectRenderer.h
         src/platform/sdl/assets/AssetConfig.h
 )
 
