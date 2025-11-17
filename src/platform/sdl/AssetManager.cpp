@@ -67,7 +67,11 @@ bool AssetManager::loadTextures() {
         {"player_attack", "assets/sprites/player/attack.png"},
         {"player_defence_1", "assets/sprites/player/defence_1.png"},
         {"player_defence_2", "assets/sprites/player/defence_2.png"},
-        {"player_hit", "assets/sprites/player/hit.png"}
+        {"player_hit", "assets/sprites/player/hit.png"},
+
+        {"building_top", "assets/sprites/buildings/building_top.png"},
+        {"floor_normal", "assets/sprites/buildings/floor_normal.png"},
+        {"floor_destruction", "assets/sprites/buildings/floor_destruction.png"}
     };
 
     for (const auto& [key, path] : textureList) {
