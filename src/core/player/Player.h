@@ -12,7 +12,7 @@ class Building;
 class Player {
 public:
     static constexpr float HEIGHT = 1.0f;
-    static constexpr float ATTACK_RANGE = 2.0f;
+    static constexpr float ATTACK_RANGE = 4.0f;
     static constexpr float DEFENSE_RANGE = 0.5f;
     static constexpr int START_X = 25;
 
