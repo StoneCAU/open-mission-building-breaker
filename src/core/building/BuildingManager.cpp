@@ -47,7 +47,7 @@ void BuildingManager::addRandomBuilding() {
     int height = Building::MIN_HEIGHT +
                  (std::rand() % (Building::MAX_HEIGHT - Building::MIN_HEIGHT + 1));
 
-    int x = nextSpawnX;
+    int x = std::rand() % (GameConfig::MAP_WIDTH - Building::WIDTH);
     nextSpawnX += Building::WIDTH + SPAWN_X_SPACING;
 
     if (nextSpawnX + Building::WIDTH > GameConfig::MAP_WIDTH) {
