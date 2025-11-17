@@ -42,13 +42,11 @@ void MenuRenderer::renderTitle() {
     int originalW, originalH;
     SDL_QueryTexture(titleTexture, nullptr, nullptr, &originalW, &originalH);
 
-    // 크기 조정 (70%로 적당하게)
     int titleW = (originalW * 5) / 10;
     int titleH = (originalH * 5) / 10;
 
-    // 위치 조정 (중앙 위쪽, 스코어박스와 겹치지 않게)
     int titleX = (800 - titleW) / 2;
-    int titleY = 10;  // 80 → 50으로 더 위로
+    int titleY = 10;
 
     SDL_Rect titleRect = {titleX, titleY, titleW, titleH};
     SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
@@ -69,14 +67,10 @@ void MenuRenderer::renderScoreBox(int highScore) {
 }
 
 void MenuRenderer::renderButtons() {
-    static int timer = 0;
-    timer = (timer + 1) % 80;
-
-    if (timer < 60) {
-        renderTextCentered("PRESS START", 400, 450, "menu", {139, 0, 0, 255});
-    }
+    renderTextCentered("PRESS START", 400, 450, "menu", {139, 0, 0, 255});
     renderTextCentered("Q - QUIT", 400, 480, "menu", {150, 150, 150, 255});
-    renderTextCentered("SAMURAI DOJO", 400, 550, "menu", {100, 100, 100, 255});
+    renderTextCentered("WOOWA TECH COURSE 8TH - OPEN MISSION", 400, 540, "menu", {120, 120, 120, 255});
+    renderTextCentered("MADE BY HONG SEOKWOO", 400, 565, "menu", {110, 110, 110, 255});
 }
 
 void MenuRenderer::renderTextCentered(const std::string& text, int x, int y, const std::string& fontName, SDL_Color color) {
