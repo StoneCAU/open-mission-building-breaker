@@ -17,17 +17,9 @@ Game::~Game() = default;
 
 void Game::run() {
     while (isRunning) {
-        if (state == GameState::MENU) {
-            runMenu();
-        }
-
-        if (state == GameState::PLAYING) {
-            runGame();
-        }
-
-        if (state == GameState::GAME_OVER) {
-            runGameOver();
-        }
+        (state == GameState::MENU) && (runMenu(), true);
+        (state == GameState::PLAYING) && (runGame(), true);
+        (state == GameState::GAME_OVER) && (runGameOver(), true);
     }
 }
 
@@ -56,14 +48,7 @@ void Game::runGameOver() {
 }
 
 void Game::processGameFrame() {
-#ifdef USE_SDL
-    auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
-    if (sdlInput && !sdlInput->pollEvents()) {
-        isRunning = false;
-        state = GameState::MENU;
-        return;
-    }
-#endif
+    if (!pollSDLEvents()) return;
 
     handleFrameInput();
     updateFrameState();
@@ -73,11 +58,9 @@ void Game::processGameFrame() {
 
 void Game::handleFrameInput() {
     InputKey key = inputHandler->getInput();
-    if (key == InputKey::NONE) {
-        return;
+    if (key != InputKey::NONE) {
+        session.handleInput(key);
     }
-
-    session.handleInput(key);
 }
 
 void Game::updateFrameState() {
@@ -95,32 +78,12 @@ void Game::renderFrame() {
 
 void Game::handleMenuInput() {
     while (isRunning && state == GameState::MENU) {
-#ifdef USE_SDL
-        auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
-        if (sdlInput && !sdlInput->pollEvents()) {
-            isRunning = false;
-            return;
-        }
-#endif
+        if (!pollSDLEvents()) return;
 
         InputKey key = inputHandler->getInput();
+        if (key == InputKey::NONE) continue;
 
-        if (key == InputKey::NONE) {
-            continue;
-        }
-
-        renderer->handleMenuInput(key);
-
-        if (key == InputKey::ENTER) {
-            state = GameState::PLAYING;
-            renderer->clearScreen();
-            return;
-        }
-
-        if (key == InputKey::QUIT) {
-            isRunning = false;
-            return;
-        }
+        if (processMenuEvent(key)) return;
     }
 }
 
@@ -139,35 +102,61 @@ void Game::displayGameOverScreen() {
 
 void Game::handleGameOverInput() {
     while (isRunning && state == GameState::GAME_OVER) {
-#ifdef USE_SDL
-        auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
-        if (sdlInput && !sdlInput->pollEvents()) {
-            isRunning = false;
-            return;
-        }
-#endif
+        if (!pollSDLEvents()) return;
 
         InputKey key = inputHandler->getInput();
+        if (key == InputKey::NONE) continue;
 
-        if (key == InputKey::NONE) {
-            continue;
-        }
-
-        renderer->handleGameOverInput(key);
-
-        if (key == InputKey::RESTART) {
-            state = GameState::PLAYING;
-            renderer->clearScreen();
-            return;
-        }
-
-        if (key == InputKey::QUIT) {
-            isRunning = false;
-            return;
-        }
+        if (processGameOverEvent(key)) return;
     }
 }
 
 void Game::onGameOver() {
     state = GameState::GAME_OVER;
+}
+
+
+bool Game::pollSDLEvents() {
+#ifdef USE_SDL
+    auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
+    if (sdlInput && !sdlInput->pollEvents()) {
+        isRunning = false;
+        return false;
+    }
+#endif
+    return true;
+}
+
+bool Game::processMenuEvent(InputKey key) {
+    renderer->handleMenuInput(key);
+
+    if (key == InputKey::ENTER) {
+        state = GameState::PLAYING;
+        renderer->clearScreen();
+        return true;
+    }
+
+    if (key == InputKey::QUIT) {
+        isRunning = false;
+        return true;
+    }
+
+    return false;
+}
+
+bool Game::processGameOverEvent(InputKey key) {
+    renderer->handleGameOverInput(key);
+
+    if (key == InputKey::RESTART) {
+        state = GameState::PLAYING;
+        renderer->clearScreen();
+        return true;
+    }
+
+    if (key == InputKey::QUIT) {
+        isRunning = false;
+        return true;
+    }
+
+    return false;
 }

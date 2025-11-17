@@ -43,4 +43,8 @@ private:
     void displayGameOverScreen();
     void handleGameOverInput();
     void onGameOver();
+
+    bool pollSDLEvents();
+    bool processMenuEvent(InputKey key);
+    bool processGameOverEvent(InputKey key);
 };
