@@ -197,8 +197,8 @@ C++은 PS(Problem Solving) 문제 풀이에서는 자주 사용했지만, **실�
 ### 테마: 사무라이 도장
 
 - 🏯 **일본 전통 건축물**: 기와지붕, 목재 층
-- 🥋 **사무라이 캐릭터**: 9프레임 스프라이트 애니메이션
-- 🎨 **레트로 픽셀 아트**: 480x360 해상도의 고전 게임 감성
+- 🥋 **사무라이 캐릭터**: 10프레임 스프라이트 애니메이션
+- 🎨 **레트로 픽셀 아트**: 800x600 해상도의 고전 게임 감성
 - 🎵 **테마 BGM**: 일본풍 배경음악 및 효과음
 
 ---
@@ -206,26 +206,34 @@ C++은 PS(Problem Solving) 문제 풀이에서는 자주 사용했지만, **실�
 ## 📂 프로젝트 구조
 ```
 src/
+├── main.cpp
 ├── core/                      # 게임 로직 (플랫폼 독립적)
+│   ├── building/
+│   │   ├── Building.cpp
+│   │   ├── BuildingManager.cpp
+│   │   └── Floor.cpp
 │   ├── game/
 │   │   ├── Game.cpp          # 메인 게임 루프
+│   │   ├── GameConfig.h
+│   │   ├── GameOverDisplayData.h
 │   │   ├── GameSession.cpp   # 게임 상태 관리
-│   │   └── GameStats.cpp     # 점수/콤보/게이지
+│   │   ├── GameStats.cpp     # 점수/콤보/게이지
+│   │   └── ScoreManager.cpp
 │   ├── player/
+│   │   ├── CollisionResult.h
 │   │   ├── Player.cpp
-│   │   ├── PlayerMovement.cpp
 │   │   ├── PlayerAction.cpp
-│   │   └── PlayerCollision.cpp
-│   └── building/
-│       ├── Building.cpp
-│       ├── BuildingManager.cpp
-│       └── Floor.cpp
-├── core/ui/                   # UI 메시지 시스템
-│   ├── UIMessage.cpp
-│   └── UIStrings.h
+│   │   ├── PlayerActionType.h
+│   │   ├── PlayerAttachment.cpp
+│   │   ├── PlayerCollision.cpp
+│   │   └── PlayerMovement.cpp
+│   └── ui/                    # UI 메시지 시스템
+│       ├── UIMessage.cpp
+│       └── UIStrings.h
 ├── interfaces/                # 추상화 계층
-│   ├── IRenderer.h
-│   └── IInputHandler.h
+│   ├── IInputHandler.h
+│   ├── InputKey.h
+│   └── IRenderer.h
 └── platform/
     ├── console/               # 콘솔 구현체
     │   ├── ConsoleRenderer.cpp
@@ -235,11 +243,15 @@ src/
         │   ├── SDLRenderer.cpp
         │   └── SDLInputHandler.cpp
         ├── rendering/
-        │   ├── MenuRenderer.cpp
+        │   ├── BuildingRenderer.cpp
+        │   ├── GameOverRenderer.cpp
         │   ├── GameRenderer.cpp
         │   ├── HUDRenderer.cpp
-        │   └── PlayerAnimationRenderer.cpp
+        │   ├── MenuRenderer.cpp
+        │   ├── PlayerAnimationRenderer.cpp
+        │   └── UltimateEffectRenderer.cpp
         └── assets/
+            ├── AssetConfig.h
             ├── AssetManager.cpp
             └── SoundManager.cpp
 ```
@@ -257,7 +269,7 @@ src/
 ### 빌드
 ```bash
 # 1. 저장소 클론
-git clone https://github.com/seokwoo-jung/building-breaker.git
+git clone https://github.com/StoneCAU/open-mission-building-breaker.git
 cd building-breaker
 
 # 2. SDL2 버전 빌드
