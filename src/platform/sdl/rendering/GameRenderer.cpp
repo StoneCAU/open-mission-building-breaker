@@ -103,6 +103,7 @@ void GameRenderer::handlePlayerSounds(const Player& player) {
 void GameRenderer::handleBuildingSounds(const GameSession& session) {
     processBuildingDestroySounds(session);
     processBuildingReboundSounds(session);
+    processFloorDestroySounds(session);
 }
 
 void GameRenderer::processPlayerActionSounds(const Player& player) {
@@ -137,6 +138,17 @@ void GameRenderer::processBuildingReboundSounds(const GameSession& session) {
     for (const auto& building : buildings) {
         building.isRebounded() &&
             (SoundManager::playWithCooldown(AssetConfig::SOUND_DEFEND, DEFEND_SOUND_COOLDOWN), true);
+    }
+}
+
+void GameRenderer::processFloorDestroySounds(const GameSession& session) {
+    const auto& buildings = session.getBuildingManager().getAll();
+
+    for (const auto& building : buildings) {
+        for (const auto& floor : building.getFloors()) {
+            floor.isDestroyed() &&
+                (SoundManager::playOnce(AssetConfig::SOUND_FLOOR_BREAK), true);
+        }
     }
 }
 

@@ -62,6 +62,7 @@ private:
     void processPlayerHitSound(const Player& player);
     void processBuildingDestroySounds(const GameSession& session);
     void processBuildingReboundSounds(const GameSession& session);
+    void processFloorDestroySounds(const GameSession& session);
 
     struct PlayerRenderData {
         int screenX;
