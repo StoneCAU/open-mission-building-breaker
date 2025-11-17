@@ -12,6 +12,12 @@ AssetManager::~AssetManager() {
     for (auto& [name, texture] : textures) {
         SDL_DestroyTexture(texture);
     }
+    for (auto& [name, bgm] : music) {
+        Mix_FreeMusic(bgm);
+    }
+    for (auto& [name, sound] : sounds) {
+        Mix_FreeChunk(sound);
+    }
 }
 
 bool AssetManager::loadFonts() {
@@ -99,6 +105,18 @@ bool AssetManager::loadSingleTexture(const std::string& key, const std::string& 
     return false;
 }
 
+bool AssetManager::loadAudio() {
+    Mix_Music* menuMusic = Mix_LoadMUS("assets/audio/bgm/menu_bgm.mp3");
+    Mix_Music* gameMusic = Mix_LoadMUS("assets/audio/bgm/game_bgm.mp3");
+    Mix_Music* gameoverMusic = Mix_LoadMUS("assets/audio/bgm/gameover_bgm.mp3");
+
+    menuMusic && (music["menu"] = menuMusic, true);
+    gameMusic && (music["game"] = gameMusic, true);
+    gameoverMusic && (music["gameover"] = gameoverMusic, true);
+
+    return menuMusic && gameMusic && gameoverMusic;
+}
+
 TTF_Font* AssetManager::getFont(const std::string& name) {
     auto it = fonts.find(name);
     return (it != fonts.end()) ? it->second : nullptr;
@@ -107,4 +125,14 @@ TTF_Font* AssetManager::getFont(const std::string& name) {
 SDL_Texture* AssetManager::getTexture(const std::string& name) {
     auto it = textures.find(name);
     return (it != textures.end()) ? it->second : nullptr;
+}
+
+Mix_Music* AssetManager::getMusic(const std::string& name) {
+    auto it = music.find(name);
+    return (it != music.end()) ? it->second : nullptr;
+}
+
+Mix_Chunk* AssetManager::getSound(const std::string& name) {
+    auto it = sounds.find(name);
+    return (it != sounds.end()) ? it->second : nullptr;
 }
