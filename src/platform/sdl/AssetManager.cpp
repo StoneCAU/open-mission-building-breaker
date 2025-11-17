@@ -39,13 +39,27 @@ bool AssetManager::loadFonts() {
 }
 
 bool AssetManager::loadTextures() {
-    // 텍스처 목록 정의
-    std::pmr::vector<std::pair<std::string, std::string>> textureList = {
+    return loadBackgroundTextures() &&
+           loadUITextures() &&
+           loadNumberTextures() &&
+           loadPlayerTextures() &&
+           loadBuildingTextures();
+}
+
+bool AssetManager::loadBackgroundTextures() {
+    const std::vector<std::pair<std::string, std::string>> backgroundTextures = {
         {"title", "assets/images/title_samurai.png"},
         {"dojo_bg", "assets/images/dojo_background.png"},
         {"game_bg", "assets/images/samurai_game_background.png"},
-        {"game_over_bg", "assets/images/game_over_background.png"},
+        {"game_over_bg", "assets/images/game_over_background.png"}
+    };
 
+    loadTextureGroup(backgroundTextures);
+    return true;
+}
+
+bool AssetManager::loadUITextures() {
+    const std::vector<std::pair<std::string, std::string>> uiTextures = {
         {"ui_panel", "assets/images/ui_top_panel.png"},
         {"score_frame", "assets/images/score_frame.png"},
         {"combo_medal", "assets/images/combo_medal.png"},
@@ -54,8 +68,15 @@ bool AssetManager::loadTextures() {
         {"gauge_fill", "assets/images/gauge_fill.png"},
         {"life_active", "assets/images/life_active.png"},
         {"life_inactive", "assets/images/life_inactive.png"},
-        {"hurricane_effect", "assets/images/hurricane_effect.png"},
+        {"hurricane_effect", "assets/images/hurricane_effect.png"}
+    };
 
+    loadTextureGroup(uiTextures);
+    return true;
+}
+
+bool AssetManager::loadNumberTextures() {
+    const std::vector<std::pair<std::string, std::string>> numberTextures = {
         {"number_0", "assets/images/number_0.png"},
         {"number_1", "assets/images/number_1.png"},
         {"number_2", "assets/images/number_2.png"},
@@ -65,8 +86,15 @@ bool AssetManager::loadTextures() {
         {"number_6", "assets/images/number_6.png"},
         {"number_7", "assets/images/number_7.png"},
         {"number_8", "assets/images/number_8.png"},
-        {"number_9", "assets/images/number_9.png"},
+        {"number_9", "assets/images/number_9.png"}
+    };
 
+    loadTextureGroup(numberTextures);
+    return true;
+}
+
+bool AssetManager::loadPlayerTextures() {
+    const std::vector<std::pair<std::string, std::string>> playerTextures = {
         {"player_idle", "assets/sprites/player/idle.png"},
         {"player_move_1", "assets/sprites/player/move_1.png"},
         {"player_move_2", "assets/sprites/player/move_2.png"},
@@ -74,18 +102,28 @@ bool AssetManager::loadTextures() {
         {"player_attack", "assets/sprites/player/attack.png"},
         {"player_defence_1", "assets/sprites/player/defence_1.png"},
         {"player_defence_2", "assets/sprites/player/defence_2.png"},
-        {"player_hit", "assets/sprites/player/hit.png"},
+        {"player_hit", "assets/sprites/player/hit.png"}
+    };
 
+    loadTextureGroup(playerTextures);
+    return true;
+}
+
+bool AssetManager::loadBuildingTextures() {
+    const std::vector<std::pair<std::string, std::string>> buildingTextures = {
         {"building_top", "assets/sprites/buildings/building_top.png"},
         {"floor_normal", "assets/sprites/buildings/floor_normal.png"},
         {"floor_destruction", "assets/sprites/buildings/floor_destruction.png"}
     };
 
+    loadTextureGroup(buildingTextures);
+    return true;
+}
+
+void AssetManager::loadTextureGroup(const std::vector<std::pair<std::string, std::string>>& textureList) {
     for (const auto& [key, path] : textureList) {
         loadSingleTexture(key, path);
     }
-
-    return true;
 }
 
 bool AssetManager::loadSingleTexture(const std::string& key, const std::string& path) {

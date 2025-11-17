@@ -4,6 +4,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 class AssetManager {
 public:
@@ -31,5 +32,12 @@ private:
     static constexpr int GAME_FONT_SIZE = 20;
     static constexpr int FALLBACK_GAME_FONT_SIZE = 14;
 
+    bool loadBackgroundTextures();
+    bool loadUITextures();
+    bool loadNumberTextures();
+    bool loadPlayerTextures();
+    bool loadBuildingTextures();
+
     bool loadSingleTexture(const std::string& key, const std::string& path);
+    void loadTextureGroup(const std::vector<std::pair<std::string, std::string>>& textureList);
 };
