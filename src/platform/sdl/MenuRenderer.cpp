@@ -18,6 +18,11 @@ void MenuRenderer::render(int highScore) {
     SDL_RenderPresent(renderer);
 }
 
+void MenuRenderer::handleInput(InputKey key) {
+    (key == InputKey::ENTER || key == InputKey::QUIT) &&
+        (SoundManager::playImmediate("menu_select"), true);
+}
+
 void MenuRenderer::renderBackground() {
     SDL_Texture* bgTexture = assets->getTexture("dojo_bg");
     if (bgTexture) {

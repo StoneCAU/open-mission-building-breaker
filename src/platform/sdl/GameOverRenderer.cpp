@@ -45,6 +45,11 @@ void GameOverRenderer::render(const GameOverDisplayData& data) {
     SDL_RenderPresent(renderer);
 }
 
+void GameOverRenderer::handleInput(InputKey key) {
+    (key == InputKey::RESTART || key == InputKey::QUIT) &&
+        (SoundManager::playImmediate("menu_select"), true);
+}
+
 void GameOverRenderer::renderTextCentered(const std::string& text, int x, int y, SDL_Color color) {
     TTF_Font* font = assets->getFont("game");
 
