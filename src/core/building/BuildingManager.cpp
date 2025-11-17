@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <unordered_set>
 
 #include "../game/GameConfig.h"
 
@@ -167,8 +168,15 @@ void BuildingManager::handleSpawn() {
 }
 
 bool BuildingManager::shouldRemoveBuilding(const Building& b) const {
+    static std::unordered_set<const Building*> destroyedLastFrame;
+
     if (b.isDestroyed()) {
-        return true;
+        if (destroyedLastFrame.count(&b)) {
+            destroyedLastFrame.erase(&b);
+            return true;
+        }
+        destroyedLastFrame.insert(&b);
+        return false;
     }
 
     bool tooFarDown = b.getBottomY() > GameConfig::MAP_GROUND_Y + OFFSCREEN_BOTTOM_THRESHOLD;

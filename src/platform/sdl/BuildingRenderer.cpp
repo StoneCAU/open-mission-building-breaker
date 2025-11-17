@@ -1,6 +1,7 @@
 #include "BuildingRenderer.h"
 #include "../../core/building/Building.h"
 #include "AssetManager.h"
+#include "SoundManager.h"
 
 BuildingRenderer::BuildingRenderer(SDL_Renderer* renderer, AssetManager* assets)
     : renderer(renderer), assets(assets) {}
@@ -18,6 +19,8 @@ void BuildingRenderer::renderFloor(const Building& building, int floorIndex, int
     std::string spriteName = getFloorSpriteName(building, floorIndex);
     SDL_Texture* texture = assets->getTexture(spriteName);
 
+    (spriteName == "floor_destruction") && (SoundManager::playOnce("floor_break"), true);
+
     const auto renderFloorTexture = [&]() {
         int spriteWidth = Building::WIDTH * PIXELS_PER_WIDTH_UNIT;
         SDL_Rect destRect{screenX, screenY, spriteWidth, FLOOR_HEIGHT};
@@ -26,7 +29,6 @@ void BuildingRenderer::renderFloor(const Building& building, int floorIndex, int
 
     texture && (renderFloorTexture(), true);
 }
-
 std::string BuildingRenderer::getFloorSpriteName(const Building& building, int floorIndex) const {
     const auto renderLines = building.getRenderLines();
 
