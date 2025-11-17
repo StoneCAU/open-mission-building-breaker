@@ -18,7 +18,21 @@ void GameStats::reset() {
 }
 
 void GameStats::addScore(int value) {
-    score += value;
+    float comboMultiplier = calculateComboMultiplier();
+    int finalScore = static_cast<int>(value * comboMultiplier);
+    score += finalScore;
+}
+
+float GameStats::calculateComboMultiplier() const {
+    if (combo <= 1) return COMBO_MULTIPLIER_BASE;
+    if (combo <= COMBO_TIER_LOW) return COMBO_MULTIPLIER_LOW;
+    if (combo <= COMBO_TIER_MID) return COMBO_MULTIPLIER_MID;
+    return COMBO_MULTIPLIER_HIGH;
+}
+
+int GameStats::getComboScore(int baseScore) const {
+    float multiplier = calculateComboMultiplier();
+    return static_cast<int>(baseScore * multiplier);
 }
 
 int GameStats::getScore() const {
