@@ -42,6 +42,25 @@ private:
     static bool bgmLoop;
     static float bgmVolume;
 
+    static constexpr int MAX_AUDIO_CHANNELS = 32;
+    static constexpr int SDL_VOLUME_MAX = 128;
+    static constexpr int INFINITE_LOOP = -1;
+    static constexpr int NO_LOOP = 0;
+    static constexpr int ANY_CHANNEL = -1;
+    static constexpr float DEFAULT_BGM_VOLUME = 0.5f;
+    static constexpr float DEFAULT_GLOBAL_VOLUME = 1.0f;
+
     static bool canPlaySound(const std::string& soundName, int cooldownFrames);
     static void playSound(const std::string& soundName);
+
+    static bool shouldPlayBGM(const std::string& bgmName);
+    static bool isSameBGMPlaying(const std::string& bgmName);
+    static void stopCurrentBGM();
+    static bool loadAndPlayBGM(const std::string& bgmName, bool loop);
+    static void updateBGMSettings(const std::string& bgmName, bool loop);
+
+    static void processBlockedSound(const std::string& soundName, int frameLimit);
+    static bool isBlockExpired(int frameLimit);
+
+    static int calculateSDLVolume(float volume);
 };

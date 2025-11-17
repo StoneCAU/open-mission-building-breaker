@@ -1,5 +1,4 @@
 #include "SoundManager.h"
-#include <iostream>
 #include "AssetManager.h"
 
 AssetManager* SoundManager::assets = nullptr;
@@ -9,17 +8,17 @@ std::set<std::string> SoundManager::blockedSounds;
 std::map<std::string, int> SoundManager::blockedUntilFrame;
 int SoundManager::currentFrame = 0;
 bool SoundManager::soundEnabled = true;
-float SoundManager::globalVolume = 1.0f;
+float SoundManager::globalVolume = DEFAULT_GLOBAL_VOLUME;
 bool SoundManager::initialized = false;
 
 std::string SoundManager::currentBGM = "";
 bool SoundManager::bgmLoop = true;
-float SoundManager::bgmVolume = 0.5f;
+float SoundManager::bgmVolume = DEFAULT_BGM_VOLUME;
 
 void SoundManager::initialize(AssetManager* a) {
     assets = a;
     initialized = true;
-    Mix_AllocateChannels(32);
+    Mix_AllocateChannels(MAX_AUDIO_CHANNELS);
 }
 
 void SoundManager::shutdown() {
@@ -63,11 +62,12 @@ void SoundManager::playWithCooldown(const std::string& soundName, int cooldownFr
 }
 
 void SoundManager::playImmediate(const std::string& soundName) {
-    if (!initialized || !soundEnabled) return;
-    
-    if (blockedSounds.find(soundName) != blockedSounds.end()) return;
+    const auto canPlayImmediate = [&]() {
+        return initialized && soundEnabled &&
+               blockedSounds.find(soundName) == blockedSounds.end();
+    };
 
-    playSound(soundName);
+    canPlayImmediate() && (playSound(soundName), true);
 }
 
 void SoundManager::blockSound(const std::string& soundName, int frames) {
@@ -77,34 +77,71 @@ void SoundManager::blockSound(const std::string& soundName, int frames) {
 
 void SoundManager::clearBlocks() {
     auto it = blockedUntilFrame.begin();
-    while (it != blockedUntilFrame.end()) {
-        if (currentFrame >= it->second) {
-            blockedSounds.erase(it->first);
-            it = blockedUntilFrame.erase(it);
-        } else {
-            ++it;
-        }
-    }
+
+    const auto processNextBlock = [&]() {
+        const auto& [soundName, frameLimit] = *it;
+        processBlockedSound(soundName, frameLimit);
+        return it != blockedUntilFrame.end();
+    };
+
+    it != blockedUntilFrame.end() && (processNextBlock(), true);
+}
+
+void SoundManager::processBlockedSound(const std::string& soundName, int frameLimit) {
+    auto it = blockedUntilFrame.find(soundName);
+
+    const auto removeExpiredBlock = [&]() {
+        blockedSounds.erase(soundName);
+        blockedUntilFrame.erase(it);
+    };
+
+    const auto moveToNext = [&]() {
+        ++it;
+    };
+
+    isBlockExpired(frameLimit) && (removeExpiredBlock(), true) || (moveToNext(), true);
+}
+
+bool SoundManager::isBlockExpired(int frameLimit) {
+    return currentFrame >= frameLimit;
 }
 
 void SoundManager::playBGM(const std::string& bgmName, bool loop) {
-    if (!initialized || !assets) return;
+    const auto processBGMRequest = [&]() {
+        stopCurrentBGM();
+        loadAndPlayBGM(bgmName, loop) && (updateBGMSettings(bgmName, loop), true);
+    };
 
-    if (currentBGM == bgmName && Mix_PlayingMusic()) {
-        return;
-    }
+    shouldPlayBGM(bgmName) && (processBGMRequest(), true);
+}
 
+bool SoundManager::shouldPlayBGM(const std::string& bgmName) {
+    return initialized && assets && !isSameBGMPlaying(bgmName);
+}
+
+bool SoundManager::isSameBGMPlaying(const std::string& bgmName) {
+    return currentBGM == bgmName && Mix_PlayingMusic();
+}
+
+void SoundManager::stopCurrentBGM() {
     Mix_HaltMusic();
+}
 
+bool SoundManager::loadAndPlayBGM(const std::string& bgmName, bool loop) {
     Mix_Music* music = assets->getMusic(bgmName);
-    if (!music) {
-        return;
-    }
 
+    const auto playMusic = [&]() {
+        int loopCount = loop ? INFINITE_LOOP : NO_LOOP;
+        Mix_PlayMusic(music, loopCount);
+        Mix_VolumeMusic(calculateSDLVolume(bgmVolume));
+    };
+
+    return music && (playMusic(), true);
+}
+
+void SoundManager::updateBGMSettings(const std::string& bgmName, bool loop) {
     currentBGM = bgmName;
     bgmLoop = loop;
-    Mix_PlayMusic(music, loop ? -1 : 0);
-    Mix_VolumeMusic(static_cast<int>(128 * bgmVolume));
 }
 
 void SoundManager::stopBGM() {
@@ -114,7 +151,7 @@ void SoundManager::stopBGM() {
 
 void SoundManager::setBGMVolume(float volume) {
     bgmVolume = volume;
-    Mix_VolumeMusic(static_cast<int>(128 * bgmVolume));
+    Mix_VolumeMusic(calculateSDLVolume(bgmVolume));
 }
 
 bool SoundManager::isBGMPlaying() {
@@ -123,12 +160,14 @@ bool SoundManager::isBGMPlaying() {
 
 void SoundManager::nextFrame() {
     playedThisFrame.clear();
-    clearBlocks();  // 시간 기반 차단 해제
+    clearBlocks();
     currentFrame++;
 
-    if (bgmLoop && !Mix_PlayingMusic() && !currentBGM.empty()) {
+    const auto restartBGM = [&]() {
         playBGM(currentBGM, true);
-    }
+    };
+
+    bgmLoop && !Mix_PlayingMusic() && !currentBGM.empty() && (restartBGM(), true);
 }
 
 void SoundManager::setEnabled(bool enabled) {
@@ -137,7 +176,7 @@ void SoundManager::setEnabled(bool enabled) {
 
 void SoundManager::setVolume(float volume) {
     globalVolume = volume;
-    Mix_Volume(-1, static_cast<int>(128 * globalVolume));
+    Mix_Volume(ANY_CHANNEL, calculateSDLVolume(globalVolume));
 }
 
 bool SoundManager::canPlaySound(const std::string& soundName, int cooldownFrames) {
@@ -146,10 +185,19 @@ bool SoundManager::canPlaySound(const std::string& soundName, int cooldownFrames
 }
 
 void SoundManager::playSound(const std::string& soundName) {
-    if (!assets) return;
+    const auto playAudioChunk = [&]() {
+        Mix_Chunk* sound = assets->getSound(soundName);
 
-    Mix_Chunk* sound = assets->getSound(soundName);
-    if (!sound) return;
+        const auto playOnChannel = [&]() {
+            Mix_PlayChannel(ANY_CHANNEL, sound, NO_LOOP);
+        };
 
-    Mix_PlayChannel(-1, sound, 0);
+        sound && (playOnChannel(), true);
+    };
+
+    assets && (playAudioChunk(), true);
+}
+
+int SoundManager::calculateSDLVolume(float volume) {
+    return static_cast<int>(SDL_VOLUME_MAX * volume);
 }
