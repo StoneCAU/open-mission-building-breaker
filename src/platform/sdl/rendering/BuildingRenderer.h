@@ -15,8 +15,8 @@ private:
     SDL_Renderer* renderer;
     AssetManager* assets;
 
-    static constexpr int PIXELS_PER_WIDTH_UNIT = 8;
-    static constexpr int FLOOR_HEIGHT = 12;
+    static constexpr int PIXELS_PER_WIDTH_UNIT = 20;
+    static constexpr int FLOOR_HEIGHT = 20;
     static constexpr char DESTRUCTION_MARKER = '*';
 
     void renderFloor(const Building& building, int floorIndex, int screenX, int screenY);

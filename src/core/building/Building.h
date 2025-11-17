@@ -6,7 +6,7 @@
 
 class Building {
 public:
-    static constexpr int WIDTH = 6;
+    static constexpr int WIDTH = 5;
     static constexpr int MIN_HEIGHT = 5;
     static constexpr int MAX_HEIGHT = 8;
 
