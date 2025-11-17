@@ -3,6 +3,7 @@
 #include "HUDRenderer.h"
 #include "BuildingRenderer.h"
 #include "AssetManager.h"
+#include "SoundManager.h"
 #include "../../core/game/GameSession.h"
 #include "../../core/game/GameConfig.h"
 #include "../../core/player/Player.h"
@@ -33,6 +34,8 @@ void GameRenderer::render(const GameSession& session) {
     };
 
     session.messageQueue.hasMessage() && (renderMessage(), true);
+
+    SoundManager::nextFrame();
     SDL_RenderPresent(renderer);
 }
 
@@ -65,6 +68,19 @@ void GameRenderer::renderPlayer(const GameSession& session) {
     int screenX = gameToScreenX(player.getX()) - 8;
     int screenY = gameToScreenY(player.getY() + 1) - 16;
 
+    static PlayerActionType lastAction = PlayerActionType::IDLE;
+    PlayerActionType currentAction = player.getAction();
+
+    const auto playAttackSound = [&]() {
+        (currentAction == PlayerActionType::ATTACK) &&
+            (SoundManager::playWithCooldown("attack", 15), true);
+    };
+
+    (currentAction != lastAction) && (playAttackSound(), lastAction = currentAction, true);
+
+    player.isDamaged() && (SoundManager::blockSound("defend"),
+                           SoundManager::playWithCooldown("hit", 50), true);
+
     playerRenderer->render(renderer, player, screenX, screenY);
 }
 
@@ -72,12 +88,19 @@ void GameRenderer::renderBuildings(const GameSession& session) {
     const auto& buildings = session.getBuildingManager().getAll();
 
     for (const auto& building : buildings) {
+        building.isDestroyed() &&
+            (SoundManager::playOnce("building_collapse"), true);
+    }
+
+    for (const auto& building : buildings) {
         const auto renderSingleBuilding = [&]() {
             int baseX = gameToScreenX(building.getX());
             int baseY = gameToScreenY(building.getY());
-
             buildingRenderer->renderBuilding(building, baseX, baseY);
         };
+
+        building.isRebounded() &&
+            (SoundManager::playWithCooldown("defend", 40), true);
 
         building.isDestroyed() || (renderSingleBuilding(), true);
     }

@@ -5,6 +5,8 @@
 #include "GameOverRenderer.h"
 #include <iostream>
 
+#include "SoundManager.h"
+
 SDLRenderer::SDLRenderer()
     : window(nullptr), renderer(nullptr) {}
 
@@ -25,8 +27,8 @@ bool SDLRenderer::initialize() {
         std::cerr << "오디오 로딩 실패!" << std::endl;
         return false;
     }
-    std::cout << "오디오 로딩 성공!" << std::endl;
 
+    SoundManager::initialize(assetManager.get());
     menuRenderer = std::make_unique<MenuRenderer>(renderer, assetManager.get());
     gameRenderer = std::make_unique<GameRenderer>(renderer, assetManager.get());
     gameOverRenderer = std::make_unique<GameOverRenderer>(renderer, assetManager.get());

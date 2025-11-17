@@ -1,4 +1,6 @@
 #include "GameOverRenderer.h"
+
+#include "SoundManager.h"
 #include "../../core/game/GameOverDisplayData.h"
 
 GameOverRenderer::GameOverRenderer(SDL_Renderer* r, AssetManager* a)
@@ -40,6 +42,7 @@ void GameOverRenderer::render(const GameOverDisplayData& data) {
     renderTextCentered("[R] 재시작", 400, 450, {100, 255, 100, 255});
     renderTextCentered("[Q] 종료", 400, 480, {255, 100, 100, 255});
 
+    SoundManager::nextFrame();
     SDL_RenderPresent(renderer);
 }
 

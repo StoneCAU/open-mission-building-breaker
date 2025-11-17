@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "SoundManager.h"
+
 MenuRenderer::MenuRenderer(SDL_Renderer* r, AssetManager* a) 
     : renderer(r), assets(a) {}
 
@@ -13,6 +15,7 @@ void MenuRenderer::render(int highScore) {
     renderTitle();
     renderButtons();
 
+    SoundManager::nextFrame();
     SDL_RenderPresent(renderer);
 }
 
