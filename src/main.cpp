@@ -1,5 +1,5 @@
-#include <iostream>
 #include <memory>
+#include <locale>
 
 #ifdef USE_SDL
     #include <SDL2/SDL.h>
@@ -11,51 +11,84 @@
     #include "platform/console/ConsoleInputHandler.h"
 #endif
 
-#include <windows.h>
+#ifdef _WIN32
+    #include <windows.h>
+    #include <iostream>
+#endif
 
 #include "core/game/Game.h"
 
-int main(int argc, char* argv[]) {
+namespace {
+    constexpr int SUCCESS_EXIT_CODE = 0;
+    constexpr int ERROR_EXIT_CODE = 1;
+
 #ifdef _WIN32
-    // 윈도우 콘솔 UTF-8 설정
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    std::locale::global(std::locale(""));
+    void setupWindowsEnvironment() {
+        SetConsoleOutputCP(CP_UTF8);
+        SetConsoleCP(CP_UTF8);
+        std::locale::global(std::locale(""));
+    }
+
+    void hideConsoleCursor() {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_CURSOR_INFO cursorInfo;
+        GetConsoleCursorInfo(hConsole, &cursorInfo);
+        cursorInfo.bVisible = FALSE;
+        SetConsoleCursorInfo(hConsole, &cursorInfo);
+    }
 #endif
 
 #ifdef USE_SDL
-    std::cout << "SDL2 버전으로 실행합니다!" << std::endl;
+    std::unique_ptr<Game> createSDLGame() {
+        auto sdlRenderer = std::make_unique<SDLRenderer>();
 
-    auto sdlRenderer = std::make_unique<SDLRenderer>();
-    if (!sdlRenderer->initialize()) {
-        std::cerr << "SDL2 초기화 실패!" << std::endl;
-        return 1;
+        const auto initializeRenderer = [&]() {
+            auto renderer = std::unique_ptr<IRenderer>(std::move(sdlRenderer));
+            auto inputHandler = std::make_unique<SDLInputHandler>();
+
+            return std::make_unique<Game>(std::move(renderer), std::move(inputHandler));
+        };
+
+        return sdlRenderer->initialize() ? initializeRenderer() : nullptr;
     }
-
-    auto renderer = std::unique_ptr<IRenderer>(std::move(sdlRenderer));
-    auto inputHandler = std::make_unique<SDLInputHandler>();
-
-    Game game(std::move(renderer), std::move(inputHandler));
-    game.run();
-
 #else
-    std::cout << "콘솔 버전으로 실행합니다!" << std::endl;
+    std::unique_ptr<Game> createConsoleGame() {
+        hideConsoleCursor();
 
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
+        auto renderer = std::make_unique<ConsoleRenderer>();
+        auto inputHandler = std::make_unique<ConsoleInputHandler>();
 
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(hConsole, &cursorInfo);
-    cursorInfo.bVisible = FALSE;
-    SetConsoleCursorInfo(hConsole, &cursorInfo);
-
-    auto renderer = std::make_unique<ConsoleRenderer>();
-    auto inputHandler = std::make_unique<ConsoleInputHandler>();
-
-    Game game(std::move(renderer), std::move(inputHandler));
-    game.run();
+        return std::make_unique<Game>(std::move(renderer), std::move(inputHandler));
+    }
 #endif
 
-    return 0;
+    std::unique_ptr<Game> createGame() {
+#ifdef USE_SDL
+        return createSDLGame();
+#else
+        return createConsoleGame();
+#endif
+    }
+
+    int runGame() {
+        auto game = createGame();
+
+        const auto executeGame = [&]() {
+            game->run();
+            return SUCCESS_EXIT_CODE;
+        };
+
+        int result = ERROR_EXIT_CODE;
+        game && (result = executeGame(), true);
+
+        return result;
+    }
+}
+
+int main(int argc, char* argv[]) {
+#ifdef _WIN32
+    setupWindowsEnvironment();
+#endif
+
+    return runGame();
 }
