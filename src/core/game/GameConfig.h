@@ -6,7 +6,7 @@ namespace GameConfig {
     // ===== 맵 =====
     inline constexpr int MAP_WIDTH = 50;
     inline constexpr int MAP_MIN_X = 0;
-    inline constexpr int MAP_MAX_X = MAP_WIDTH - 1;
+    inline constexpr int MAP_MAX_X = 35;
     inline constexpr int MAP_GROUND_Y = 20;
 
     // ===== 게임 세션 =====
