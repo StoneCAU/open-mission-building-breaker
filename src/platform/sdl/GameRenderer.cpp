@@ -38,9 +38,8 @@ void GameRenderer::render(const GameSession& session) {
 
     const auto renderMessage = [&]() {
         std::string message = session.messageQueue.getMessage();
-        int messageX = 250;
-        int messageY = WINDOW_HEIGHT - 40;
-        renderText(message, messageX, messageY, {255, 255, 100, 255});
+        int messageY = WINDOW_HEIGHT - MESSAGE_Y_OFFSET;
+        renderText(message, MESSAGE_X, messageY, {255, 255, 100, 255});
     };
 
     session.messageQueue.hasMessage() && (renderMessage(), true);
@@ -75,9 +74,29 @@ void GameRenderer::renderGameArea(const GameSession& session) {
 
 void GameRenderer::renderPlayer(const GameSession& session) {
     const Player& player = session.getPlayer();
-    int screenX = gameToScreenX(player.getX()) - 8;
-    int screenY = gameToScreenY(player.getY() + 1) - 16;
 
+    handlePlayerSounds(player);
+
+    PlayerRenderData renderData = calculatePlayerRenderData(player);
+    drawPlayer(player, renderData);
+}
+
+void GameRenderer::renderBuildings(const GameSession& session) {
+    handleBuildingSounds(session);
+    drawBuildings(session);
+}
+
+void GameRenderer::handlePlayerSounds(const Player& player) {
+    processPlayerActionSounds(player);
+    processPlayerHitSound(player);
+}
+
+void GameRenderer::handleBuildingSounds(const GameSession& session) {
+    processBuildingDestroySounds(session);
+    processBuildingReboundSounds(session);
+}
+
+void GameRenderer::processPlayerActionSounds(const Player& player) {
     static PlayerActionType lastAction = PlayerActionType::IDLE;
     PlayerActionType currentAction = player.getAction();
 
@@ -87,20 +106,43 @@ void GameRenderer::renderPlayer(const GameSession& session) {
     };
 
     (currentAction != lastAction) && (playAttackSound(), lastAction = currentAction, true);
-
-    player.isDamaged() && (SoundManager::blockSound("defend", 35),
-                           SoundManager::playWithCooldown("hit", 50), true);
-
-    playerRenderer->render(renderer, player, screenX, screenY);
 }
 
-void GameRenderer::renderBuildings(const GameSession& session) {
+void GameRenderer::processPlayerHitSound(const Player& player) {
+    player.isDamaged() && (SoundManager::blockSound("defend", 35),
+                           SoundManager::playWithCooldown("hit", 50), true);
+}
+
+void GameRenderer::processBuildingDestroySounds(const GameSession& session) {
     const auto& buildings = session.getBuildingManager().getAll();
 
     for (const auto& building : buildings) {
         building.isDestroyed() &&
             (SoundManager::playOnce("building_collapse"), true);
     }
+}
+
+void GameRenderer::processBuildingReboundSounds(const GameSession& session) {
+    const auto& buildings = session.getBuildingManager().getAll();
+
+    for (const auto& building : buildings) {
+        building.isRebounded() &&
+            (SoundManager::playWithCooldown("defend", 38), true);
+    }
+}
+
+GameRenderer::PlayerRenderData GameRenderer::calculatePlayerRenderData(const Player& player) const {
+    int screenX = gameToScreenX(player.getX()) - PLAYER_SPRITE_OFFSET_X;
+    int screenY = gameToScreenY(player.getY() + 1) - PLAYER_SPRITE_OFFSET_Y;
+    return {screenX, screenY};
+}
+
+void GameRenderer::drawPlayer(const Player& player, const PlayerRenderData& data) {
+    playerRenderer->render(renderer, player, data.screenX, data.screenY);
+}
+
+void GameRenderer::drawBuildings(const GameSession& session) {
+    const auto& buildings = session.getBuildingManager().getAll();
 
     for (const auto& building : buildings) {
         const auto renderSingleBuilding = [&]() {
@@ -109,15 +151,12 @@ void GameRenderer::renderBuildings(const GameSession& session) {
             buildingRenderer->renderBuilding(building, baseX, baseY);
         };
 
-        building.isRebounded() &&
-            (SoundManager::playWithCooldown("defend", 38), true);
-
         building.isDestroyed() || (renderSingleBuilding(), true);
     }
 }
 
 int GameRenderer::gameToScreenX(int gameX) const {
-    return gameX * TILE_SIZE + 50;
+    return gameX * TILE_SIZE + GAME_AREA_OFFSET_X;
 }
 
 int GameRenderer::gameToScreenY(float gameY) const {
