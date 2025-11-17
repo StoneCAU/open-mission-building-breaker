@@ -31,6 +31,7 @@ public:
     float getVelocityY() const;
     int getGroundFrames() const;
 
+    const std::vector<Floor>& getFloors() const;
     std::vector<std::string> getRenderLines() const;
 
 private:

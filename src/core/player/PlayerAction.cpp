@@ -1,6 +1,4 @@
 #include "PlayerAction.h"
-#include <windows.h>
-#include "../../ui/InputHandler.h"
 
 PlayerAction::PlayerAction()
     : action(PlayerActionType::IDLE),
@@ -63,10 +61,13 @@ void PlayerAction::startDefend() {
     actionFrame = 0;
 }
 
-void PlayerAction::update() {
+void PlayerAction::update(bool defendKeyReleased) {
     updateActionFrame();
     updateCooldown();
-    updateDefendRelease();
+
+    if (action == PlayerActionType::DEFEND && defendKeyReleased) {
+        endAction();
+    }
 }
 
 void PlayerAction::updateActionFrame() {
@@ -93,16 +94,6 @@ void PlayerAction::updateCooldown() {
     }
 }
 
-void PlayerAction::updateDefendRelease() {
-    if (action == PlayerActionType::DEFEND && isDefendKeyReleased()) {
-        endAction();
-    }
-}
-
-bool PlayerAction::isDefendKeyReleased() const {
-    return InputHandler::isKeyReleased(VK_DOWN);
-}
-
 void PlayerAction::endAction() {
     action = PlayerActionType::IDLE;
 }
@@ -121,6 +112,6 @@ void PlayerAction::setActionCooldown(int value) {
 
 bool PlayerAction::isAttackActiveFrame() const {
     return action == PlayerActionType::ATTACK &&
-           actionFrame >= ATTACK_ACTIVE_START_FRAME && 
+           actionFrame >= ATTACK_ACTIVE_START_FRAME &&
            actionFrame <= ATTACK_ACTIVE_END_FRAME;
 }

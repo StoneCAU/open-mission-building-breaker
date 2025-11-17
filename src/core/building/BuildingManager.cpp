@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <unordered_set>
 
 #include "../game/GameConfig.h"
 
@@ -47,7 +48,7 @@ void BuildingManager::addRandomBuilding() {
     int height = Building::MIN_HEIGHT +
                  (std::rand() % (Building::MAX_HEIGHT - Building::MIN_HEIGHT + 1));
 
-    int x = nextSpawnX;
+    int x = std::rand() % (GameConfig::MAP_WIDTH - Building::WIDTH);
     nextSpawnX += Building::WIDTH + SPAWN_X_SPACING;
 
     if (nextSpawnX + Building::WIDTH > GameConfig::MAP_WIDTH) {
@@ -167,8 +168,15 @@ void BuildingManager::handleSpawn() {
 }
 
 bool BuildingManager::shouldRemoveBuilding(const Building& b) const {
+    static std::unordered_set<const Building*> destroyedLastFrame;
+
     if (b.isDestroyed()) {
-        return true;
+        if (destroyedLastFrame.count(&b)) {
+            destroyedLastFrame.erase(&b);
+            return true;
+        }
+        destroyedLastFrame.insert(&b);
+        return false;
     }
 
     bool tooFarDown = b.getBottomY() > GameConfig::MAP_GROUND_Y + OFFSCREEN_BOTTOM_THRESHOLD;

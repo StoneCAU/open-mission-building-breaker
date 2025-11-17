@@ -1,6 +1,22 @@
 #pragma once
 
 class GameStats {
+private:
+    int score;
+    int combo;
+    int gauge;
+    int life;
+    int maxCombo;
+
+    static constexpr int COMBO_TIER_LOW = 5;
+    static constexpr int COMBO_TIER_MID = 15;
+    static constexpr float COMBO_MULTIPLIER_BASE = 1.0f;
+    static constexpr float COMBO_MULTIPLIER_LOW = 1.5f;
+    static constexpr float COMBO_MULTIPLIER_MID = 2.5f;
+    static constexpr float COMBO_MULTIPLIER_HIGH = 4.0f;
+
+    float calculateComboMultiplier() const;
+
 public:
     GameStats();
 
@@ -23,10 +39,5 @@ public:
     int getLife() const;
     bool isAlive() const;
 
-private:
-    int score;
-    int combo;
-    int maxCombo;
-    int gauge;
-    int life;
+    int getComboScore(int baseScore) const;
 };

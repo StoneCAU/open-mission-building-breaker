@@ -1,21 +1,21 @@
 #include "PlayerMovement.h"
-#include <windows.h>
 
 #include "Player.h"
-#include "../../ui/InputHandler.h"
 #include "../game/GameConfig.h"
 
 PlayerMovement::PlayerMovement(int& x, float& y)
-    : x(x), 
-      y(y), 
+    : x(x),
+      y(y),
       velocityY(0.0f),
-      jumping(false), 
-      canJump(true), 
+      jumping(false),
+      canJump(true),
       jumpCooldown(0),
       startX(Player::START_X),
       groundY(static_cast<float>(GameConfig::MAP_GROUND_Y)),
       mapMinX(GameConfig::MAP_MIN_X),
-      mapMaxX(GameConfig::MAP_MAX_X) {}
+      mapMaxX(GameConfig::MAP_MAX_X),
+      movingLeft(false),
+      movingRight(false) {}
 
 void PlayerMovement::reset() {
     x = startX;
@@ -36,10 +36,13 @@ bool PlayerMovement::handleInput(InputKey key) {
     return jumped;
 }
 
-void PlayerMovement::update() {
+void PlayerMovement::update(bool jumpKeyReleased) {
     applyPhysics();
     updateJumpCooldown();
-    updateJumpRelease();
+
+    if (!jumping && jumpKeyReleased) {
+        canJump = true;
+    }
 }
 
 void PlayerMovement::applyPhysics() {
@@ -75,10 +78,15 @@ void PlayerMovement::jump() {
 }
 
 void PlayerMovement::handleMovement(InputKey key) {
+    movingLeft = false;
+    movingRight = false;
+
     if (key == InputKey::LEFT && canMoveLeft()) {
+        movingLeft = true;
         --x;
     }
     if (key == InputKey::RIGHT && canMoveRight()) {
+        movingRight = true;
         ++x;
     }
 }
@@ -119,16 +127,6 @@ void PlayerMovement::updateJumpCooldown() {
     }
 }
 
-void PlayerMovement::updateJumpRelease() {
-    if (!jumping && isJumpKeyReleased()) {
-        canJump = true;
-    }
-}
-
-bool PlayerMovement::isJumpKeyReleased() const {
-    return InputHandler::isKeyReleased(VK_UP);
-}
-
 bool PlayerMovement::canMoveLeft() const {
     return x > mapMinX;
 }
@@ -143,4 +141,12 @@ bool PlayerMovement::isJumping() const {
 
 float PlayerMovement::getVelocityY() const {
     return velocityY;
+}
+
+bool PlayerMovement::isMovingRight() const {
+    return movingRight;
+}
+
+bool PlayerMovement::isMovingLeft() const {
+    return movingLeft;
 }

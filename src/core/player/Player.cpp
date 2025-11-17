@@ -1,11 +1,12 @@
 #include "Player.h"
 #include "../building/Building.h"
 #include "../game/GameConfig.h"
+#include <windows.h>
 
 Player::Player()
     : x(START_X),
       y(static_cast<float>(GameConfig::MAP_GROUND_Y)),
-      movement(x, y){}
+      movement(x, y) {}
 
 void Player::reset() {
     movement.reset();
@@ -33,9 +34,9 @@ void Player::handleJumpInput(InputKey key) {
     }
 }
 
-void Player::update() {
+void Player::update(IInputHandler* inputHandler) {
     updateAttachedState();
-    updateComponents();
+    updateComponents(inputHandler);
 }
 
 void Player::updateAttachedState() {
@@ -70,11 +71,14 @@ void Player::followAttachedBuilding(Building* building) {
     movement.followObject(targetY, targetVelocityY);
 }
 
-void Player::updateComponents() {
-    action.update();
+void Player::updateComponents(IInputHandler* inputHandler) {
+    bool jumpKeyReleased = inputHandler->isKeyReleased(VK_UP);
+    bool defendKeyReleased = inputHandler->isKeyReleased(VK_DOWN);
+
+    action.update(defendKeyReleased);
 
     if (!attachment.isAttached()) {
-        movement.update();
+        movement.update(jumpKeyReleased);
     }
 
     collision.update();
@@ -126,4 +130,12 @@ void Player::detachFromBuilding() {
 
 bool Player::isAttachedToBuilding() const {
     return attachment.isAttached();
+}
+
+bool Player::isMovingLeft() const {
+    return movement.isMovingLeft();
+}
+
+bool Player::isMovingRight() const {
+    return movement.isMovingRight();
 }

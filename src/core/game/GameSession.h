@@ -4,9 +4,11 @@
 
 #include "GameOverDisplayData.h"
 #include "GameStats.h"
-#include "../../ui/UIMessage.h"
+#include "../../platform/console/UIMessage.h"
 #include "../player/Player.h"
 #include "../building/BuildingManager.h"
+#include "../../interfaces/InputKey.h"
+#include "../../interfaces/IInputHandler.h"
 
 class GameSession {
 public:
@@ -15,9 +17,11 @@ public:
     void start();
     void reset();
     void handleInput(InputKey key);
-    void update();
+    void update(IInputHandler* inputHandler);
+    void clearUltimateFlag() { ultimateUsedThisFrame = false; }
 
     bool isGameOver() const;
+    bool justUsedUltimate() const { return ultimateUsedThisFrame; }
 
     const Player& getPlayer() const;
     BuildingManager& getBuildingManager();
@@ -39,8 +43,9 @@ private:
     std::chrono::steady_clock::time_point startTime;
 
     bool hitThisFrame = false;
+    bool ultimateUsedThisFrame = false;
 
-    void updatePlayerState();
+    void updatePlayerState(IInputHandler* inputHandler);
     void updateCollisions();
 
     void checkPhysicsCollision();

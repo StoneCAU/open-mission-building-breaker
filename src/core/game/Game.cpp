@@ -1,11 +1,15 @@
 #include "Game.h"
 #include <windows.h>
-
 #include "GameConfig.h"
-#include "../../ui/InputHandler.h"
 
-Game::Game()
-    : state(GameState::MENU),
+#ifdef USE_SDL
+    #include "../../platform/sdl/base/SDLInputHandler.h"
+#endif
+
+Game::Game(std::unique_ptr<IRenderer> r, std::unique_ptr<IInputHandler> i)
+    : renderer(std::move(r)),
+      inputHandler(std::move(i)),
+      state(GameState::MENU),
       isRunning(true),
       highScore(0) {}
 
@@ -13,36 +17,28 @@ Game::~Game() = default;
 
 void Game::run() {
     while (isRunning) {
-        if (state == GameState::MENU) {
-            runMenu();
-        }
-
-        if (state == GameState::PLAYING) {
-            runGame();
-        }
-
-        if (state == GameState::GAME_OVER) {
-            runGameOver();
-        }
+        (state == GameState::MENU) && (runMenu(), true);
+        (state == GameState::PLAYING) && (runGame(), true);
+        (state == GameState::GAME_OVER) && (runGameOver(), true);
     }
 }
 
 void Game::runMenu() {
-    ui.renderMenu(scoreManager.loadHighScore());
+    renderer->renderMenu(scoreManager.loadHighScore());
     handleMenuInput();
 }
 
 void Game::runGame() {
     session.start();
-    ui.clearScreenFull();
-    ui.renderPlaying(session);
+    renderer->clearScreenFull();
+    renderer->renderPlaying(session);
 
     while (isRunning && state == GameState::PLAYING) {
         processGameFrame();
     }
 
     if (state == GameState::GAME_OVER) {
-        ui.clearScreen();
+        renderer->clearScreen();
     }
 }
 
@@ -52,6 +48,8 @@ void Game::runGameOver() {
 }
 
 void Game::processGameFrame() {
+    if (!pollSDLEvents()) return;
+
     handleFrameInput();
     updateFrameState();
     renderFrame();
@@ -59,16 +57,14 @@ void Game::processGameFrame() {
 }
 
 void Game::handleFrameInput() {
-    InputKey key = InputHandler::getInput();
-    if (key == InputKey::NONE) {
-        return;
+    InputKey key = inputHandler->getInput();
+    if (key != InputKey::NONE) {
+        session.handleInput(key);
     }
-
-    session.handleInput(key);
 }
 
 void Game::updateFrameState() {
-    session.update();
+    session.update(inputHandler.get());
 
     if (session.isGameOver()) {
         onGameOver();
@@ -76,33 +72,23 @@ void Game::updateFrameState() {
 }
 
 void Game::renderFrame() {
-    ui.clearScreen();
-    ui.renderPlaying(session);
+    renderer->clearScreen();
+    renderer->renderPlaying(session);
 }
 
 void Game::handleMenuInput() {
     while (isRunning && state == GameState::MENU) {
-        InputKey key = InputHandler::getInput();
+        if (!pollSDLEvents()) return;
 
-        if (key == InputKey::NONE) {
-            continue;
-        }
+        InputKey key = inputHandler->getInput();
+        if (key == InputKey::NONE) continue;
 
-        if (key == InputKey::ENTER) {
-            state = GameState::PLAYING;
-            ui.clearScreen();
-            return;
-        }
-
-        if (key == InputKey::QUIT) {
-            isRunning = false;
-            return;
-        }
+        if (processMenuEvent(key)) return;
     }
 }
 
 void Game::displayGameOverScreen() {
-    ui.clearScreenFull();
+    renderer->clearScreenFull();
 
     int currentHighScore = scoreManager.loadHighScore();
     GameOverDisplayData data = session.getGameOverData(currentHighScore);
@@ -111,30 +97,66 @@ void Game::displayGameOverScreen() {
         scoreManager.saveHighScore(data.finalScore);
     }
 
-    ui.renderGameOver(data);
+    renderer->renderGameOver(data);
 }
 
 void Game::handleGameOverInput() {
     while (isRunning && state == GameState::GAME_OVER) {
-        InputKey key = InputHandler::getInput();
+        if (!pollSDLEvents()) return;
 
-        if (key == InputKey::NONE) {
-            continue;
-        }
+        InputKey key = inputHandler->getInput();
+        if (key == InputKey::NONE) continue;
 
-        if (key == InputKey::RESTART) {
-            state = GameState::PLAYING;
-            ui.clearScreen();
-            return;
-        }
-
-        if (key == InputKey::QUIT) {
-            isRunning = false;
-            return;
-        }
+        if (processGameOverEvent(key)) return;
     }
 }
 
 void Game::onGameOver() {
     state = GameState::GAME_OVER;
+}
+
+
+bool Game::pollSDLEvents() {
+#ifdef USE_SDL
+    auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
+    if (sdlInput && !sdlInput->pollEvents()) {
+        isRunning = false;
+        return false;
+    }
+#endif
+    return true;
+}
+
+bool Game::processMenuEvent(InputKey key) {
+    renderer->handleMenuInput(key);
+
+    if (key == InputKey::ENTER) {
+        state = GameState::PLAYING;
+        renderer->clearScreen();
+        return true;
+    }
+
+    if (key == InputKey::QUIT) {
+        isRunning = false;
+        return true;
+    }
+
+    return false;
+}
+
+bool Game::processGameOverEvent(InputKey key) {
+    renderer->handleGameOverInput(key);
+
+    if (key == InputKey::RESTART) {
+        state = GameState::PLAYING;
+        renderer->clearScreen();
+        return true;
+    }
+
+    if (key == InputKey::QUIT) {
+        isRunning = false;
+        return true;
+    }
+
+    return false;
 }
