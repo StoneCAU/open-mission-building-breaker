@@ -2,6 +2,7 @@
 #include "PlayerAnimationRenderer.h"
 #include "HUDRenderer.h"
 #include "BuildingRenderer.h"
+#include "UltimateEffectRenderer.h"
 #include "AssetManager.h"
 #include "SoundManager.h"
 #include "../../core/game/GameSession.h"
@@ -14,6 +15,7 @@ GameRenderer::GameRenderer(SDL_Renderer* r, AssetManager* a)
     playerRenderer = std::make_unique<PlayerAnimationRenderer>(assets);
     hudRenderer = std::make_unique<HUDRenderer>(renderer, assets);
     buildingRenderer = std::make_unique<BuildingRenderer>(renderer, assets);
+    ultimateRenderer = std::make_unique<UltimateEffectRenderer>(assets);
 }
 
 GameRenderer::~GameRenderer() = default;
@@ -21,8 +23,17 @@ GameRenderer::~GameRenderer() = default;
 void GameRenderer::render(const GameSession& session) {
     SoundManager::playBGM("game");
 
+    ultimateRenderer->update(session);
+    const_cast<GameSession&>(session).clearUltimateFlag();
+
     renderBackground();
     renderGameArea(session);
+
+    const Player& player = session.getPlayer();
+    int centerX = gameToScreenX(player.getX());
+    int centerY = gameToScreenY(player.getY());
+    ultimateRenderer->render(renderer, centerX, centerY);
+
     hudRenderer->render(session);
 
     const auto renderMessage = [&]() {

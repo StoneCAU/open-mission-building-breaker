@@ -8,6 +8,7 @@ class GameSession;
 class PlayerAnimationRenderer;
 class HUDRenderer;
 class BuildingRenderer;
+class UltimateEffectRenderer;
 
 class GameRenderer {
 public:
@@ -22,6 +23,7 @@ private:
     std::unique_ptr<PlayerAnimationRenderer> playerRenderer;
     std::unique_ptr<HUDRenderer> hudRenderer;
     std::unique_ptr<BuildingRenderer> buildingRenderer;
+    std::unique_ptr<UltimateEffectRenderer> ultimateRenderer;
 
     static constexpr int WINDOW_WIDTH = 800;
     static constexpr int WINDOW_HEIGHT = 600;
