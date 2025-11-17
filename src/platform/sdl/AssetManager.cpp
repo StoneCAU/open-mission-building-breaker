@@ -54,7 +54,7 @@ bool AssetManager::loadTextures() {
         {"gauge_fill", "assets/images/gauge_fill.png"},
         {"life_active", "assets/images/life_active.png"},
         {"life_inactive", "assets/images/life_inactive.png"},
-
+        {"hurricane_effect", "assets/images/hurricane_effect.png"},
 
         {"number_0", "assets/images/number_0.png"},
         {"number_1", "assets/images/number_1.png"},
@@ -75,6 +75,7 @@ bool AssetManager::loadTextures() {
         {"player_defence_1", "assets/sprites/player/defence_1.png"},
         {"player_defence_2", "assets/sprites/player/defence_2.png"},
         {"player_hit", "assets/sprites/player/hit.png"},
+
 
         {"building_top", "assets/sprites/buildings/building_top.png"},
         {"floor_normal", "assets/sprites/buildings/floor_normal.png"},
