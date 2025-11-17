@@ -114,6 +114,14 @@ bool AssetManager::loadAudio() {
     gameMusic && (music["game"] = gameMusic, true);
     gameoverMusic && (music["gameover"] = gameoverMusic, true);
 
+    sounds["menu_select"] = Mix_LoadWAV("assets/audio/sfx/menu_select.wav");
+    sounds["attack"] = Mix_LoadWAV("assets/audio/sfx/attack.mp3");
+    sounds["defend"] = Mix_LoadWAV("assets/audio/sfx/defend.mp3");
+    sounds["hit"] = Mix_LoadWAV("assets/audio/sfx/hit.mp3");
+    sounds["special"] = Mix_LoadWAV("assets/audio/sfx/special_attack.mp3");
+    sounds["floor_break"] = Mix_LoadWAV("assets/audio/sfx/floor_break.wav");
+    sounds["building_collapse"] = Mix_LoadWAV("assets/audio/sfx/building_collapse.mp3");
+
     return menuMusic && gameMusic && gameoverMusic;
 }
 
