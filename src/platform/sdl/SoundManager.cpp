@@ -1,4 +1,3 @@
-// SoundManager.cpp
 #include "SoundManager.h"
 #include <iostream>
 #include "AssetManager.h"
@@ -20,6 +19,7 @@ float SoundManager::bgmVolume = 0.5f;
 void SoundManager::initialize(AssetManager* a) {
     assets = a;
     initialized = true;
+    Mix_AllocateChannels(32);
 }
 
 void SoundManager::shutdown() {
