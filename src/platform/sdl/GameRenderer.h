@@ -7,7 +7,7 @@ class AssetManager;
 class GameSession;
 class PlayerAnimationRenderer;
 class HUDRenderer;
-class PixelSpriteRenderer;
+class BuildingRenderer;
 
 class GameRenderer {
 public:
@@ -21,7 +21,7 @@ private:
     AssetManager* assets;
     std::unique_ptr<PlayerAnimationRenderer> playerRenderer;
     std::unique_ptr<HUDRenderer> hudRenderer;
-    std::unique_ptr<PixelSpriteRenderer> spriteRenderer;
+    std::unique_ptr<BuildingRenderer> buildingRenderer;
 
     static constexpr int WINDOW_WIDTH = 800;
     static constexpr int WINDOW_HEIGHT = 600;

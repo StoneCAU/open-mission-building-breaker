@@ -1,7 +1,7 @@
 #include "GameRenderer.h"
 #include "PlayerAnimationRenderer.h"
 #include "HUDRenderer.h"
-#include "PixelSpriteRenderer.h"
+#include "BuildingRenderer.h"
 #include "AssetManager.h"
 #include "../../core/game/GameSession.h"
 #include "../../core/game/GameConfig.h"
@@ -12,9 +12,10 @@ GameRenderer::GameRenderer(SDL_Renderer* r, AssetManager* a)
     : renderer(r), assets(a) {
     playerRenderer = std::make_unique<PlayerAnimationRenderer>(assets);
     hudRenderer = std::make_unique<HUDRenderer>(renderer, assets);
-    spriteRenderer = std::make_unique<PixelSpriteRenderer>(renderer);
-    spriteRenderer->initializeSprites();
+    buildingRenderer = std::make_unique<BuildingRenderer>(renderer, assets);
 }
+
+GameRenderer::~GameRenderer() = default;
 
 void GameRenderer::render(const GameSession& session) {
     renderBackground();
@@ -66,19 +67,14 @@ void GameRenderer::renderBuildings(const GameSession& session) {
     const auto& buildings = session.getBuildingManager().getAll();
 
     for (const auto& building : buildings) {
-        if (building.isDestroyed()) continue;
+        const auto renderSingleBuilding = [&]() {
+            int baseX = gameToScreenX(building.getX());
+            int baseY = gameToScreenY(building.getY());
 
-        int baseX = gameToScreenX(building.getX());
+            buildingRenderer->renderBuilding(building, baseX, baseY);
+        };
 
-        for (int floor = 0; floor < building.getHeight(); ++floor) {
-            float buildingFloorY = building.getY() - floor;
-            int screenY = gameToScreenY(buildingFloorY) - 12;
-
-            for (int blockX = 0; blockX < Building::WIDTH; blockX += 2) {
-                spriteRenderer->renderSprite(spriteRenderer->getBuildingSprite(),
-                                           baseX + blockX * 6, screenY, 2);
-            }
-        }
+        building.isDestroyed() || (renderSingleBuilding(), true);
     }
 }
 
@@ -93,18 +89,26 @@ int GameRenderer::gameToScreenY(float gameY) const {
 void GameRenderer::renderText(const std::string& text, int x, int y, SDL_Color color) {
     TTF_Font* font = assets->getFont("game");
 
-    const auto processText = [&]() {
+    const auto createAndRenderTexture = [&]() {
         SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-        SDL_Rect rect{x, y, surface->w, surface->h};
-        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+        const auto renderSurface = [&]() {
+            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-        SDL_DestroyTexture(texture);
-        SDL_FreeSurface(surface);
+            const auto copyTexture = [&]() {
+                SDL_Rect rect{x, y, surface->w, surface->h};
+                SDL_RenderCopy(renderer, texture, nullptr, &rect);
+                SDL_DestroyTexture(texture);
+            };
+
+            texture && (copyTexture(), true);
+            SDL_FreeSurface(surface);
+        };
+
+        surface && (renderSurface(), true);
     };
 
-    font && (processText(), true);
+    font && (createAndRenderTexture(), true);
 }
 
 void GameRenderer::renderTextCentered(const std::string& text, int centerX, int y, SDL_Color color) {
@@ -125,5 +129,3 @@ void GameRenderer::renderRect(int x, int y, int w, int h, SDL_Color color) {
     SDL_Rect rect{x, y, w, h};
     SDL_RenderFillRect(renderer, &rect);
 }
-
-GameRenderer::~GameRenderer() = default;
