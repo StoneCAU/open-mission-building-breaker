@@ -53,6 +53,7 @@ set(SOURCES
         src/platform/sdl/SoundManager.h
         src/platform/sdl/UltimateEffectRenderer.cpp
         src/platform/sdl/UltimateEffectRenderer.h
+        src/platform/sdl/AssetConfig.h
 )
 
 if(USE_SDL)
