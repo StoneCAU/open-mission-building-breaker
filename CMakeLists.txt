@@ -49,6 +49,8 @@ set(SOURCES
         src/platform/sdl/HUDRenderer.h
         src/platform/sdl/BuildingRenderer.cpp
         src/platform/sdl/BuildingRenderer.h
+        src/platform/sdl/SoundManager.cpp
+        src/platform/sdl/SoundManager.h
 )
 
 if(USE_SDL)
