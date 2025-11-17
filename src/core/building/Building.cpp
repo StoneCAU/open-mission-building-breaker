@@ -106,6 +106,10 @@ int Building::getGroundFrames() const {
     return groundFrames;
 }
 
+const std::vector<Floor>& Building::getFloors() const {
+    return floors;
+}
+
 std::vector<std::string> Building::getRenderLines() const {
     std::vector<std::string> lines;
     lines.reserve(floors.size());
