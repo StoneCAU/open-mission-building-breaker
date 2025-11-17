@@ -1,96 +1,160 @@
 #include "MenuRenderer.h"
-
-#include <iostream>
-
+#include "AssetConfig.h"
 #include "SoundManager.h"
 
-MenuRenderer::MenuRenderer(SDL_Renderer* r, AssetManager* a) 
+MenuRenderer::MenuRenderer(SDL_Renderer* r, AssetManager* a)
     : renderer(r), assets(a) {}
 
 void MenuRenderer::render(int highScore) {
-    SoundManager::playBGM("menu");
+    initializeFrame();
+    renderMenuContent(highScore);
+    finalizeFrame();
+}
 
+void MenuRenderer::initializeFrame() {
+    SoundManager::playBGM(AssetConfig::MUSIC_MENU);
+}
+
+void MenuRenderer::renderMenuContent(int highScore) {
     renderBackground();
     renderTitle();
     renderButtons();
+}
 
+void MenuRenderer::finalizeFrame() {
     SoundManager::nextFrame();
     SDL_RenderPresent(renderer);
 }
 
 void MenuRenderer::handleInput(InputKey key) {
     (key == InputKey::ENTER || key == InputKey::QUIT) &&
-        (SoundManager::playImmediate("menu_select"), true);
+        (SoundManager::playImmediate(AssetConfig::SOUND_MENU_SELECT), true);
 }
 
 void MenuRenderer::renderBackground() {
-    SDL_Texture* bgTexture = assets->getTexture("dojo_bg");
-    if (bgTexture) {
-        SDL_Rect fullScreen = {0, 0, 800, 600};
+    SDL_Texture* bgTexture = assets->getTexture(AssetConfig::TEXTURE_DOJO_BG);
+
+    const auto renderTextureBackground = [&]() {
+        SDL_Rect fullScreen{0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
         SDL_RenderCopy(renderer, bgTexture, nullptr, &fullScreen);
-    } else {
-        // Fallback 배경
-        SDL_SetRenderDrawColor(renderer, 26, 26, 26, 255);
+    };
+
+    const auto renderFallbackBackground = [&]() {
+        SDL_SetRenderDrawColor(renderer, FALLBACK_BG_COLOR.r, FALLBACK_BG_COLOR.g,
+                               FALLBACK_BG_COLOR.b, FALLBACK_BG_COLOR.a);
         SDL_RenderClear(renderer);
-    }
+    };
+
+    bgTexture && (renderTextureBackground(), true) || (renderFallbackBackground(), true);
 }
 
 void MenuRenderer::renderTitle() {
-    SDL_Texture* titleTexture = assets->getTexture("title");
-    if (!titleTexture) return;
-    
-    int originalW, originalH;
-    SDL_QueryTexture(titleTexture, nullptr, nullptr, &originalW, &originalH);
+    SDL_Texture* titleTexture = assets->getTexture(AssetConfig::TEXTURE_TITLE);
 
-    int titleW = (originalW * 5) / 10;
-    int titleH = (originalH * 5) / 10;
+    const auto renderTitleTexture = [&]() {
+        int originalW, originalH;
+        SDL_QueryTexture(titleTexture, nullptr, nullptr, &originalW, &originalH);
 
-    int titleX = (800 - titleW) / 2;
-    int titleY = 10;
+        SDL_Rect titleRect = calculateTitleRect(originalW, originalH);
+        SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
+    };
 
-    SDL_Rect titleRect = {titleX, titleY, titleW, titleH};
-    SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
+    titleTexture && (renderTitleTexture(), true);
 }
 
 void MenuRenderer::renderScoreBox(int highScore) {
-    int boxX = 250, boxY = 300, boxW = 300, boxH = 60;
+    renderScoreBoxBackground();
+    renderScoreBoxBorder();
+    renderScoreContent(highScore);
+}
 
-    renderRect(boxX, boxY, boxW, boxH, {45, 27, 20, 180});
+void MenuRenderer::renderScoreBoxBackground() {
+    SDL_Rect boxRect = calculateScoreBoxRect();
+    renderRect(boxRect.x, boxRect.y, boxRect.w, boxRect.h, SCORE_BOX_COLOR);
+}
 
-    SDL_SetRenderDrawColor(renderer, 139, 0, 0, 255);
-    SDL_Rect border = {boxX - 2, boxY - 2, boxW + 4, boxH + 4};
-    SDL_RenderDrawRect(renderer, &border);
+void MenuRenderer::renderScoreBoxBorder() {
+    SDL_Rect borderRect = calculateScoreBorderRect();
+    SDL_SetRenderDrawColor(renderer, SCORE_BORDER_COLOR.r, SCORE_BORDER_COLOR.g,
+                           SCORE_BORDER_COLOR.b, SCORE_BORDER_COLOR.a);
+    SDL_RenderDrawRect(renderer, &borderRect);
+}
 
-    renderTextCentered("HIGH SCORE", 400, boxY + 12, "menu", {218, 165, 32, 255});
-    std::string scoreText = std::to_string(highScore) + " PTS";
-    renderTextCentered(scoreText, 400, boxY + 35, "menu", {245, 245, 220, 255});
+void MenuRenderer::renderScoreContent(int highScore) {
+    renderTextCentered(TEXT_HIGH_SCORE, CENTER_X, SCORE_BOX_Y + SCORE_TITLE_Y_OFFSET,
+                       AssetConfig::FONT_MENU, SCORE_TITLE_COLOR);
+
+    std::string scoreText = std::to_string(highScore) + TEXT_SCORE_SUFFIX;
+    renderTextCentered(scoreText, CENTER_X, SCORE_BOX_Y + SCORE_TEXT_Y_OFFSET,
+                       AssetConfig::FONT_MENU, SCORE_TEXT_COLOR);
 }
 
 void MenuRenderer::renderButtons() {
-    renderTextCentered("PRESS START", 400, 450, "menu", {139, 0, 0, 255});
-    renderTextCentered("Q - QUIT", 400, 480, "menu", {150, 150, 150, 255});
-    renderTextCentered("WOOWA TECH COURSE 8TH - OPEN MISSION", 400, 540, "menu", {120, 120, 120, 255});
-    renderTextCentered("MADE BY HONG SEOKWOO", 400, 565, "menu", {110, 110, 110, 255});
+    renderTextCentered(TEXT_START, CENTER_X, START_BUTTON_Y, AssetConfig::FONT_MENU, START_BUTTON_COLOR);
+    renderTextCentered(TEXT_QUIT, CENTER_X, QUIT_BUTTON_Y, AssetConfig::FONT_MENU, QUIT_BUTTON_COLOR);
+    renderTextCentered(TEXT_CREDIT1, CENTER_X, CREDIT_LINE1_Y, AssetConfig::FONT_MENU, CREDIT_COLOR1);
+    renderTextCentered(TEXT_CREDIT2, CENTER_X, CREDIT_LINE2_Y, AssetConfig::FONT_MENU, CREDIT_COLOR2);
 }
 
 void MenuRenderer::renderTextCentered(const std::string& text, int x, int y, const std::string& fontName, SDL_Color color) {
+    SDL_Surface* surface = createTextSurface(text, fontName, color);
+
+    const auto processSurface = [&]() {
+        SDL_Texture* texture = createTextTexture(surface);
+
+        const auto renderAndCleanup = [&]() {
+            renderTextTexture(texture, surface, x, y);
+            cleanupTextResources(surface, texture);
+        };
+
+        texture && (renderAndCleanup(), true);
+    };
+
+    surface && (processSurface(), true);
+}
+
+SDL_Surface* MenuRenderer::createTextSurface(const std::string& text, const std::string& fontName, SDL_Color color) {
     TTF_Font* font = assets->getFont(fontName);
-    if (!font) return;
-    
-    SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
-    if (!surface) return;
-    
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (texture) {
-        SDL_Rect rect = {x - surface->w / 2, y, surface->w, surface->h};
-        SDL_RenderCopy(renderer, texture, nullptr, &rect);
-        SDL_DestroyTexture(texture);
-    }
+    SDL_Surface* result = nullptr;
+
+    font && (result = TTF_RenderUTF8_Solid(font, text.c_str(), color), true);
+
+    return result;
+}
+
+SDL_Texture* MenuRenderer::createTextTexture(SDL_Surface* surface) {
+    return SDL_CreateTextureFromSurface(renderer, surface);
+}
+
+void MenuRenderer::renderTextTexture(SDL_Texture* texture, SDL_Surface* surface, int x, int y) {
+    SDL_Rect rect{x - surface->w / 2, y, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, nullptr, &rect);
+}
+
+void MenuRenderer::cleanupTextResources(SDL_Surface* surface, SDL_Texture* texture) {
+    SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
+}
+
+SDL_Rect MenuRenderer::calculateTitleRect(int originalW, int originalH) {
+    int titleW = (originalW * TITLE_SCALE_NUMERATOR) / TITLE_SCALE_DENOMINATOR;
+    int titleH = (originalH * TITLE_SCALE_NUMERATOR) / TITLE_SCALE_DENOMINATOR;
+    int titleX = (SCREEN_WIDTH - titleW) / 2;
+
+    return {titleX, TITLE_Y, titleW, titleH};
+}
+
+SDL_Rect MenuRenderer::calculateScoreBoxRect() {
+    return {SCORE_BOX_X, SCORE_BOX_Y, SCORE_BOX_WIDTH, SCORE_BOX_HEIGHT};
+}
+
+SDL_Rect MenuRenderer::calculateScoreBorderRect() {
+    return {SCORE_BOX_X - SCORE_BOX_BORDER_SIZE, SCORE_BOX_Y - SCORE_BOX_BORDER_SIZE,
+            SCORE_BOX_WIDTH + SCORE_BOX_BORDER_SIZE * 2, SCORE_BOX_HEIGHT + SCORE_BOX_BORDER_SIZE * 2};
 }
 
 void MenuRenderer::renderRect(int x, int y, int w, int h, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = {x, y, w, h};
+    SDL_Rect rect{x, y, w, h};
     SDL_RenderFillRect(renderer, &rect);
 }
