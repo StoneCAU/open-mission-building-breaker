@@ -51,6 +51,8 @@ set(SOURCES
         src/platform/sdl/BuildingRenderer.h
         src/platform/sdl/SoundManager.cpp
         src/platform/sdl/SoundManager.h
+        src/platform/sdl/UltimateEffectRenderer.cpp
+        src/platform/sdl/UltimateEffectRenderer.h
 )
 
 if(USE_SDL)
