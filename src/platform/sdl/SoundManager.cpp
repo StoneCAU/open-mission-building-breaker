@@ -1,3 +1,4 @@
+// SoundManager.cpp
 #include "SoundManager.h"
 #include <iostream>
 #include "AssetManager.h"
@@ -6,6 +7,7 @@ AssetManager* SoundManager::assets = nullptr;
 std::set<std::string> SoundManager::playedThisFrame;
 std::map<std::string, int> SoundManager::lastPlayFrame;
 std::set<std::string> SoundManager::blockedSounds;
+std::map<std::string, int> SoundManager::blockedUntilFrame;
 int SoundManager::currentFrame = 0;
 bool SoundManager::soundEnabled = true;
 float SoundManager::globalVolume = 1.0f;
@@ -24,6 +26,7 @@ void SoundManager::shutdown() {
     playedThisFrame.clear();
     lastPlayFrame.clear();
     blockedSounds.clear();
+    blockedUntilFrame.clear();
     stopBGM();
     assets = nullptr;
     initialized = false;
@@ -61,18 +64,27 @@ void SoundManager::playWithCooldown(const std::string& soundName, int cooldownFr
 
 void SoundManager::playImmediate(const std::string& soundName) {
     if (!initialized || !soundEnabled) return;
-
+    
     if (blockedSounds.find(soundName) != blockedSounds.end()) return;
 
     playSound(soundName);
 }
 
-void SoundManager::blockSound(const std::string& soundName) {
+void SoundManager::blockSound(const std::string& soundName, int frames) {
     blockedSounds.insert(soundName);
+    blockedUntilFrame[soundName] = currentFrame + frames;
 }
 
 void SoundManager::clearBlocks() {
-    blockedSounds.clear();
+    auto it = blockedUntilFrame.begin();
+    while (it != blockedUntilFrame.end()) {
+        if (currentFrame >= it->second) {
+            blockedSounds.erase(it->first);
+            it = blockedUntilFrame.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void SoundManager::playBGM(const std::string& bgmName, bool loop) {
@@ -86,7 +98,6 @@ void SoundManager::playBGM(const std::string& bgmName, bool loop) {
 
     Mix_Music* music = assets->getMusic(bgmName);
     if (!music) {
-        std::cout << "BGM 로딩 실패: " << bgmName << std::endl;
         return;
     }
 
@@ -94,7 +105,6 @@ void SoundManager::playBGM(const std::string& bgmName, bool loop) {
     bgmLoop = loop;
     Mix_PlayMusic(music, loop ? -1 : 0);
     Mix_VolumeMusic(static_cast<int>(128 * bgmVolume));
-    std::cout << "BGM 재생: " << bgmName << std::endl;
 }
 
 void SoundManager::stopBGM() {
@@ -113,7 +123,7 @@ bool SoundManager::isBGMPlaying() {
 
 void SoundManager::nextFrame() {
     playedThisFrame.clear();
-    clearBlocks();
+    clearBlocks();  // 시간 기반 차단 해제
     currentFrame++;
 
     if (bgmLoop && !Mix_PlayingMusic() && !currentBGM.empty()) {

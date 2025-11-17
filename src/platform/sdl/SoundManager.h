@@ -15,7 +15,7 @@ public:
     static void playWithCooldown(const std::string& soundName, int cooldownFrames);
     static void playImmediate(const std::string& soundName);
 
-    static void blockSound(const std::string& soundName);
+    static void blockSound(const std::string& soundName, int frames = 30);
     static void clearBlocks();
 
     static void playBGM(const std::string& bgmName, bool loop = true);
@@ -32,6 +32,7 @@ private:
     static std::set<std::string> playedThisFrame;
     static std::map<std::string, int> lastPlayFrame;
     static std::set<std::string> blockedSounds;
+    static std::map<std::string, int> blockedUntilFrame;
     static int currentFrame;
     static bool soundEnabled;
     static float globalVolume;
