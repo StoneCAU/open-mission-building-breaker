@@ -109,6 +109,8 @@ void Game::handleMenuInput() {
             continue;
         }
 
+        renderer->handleMenuInput(key);
+
         if (key == InputKey::ENTER) {
             state = GameState::PLAYING;
             renderer->clearScreen();
@@ -138,7 +140,6 @@ void Game::displayGameOverScreen() {
 void Game::handleGameOverInput() {
     while (isRunning && state == GameState::GAME_OVER) {
 #ifdef USE_SDL
-        // SDL 이벤트 처리
         auto* sdlInput = dynamic_cast<SDLInputHandler*>(inputHandler.get());
         if (sdlInput && !sdlInput->pollEvents()) {
             isRunning = false;
@@ -151,6 +152,8 @@ void Game::handleGameOverInput() {
         if (key == InputKey::NONE) {
             continue;
         }
+
+        renderer->handleGameOverInput(key);
 
         if (key == InputKey::RESTART) {
             state = GameState::PLAYING;
