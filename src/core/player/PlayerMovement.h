@@ -24,7 +24,7 @@ public:
 
 private:
     static constexpr float GRAVITY = 0.1f;
-    static constexpr float JUMP_VELOCITY = -1.0f;
+    static constexpr float JUMP_VELOCITY = -1.2f;
     static constexpr int JUMP_DURATION = 20;
     static constexpr int JUMP_COOLDOWN_MAX = 15;
     static constexpr float GROUND_CHECK_THRESHOLD = 0.1f;
