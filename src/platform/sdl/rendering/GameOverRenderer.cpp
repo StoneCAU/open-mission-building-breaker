@@ -20,11 +20,19 @@ void GameOverRenderer::render(const GameOverDisplayData& data) {
 
 void GameOverRenderer::renderGameOverContent(const GameOverDisplayData& data) {
     renderTextCentered(TEXT_GAME_OVER, CENTER_X, TITLE_Y, TITLE_COLOR);
+
+    renderHighScore(data.highScore);
+
     renderScoreSection(data);
 
     data.isNewRecord && (renderTextCentered(TEXT_NEW_RECORD, CENTER_X, NEW_RECORD_Y, RECORD_COLOR), true);
 
     renderControlButtons();
+}
+
+void GameOverRenderer::renderHighScore(int highScore) {
+    std::string text = std::string(TEXT_HIGH_SCORE) + std::to_string(highScore) + TEXT_SCORE_UNIT;
+    renderTextCentered(text, CENTER_X, HIGH_SCORE_Y, HIGH_SCORE_COLOR);
 }
 
 void GameOverRenderer::renderScoreSection(const GameOverDisplayData& data) {

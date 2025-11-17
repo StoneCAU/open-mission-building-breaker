@@ -21,6 +21,7 @@ private:
     static constexpr int SCREEN_WIDTH = 800;
     static constexpr int SCREEN_HEIGHT = 600;
     static constexpr int TITLE_Y = 120;
+    static constexpr int HIGH_SCORE_Y = 190;
     static constexpr int FINAL_SCORE_Y = 220;
     static constexpr int MAX_COMBO_Y = 250;
     static constexpr int PLAY_TIME_Y = 280;
@@ -31,6 +32,7 @@ private:
 
     static constexpr SDL_Color FALLBACK_BG_COLOR = {25, 25, 40, 255};
     static constexpr SDL_Color TITLE_COLOR = {255, 100, 100, 255};
+    static constexpr SDL_Color HIGH_SCORE_COLOR = {255, 215, 0, 255};
     static constexpr SDL_Color SCORE_COLOR = {255, 255, 255, 255};
     static constexpr SDL_Color COMBO_COLOR = {255, 255, 100, 255};
     static constexpr SDL_Color TIME_COLOR = {200, 200, 200, 255};
@@ -39,6 +41,7 @@ private:
     static constexpr SDL_Color QUIT_COLOR = {255, 100, 100, 255};
 
     static constexpr const char* TEXT_GAME_OVER = "게임 오버";
+    static constexpr const char* TEXT_HIGH_SCORE = "최고 기록: ";
     static constexpr const char* TEXT_FINAL_SCORE = "최종 점수: ";
     static constexpr const char* TEXT_SCORE_UNIT = "점";
     static constexpr const char* TEXT_MAX_COMBO = "최고 콤보: x";
@@ -52,6 +55,7 @@ private:
     void renderTextCentered(const std::string& text, int x, int y, SDL_Color color);
     void renderBackground();
     void renderGameOverContent(const GameOverDisplayData& data);
+    void renderHighScore(int highScore);
     void renderScoreSection(const GameOverDisplayData& data);
     void renderControlButtons();
 
