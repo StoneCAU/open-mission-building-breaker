@@ -38,6 +38,7 @@ bool AssetManager::loadTextures() {
         {"title", "assets/images/title_samurai.png"},
         {"dojo_bg", "assets/images/dojo_background.png"},
         {"game_bg", "assets/images/samurai_game_background.png"},
+        {"game_over_bg", "assets/images/game_over_background.png"},
 
         {"ui_panel", "assets/images/ui_top_panel.png"},
         {"score_frame", "assets/images/score_frame.png"},
