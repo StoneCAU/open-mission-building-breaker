@@ -21,13 +21,13 @@ AssetManager::~AssetManager() {
 }
 
 bool AssetManager::loadFonts() {
-    TTF_Font* title = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", 16);
-    TTF_Font* menu = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", 12);
-    TTF_Font* game = TTF_OpenFont("assets/fonts/DungGeunMo.ttf", 20);
+    TTF_Font* title = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", TITLE_FONT_SIZE);
+    TTF_Font* menu = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", MENU_FONT_SIZE);
+    TTF_Font* game = TTF_OpenFont("assets/fonts/DungGeunMo.ttf", GAME_FONT_SIZE);
 
-    if (!title) title = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 16);
-    if (!menu) menu = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 12);
-    if (!game) game = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 14);
+    if (!title) title = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", TITLE_FONT_SIZE);
+    if (!menu) menu = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", MENU_FONT_SIZE);
+    if (!game) game = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", FALLBACK_GAME_FONT_SIZE);
 
     if (!title || !menu || !game) return false;
 
@@ -75,7 +75,6 @@ bool AssetManager::loadTextures() {
         {"player_defence_1", "assets/sprites/player/defence_1.png"},
         {"player_defence_2", "assets/sprites/player/defence_2.png"},
         {"player_hit", "assets/sprites/player/hit.png"},
-
 
         {"building_top", "assets/sprites/buildings/building_top.png"},
         {"floor_normal", "assets/sprites/buildings/floor_normal.png"},

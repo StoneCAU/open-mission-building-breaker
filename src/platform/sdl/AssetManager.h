@@ -1,10 +1,9 @@
 #pragma once
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
-#include <string>
 #include <unordered_map>
+#include <string>
 
 class AssetManager {
 public:
@@ -26,6 +25,11 @@ private:
     std::unordered_map<std::string, SDL_Texture*> textures;
     std::unordered_map<std::string, Mix_Music*> music;
     std::unordered_map<std::string, Mix_Chunk*> sounds;
+
+    static constexpr int TITLE_FONT_SIZE = 16;
+    static constexpr int MENU_FONT_SIZE = 12;
+    static constexpr int GAME_FONT_SIZE = 20;
+    static constexpr int FALLBACK_GAME_FONT_SIZE = 14;
 
     bool loadSingleTexture(const std::string& key, const std::string& path);
 };

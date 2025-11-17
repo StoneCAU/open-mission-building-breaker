@@ -16,13 +16,14 @@ void HUDRenderer::renderScore(int score) {
     SDL_Texture* scoreFrame = assets->getTexture("score_frame");
 
     const auto renderScoreFrame = [&]() {
-        SDL_Rect frameRect{20, 15, 160, 60};
+        SDL_Rect frameRect = calculateScoreFrameRect();
         SDL_RenderCopy(renderer, scoreFrame, nullptr, &frameRect);
 
         std::string scoreStr = std::to_string(score);
-        int scoreWidth = scoreStr.length() * 12;
-        int scoreX = (20 + 160) - scoreWidth - 40;
-        renderNumberImages(scoreStr, scoreX, 35);
+        int scoreWidth = scoreStr.length() * NUMBER_WIDTH;
+        int scoreX = (SCORE_FRAME_X + SCORE_FRAME_WIDTH) - scoreWidth - SCORE_TEXT_RIGHT_MARGIN;
+        int scoreY = SCORE_FRAME_Y + SCORE_TEXT_Y_OFFSET;
+        renderNumberImages(scoreStr, scoreX, scoreY);
     };
 
     scoreFrame && (renderScoreFrame(), true);
@@ -32,13 +33,14 @@ void HUDRenderer::renderCombo(int combo) {
     SDL_Texture* comboMedal = assets->getTexture("combo_medal");
 
     const auto renderComboMedal = [&]() {
-        SDL_Rect medalRect{200, 15, 60, 60};
+        SDL_Rect medalRect = calculateComboMedalRect();
         SDL_RenderCopy(renderer, comboMedal, nullptr, &medalRect);
 
         std::string comboStr = std::to_string(combo);
-        int comboWidth = comboStr.length() * 14;
-        int medalCenterX = 200 + (60 - comboWidth) / 2;
-        renderNumberImages(comboStr, medalCenterX, 35);
+        int comboWidth = comboStr.length() * COMBO_NUMBER_WIDTH;
+        int medalCenterX = COMBO_MEDAL_X + (COMBO_MEDAL_SIZE - comboWidth) / 2;
+        int comboY = COMBO_MEDAL_Y + SCORE_TEXT_Y_OFFSET;
+        renderNumberImages(comboStr, medalCenterX, comboY);
     };
 
     comboMedal && (renderComboMedal(), true);
@@ -48,20 +50,17 @@ void HUDRenderer::renderSpecialGauge(int gauge) {
     SDL_Texture* emptyGauge = assets->getTexture("gauge_empty");
     SDL_Texture* fillGauge = assets->getTexture("gauge_fill");
 
-    int gaugeX = 50;
-    int gaugeY = 600 - 40;
-    int gaugeWidth = 160;
-    int gaugeHeight = 20;
+    int gaugeY = calculateGaugeY();
 
     const auto renderEmptyGauge = [&]() {
-        SDL_Rect emptyRect{gaugeX, gaugeY, gaugeWidth, gaugeHeight};
+        SDL_Rect emptyRect{GAUGE_X, gaugeY, GAUGE_WIDTH, GAUGE_HEIGHT};
         SDL_RenderCopy(renderer, emptyGauge, nullptr, &emptyRect);
     };
 
     const auto renderFillGauge = [&]() {
-        int fillWidth = (gauge * gaugeWidth) / 100;
-        SDL_Rect srcRect{0, 0, fillWidth, gaugeHeight};
-        SDL_Rect dstRect{gaugeX, gaugeY, fillWidth, gaugeHeight};
+        int fillWidth = (gauge * GAUGE_WIDTH) / 100;
+        SDL_Rect srcRect{0, 0, fillWidth, GAUGE_HEIGHT};
+        SDL_Rect dstRect{GAUGE_X, gaugeY, fillWidth, GAUGE_HEIGHT};
         SDL_RenderCopy(renderer, fillGauge, &srcRect, &dstRect);
     };
 
@@ -73,15 +72,13 @@ void HUDRenderer::renderLives(int lives) {
     SDL_Texture* activeLife = assets->getTexture("life_active");
     SDL_Texture* inactiveLife = assets->getTexture("life_inactive");
 
-    int startX = 70;
-    int y = 600 - 70;
-    int maxLives = 3;
+    int livesY = calculateLivesY();
 
     const auto renderAllLives = [&]() {
-        for (int i = 0; i < maxLives; ++i) {
+        for (int i = 0; i < MAX_LIVES; ++i) {
             const auto selectTexture = [&]() { return (i < lives) ? activeLife : inactiveLife; };
             SDL_Texture* lifeTexture = selectTexture();
-            SDL_Rect lifeRect{startX + i * 28, y, 24, 24};
+            SDL_Rect lifeRect{LIVES_START_X + i * LIVES_SPACING, livesY, LIFE_ICON_SIZE, LIFE_ICON_SIZE};
             SDL_RenderCopy(renderer, lifeTexture, nullptr, &lifeRect);
         }
     };
@@ -98,7 +95,7 @@ void HUDRenderer::renderNumberImages(const std::string& numberStr, int startX, i
             SDL_Texture* numberTexture = assets->getTexture("number_" + std::to_string(digit));
 
             const auto renderNumberTexture = [&]() {
-                SDL_Rect numberRect{startX + i * 12, y, 16, 20};
+                SDL_Rect numberRect{startX + i * NUMBER_WIDTH, y, NUMBER_IMAGE_WIDTH, NUMBER_HEIGHT};
                 SDL_RenderCopy(renderer, numberTexture, nullptr, &numberRect);
             };
 
@@ -107,4 +104,20 @@ void HUDRenderer::renderNumberImages(const std::string& numberStr, int startX, i
 
         isDigit() && (renderDigit(), true);
     }
+}
+
+SDL_Rect HUDRenderer::calculateScoreFrameRect() const {
+    return {SCORE_FRAME_X, SCORE_FRAME_Y, SCORE_FRAME_WIDTH, SCORE_FRAME_HEIGHT};
+}
+
+SDL_Rect HUDRenderer::calculateComboMedalRect() const {
+    return {COMBO_MEDAL_X, COMBO_MEDAL_Y, COMBO_MEDAL_SIZE, COMBO_MEDAL_SIZE};
+}
+
+int HUDRenderer::calculateGaugeY() const {
+    return SCREEN_HEIGHT - GAUGE_Y_FROM_BOTTOM;
+}
+
+int HUDRenderer::calculateLivesY() const {
+    return SCREEN_HEIGHT - LIVES_Y_FROM_BOTTOM;
 }

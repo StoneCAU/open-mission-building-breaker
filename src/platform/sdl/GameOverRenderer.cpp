@@ -1,5 +1,6 @@
 #include "GameOverRenderer.h"
 
+#include "AssetManager.h"
 #include "SoundManager.h"
 #include "../../core/game/GameOverDisplayData.h"
 
@@ -12,7 +13,7 @@ void GameOverRenderer::render(const GameOverDisplayData& data) {
     SDL_Texture* bgTexture = assets->getTexture("game_over_bg");
 
     const auto renderBackground = [&]() {
-        SDL_Rect fullScreen{0, 0, 800, 600};
+        SDL_Rect fullScreen{0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
         SDL_RenderCopy(renderer, bgTexture, nullptr, &fullScreen);
     };
 
@@ -23,23 +24,23 @@ void GameOverRenderer::render(const GameOverDisplayData& data) {
 
     bgTexture && (renderBackground(), true) || (renderFallbackBackground(), true);
 
-    renderTextCentered("게임 오버", 400, 120, {255, 100, 100, 255}); // 180→120
+    renderTextCentered("게임 오버", CENTER_X, TITLE_Y, {255, 100, 100, 255});
 
     std::string finalScore = "최종 점수: " + std::to_string(data.finalScore) + "점";
-    renderTextCentered(finalScore, 400, 220, {255, 255, 255, 255}); // 280→220
+    renderTextCentered(finalScore, CENTER_X, FINAL_SCORE_Y, {255, 255, 255, 255});
 
     std::string maxCombo = "최고 콤보: x" + std::to_string(data.maxCombo);
-    renderTextCentered(maxCombo, 400, 250, {255, 255, 100, 255}); // 310→250
+    renderTextCentered(maxCombo, CENTER_X, MAX_COMBO_Y, {255, 255, 100, 255});
 
     std::string playTime = "플레이 시간: " + buildGameTimeDisplay(data.playTimeSeconds);
-    renderTextCentered(playTime, 400, 280, {200, 200, 200, 255}); // 340→280
+    renderTextCentered(playTime, CENTER_X, PLAY_TIME_Y, {200, 200, 200, 255});
 
     if (data.isNewRecord) {
-        renderTextCentered("새로운 최고 기록!", 400, 320, {255, 255, 100, 255}); // 380→320
+        renderTextCentered("새로운 최고 기록!", CENTER_X, NEW_RECORD_Y, {255, 255, 100, 255});
     }
 
-    renderTextCentered("[R] 재시작", 400, 450, {100, 255, 100, 255});
-    renderTextCentered("[Q] 종료", 400, 480, {255, 100, 100, 255});
+    renderTextCentered("[R] 재시작", CENTER_X, RESTART_BUTTON_Y, {100, 255, 100, 255});
+    renderTextCentered("[Q] 종료", CENTER_X, QUIT_BUTTON_Y, {255, 100, 100, 255});
 
     SoundManager::nextFrame();
     SDL_RenderPresent(renderer);
