@@ -1,4 +1,5 @@
 #include "AssetManager.h"
+#include "AssetConfig.h"
 #include <SDL2/SDL_image.h>
 #include <vector>
 
@@ -30,9 +31,9 @@ bool AssetManager::loadFonts() {
 
     if (!title || !menu || !game) return false;
 
-    fonts["title"] = title;
-    fonts["menu"] = menu;
-    fonts["game"] = game;
+    fonts[AssetConfig::FONT_TITLE] = title;
+    fonts[AssetConfig::FONT_MENU] = menu;
+    fonts[AssetConfig::FONT_GAME] = game;
 
     return true;
 }
@@ -47,10 +48,10 @@ bool AssetManager::loadTextures() {
 
 bool AssetManager::loadBackgroundTextures() {
     const std::vector<std::pair<std::string, std::string>> backgroundTextures = {
-        {"title", "assets/images/title_samurai.png"},
-        {"dojo_bg", "assets/images/dojo_background.png"},
-        {"game_bg", "assets/images/samurai_game_background.png"},
-        {"game_over_bg", "assets/images/game_over_background.png"}
+        {AssetConfig::TEXTURE_TITLE, "assets/images/title_samurai.png"},
+        {AssetConfig::TEXTURE_DOJO_BG, "assets/images/dojo_background.png"},
+        {AssetConfig::TEXTURE_GAME_BG, "assets/images/samurai_game_background.png"},
+        {AssetConfig::TEXTURE_GAME_OVER_BG, "assets/images/game_over_background.png"}
     };
 
     loadTextureGroup(backgroundTextures);
@@ -110,9 +111,9 @@ bool AssetManager::loadPlayerTextures() {
 
 bool AssetManager::loadBuildingTextures() {
     const std::vector<std::pair<std::string, std::string>> buildingTextures = {
-        {"building_top", "assets/sprites/buildings/building_top.png"},
-        {"floor_normal", "assets/sprites/buildings/floor_normal.png"},
-        {"floor_destruction", "assets/sprites/buildings/floor_destruction.png"}
+        {AssetConfig::TEXTURE_BUILDING_TOP, "assets/sprites/buildings/building_top.png"},
+        {AssetConfig::TEXTURE_FLOOR_NORMAL, "assets/sprites/buildings/floor_normal.png"},
+        {AssetConfig::TEXTURE_FLOOR_DESTRUCTION, "assets/sprites/buildings/floor_destruction.png"}
     };
 
     loadTextureGroup(buildingTextures);
@@ -147,17 +148,17 @@ bool AssetManager::loadAudio() {
     Mix_Music* gameMusic = Mix_LoadMUS("assets/audio/bgm/game_bgm.mp3");
     Mix_Music* gameoverMusic = Mix_LoadMUS("assets/audio/bgm/gameover_bgm.mp3");
 
-    menuMusic && (music["menu"] = menuMusic, true);
-    gameMusic && (music["game"] = gameMusic, true);
-    gameoverMusic && (music["gameover"] = gameoverMusic, true);
+    menuMusic && (music[AssetConfig::MUSIC_MENU] = menuMusic, true);
+    gameMusic && (music[AssetConfig::MUSIC_GAME] = gameMusic, true);
+    gameoverMusic && (music[AssetConfig::MUSIC_GAMEOVER] = gameoverMusic, true);
 
-    sounds["menu_select"] = Mix_LoadWAV("assets/audio/sfx/menu_select.wav");
-    sounds["attack"] = Mix_LoadWAV("assets/audio/sfx/attack.mp3");
-    sounds["defend"] = Mix_LoadWAV("assets/audio/sfx/defend.mp3");
-    sounds["hit"] = Mix_LoadWAV("assets/audio/sfx/hit.mp3");
-    sounds["special"] = Mix_LoadWAV("assets/audio/sfx/special_attack.mp3");
-    sounds["floor_break"] = Mix_LoadWAV("assets/audio/sfx/floor_break.wav");
-    sounds["building_collapse"] = Mix_LoadWAV("assets/audio/sfx/building_collapse.mp3");
+    sounds[AssetConfig::SOUND_MENU_SELECT] = Mix_LoadWAV("assets/audio/sfx/menu_select.wav");
+    sounds[AssetConfig::SOUND_ATTACK] = Mix_LoadWAV("assets/audio/sfx/attack.mp3");
+    sounds[AssetConfig::SOUND_DEFEND] = Mix_LoadWAV("assets/audio/sfx/defend.mp3");
+    sounds[AssetConfig::SOUND_HIT] = Mix_LoadWAV("assets/audio/sfx/hit.mp3");
+    sounds[AssetConfig::SOUND_SPECIAL] = Mix_LoadWAV("assets/audio/sfx/special_attack.mp3");
+    sounds[AssetConfig::SOUND_FLOOR_BREAK] = Mix_LoadWAV("assets/audio/sfx/floor_break.wav");
+    sounds[AssetConfig::SOUND_BUILDING_COLLAPSE] = Mix_LoadWAV("assets/audio/sfx/building_collapse.mp3");
 
     return menuMusic && gameMusic && gameoverMusic;
 }

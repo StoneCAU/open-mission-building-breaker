@@ -38,6 +38,6 @@ private:
     bool loadPlayerTextures();
     bool loadBuildingTextures();
 
+    void loadTextureGroup(const std::vector<std::pair<std::string, std::string>>& textureList);  // 이 메서드가 필요함
     bool loadSingleTexture(const std::string& key, const std::string& path);
-    void loadTextureGroup(const std::vector<std::pair<std::string, std::string>>& textureList);
 };
