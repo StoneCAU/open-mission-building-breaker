@@ -3,7 +3,7 @@
 #include "GameConfig.h"
 
 #ifdef USE_SDL
-    #include "../../platform/sdl/SDLInputHandler.h"
+    #include "../../platform/sdl/base/SDLInputHandler.h"
 #endif
 
 Game::Game(std::unique_ptr<IRenderer> r, std::unique_ptr<IInputHandler> i)

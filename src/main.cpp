@@ -3,8 +3,8 @@
 
 #ifdef USE_SDL
     #include <SDL2/SDL.h>
-    #include "platform/sdl/SDLRenderer.h"
-    #include "platform/sdl/SDLInputHandler.h"
+    #include "platform/sdl/base/SDLRenderer.h"
+    #include "platform/sdl/base/SDLInputHandler.h"
 #else
     #include <windows.h>
     #include "platform/console/ConsoleRenderer.h"

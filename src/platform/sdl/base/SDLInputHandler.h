@@ -1,5 +1,5 @@
 #pragma once
-#include "../../interfaces/IInputHandler.h"
+#include "../../../interfaces/IInputHandler.h"
 #include <SDL2/SDL.h>
 #include <unordered_map>
 

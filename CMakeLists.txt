@@ -37,8 +37,8 @@ set(SOURCES
         src/platform/console/UIMessage.cpp
 
         # Platform - SDL (새로 추가된 파일들)
-        src/platform/sdl/SDLRenderer.cpp
-        src/platform/sdl/SDLInputHandler.cpp
+        src/platform/sdl/base/SDLRenderer.cpp
+        src/platform/sdl/base/SDLInputHandler.cpp
         src/platform/sdl/assets/AssetManager.cpp
         src/platform/sdl/rendering/MenuRenderer.cpp
         src/platform/sdl/rendering/GameRenderer.cpp

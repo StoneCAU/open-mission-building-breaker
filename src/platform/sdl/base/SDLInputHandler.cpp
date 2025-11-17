@@ -1,6 +1,8 @@
 #include "SDLInputHandler.h"
 #include <windows.h>
 
+#include "../../../interfaces/InputKey.h"
+
 SDLInputHandler::SDLInputHandler()
     : quitRequested(false) {
     initializeKeyMap();
