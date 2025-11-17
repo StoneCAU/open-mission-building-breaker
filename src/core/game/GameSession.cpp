@@ -51,6 +51,7 @@ void GameSession::update(IInputHandler* inputHandler) {
     updatePlayerState(inputHandler);
     updateCollisions();
     buildingManager.updateAll();
+    messageQueue.update();
 }
 
 void GameSession::updatePlayerState(IInputHandler* inputHandler) {

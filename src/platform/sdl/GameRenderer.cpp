@@ -24,7 +24,9 @@ void GameRenderer::render(const GameSession& session) {
 
     const auto renderMessage = [&]() {
         std::string message = session.messageQueue.getMessage();
-        renderTextCentered(message, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, {255, 255, 100, 255});
+        int messageX = 250;
+        int messageY = WINDOW_HEIGHT - 40;
+        renderText(message, messageX, messageY, {255, 255, 100, 255});
     };
 
     session.messageQueue.hasMessage() && (renderMessage(), true);
