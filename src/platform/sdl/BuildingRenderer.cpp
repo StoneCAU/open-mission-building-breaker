@@ -1,7 +1,8 @@
 #include "BuildingRenderer.h"
+
+#include "AssetConfig.h"
 #include "../../core/building/Building.h"
 #include "AssetManager.h"
-#include "SoundManager.h"
 
 BuildingRenderer::BuildingRenderer(SDL_Renderer* renderer, AssetManager* assets)
     : renderer(renderer), assets(assets) {}
@@ -16,44 +17,46 @@ void BuildingRenderer::renderBuilding(const Building& building, int screenX, int
 }
 
 void BuildingRenderer::renderFloor(const Building& building, int floorIndex, int screenX, int screenY) {
-    std::string spriteName = getFloorSpriteName(building, floorIndex);
+    std::string spriteName = determineFloorSprite(building, floorIndex);
     SDL_Texture* texture = assets->getTexture(spriteName);
 
-    (spriteName == "floor_destruction") && (SoundManager::playOnce("floor_break"), true);
-
     const auto renderFloorTexture = [&]() {
-        int spriteWidth = Building::WIDTH * PIXELS_PER_WIDTH_UNIT;
+        int spriteWidth = calculateSpriteWidth(building);
         SDL_Rect destRect{screenX, screenY, spriteWidth, FLOOR_HEIGHT};
         SDL_RenderCopy(renderer, texture, nullptr, &destRect);
     };
 
     texture && (renderFloorTexture(), true);
 }
-std::string BuildingRenderer::getFloorSpriteName(const Building& building, int floorIndex) const {
+
+std::string BuildingRenderer::determineFloorSprite(const Building& building, int floorIndex) const {
     const auto renderLines = building.getRenderLines();
 
-    if (floorIndex < renderLines.size()) {
-        const std::string& floorVisual = renderLines[floorIndex];
-        if (floorVisual.find('*') != std::string::npos) {
-            return "floor_destruction";
-        }
-    }
+    const auto checkDestructionState = [&]() {
+        return floorIndex < renderLines.size() &&
+               hasDestructionMarker(renderLines[floorIndex]);
+    };
 
-    if (floorIndex == building.getHeight() - 1) {
-        return "building_top";
-    }
+    const auto checkTopFloor = [&]() {
+        return isTopFloor(building, floorIndex);
+    };
 
-    return "floor_normal";
+    std::string result = AssetConfig::TEXTURE_FLOOR_NORMAL;
+
+    checkDestructionState() && (result = AssetConfig::TEXTURE_FLOOR_DESTRUCTION, true);
+    checkTopFloor() && !checkDestructionState() && (result = AssetConfig::TEXTURE_BUILDING_TOP, true);
+
+    return result;
+}
+
+bool BuildingRenderer::hasDestructionMarker(const std::string& floorVisual) const {
+    return floorVisual.find(DESTRUCTION_MARKER) != std::string::npos;
 }
 
 bool BuildingRenderer::isTopFloor(const Building& building, int floorIndex) const {
     return floorIndex == building.getHeight() - 1;
 }
 
-bool BuildingRenderer::isFloorDestroyed(const Building& building, int floorIndex) const {
-    const auto renderLines = building.getRenderLines();
-    if (floorIndex < renderLines.size()) {
-        return renderLines[floorIndex].find('*') != std::string::npos;
-    }
-    return false;
+int BuildingRenderer::calculateSpriteWidth(const Building& building) const {
+    return Building::WIDTH * PIXELS_PER_WIDTH_UNIT;
 }
