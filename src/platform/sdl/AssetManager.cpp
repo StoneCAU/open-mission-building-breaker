@@ -1,6 +1,5 @@
 #include "AssetManager.h"
 #include <SDL2/SDL_image.h>
-#include <iostream>
 #include <vector>
 
 AssetManager::AssetManager(SDL_Renderer* r) : renderer(r) {}
@@ -165,20 +164,36 @@ bool AssetManager::loadAudio() {
 
 TTF_Font* AssetManager::getFont(const std::string& name) {
     auto it = fonts.find(name);
-    return (it != fonts.end()) ? it->second : nullptr;
+    TTF_Font* result = nullptr;
+
+    (it != fonts.end()) && (result = it->second, true);
+
+    return result;
 }
 
 SDL_Texture* AssetManager::getTexture(const std::string& name) {
     auto it = textures.find(name);
-    return (it != textures.end()) ? it->second : nullptr;
+    SDL_Texture* result = nullptr;
+
+    (it != textures.end()) && (result = it->second, true);
+
+    return result;
 }
 
 Mix_Music* AssetManager::getMusic(const std::string& name) {
     auto it = music.find(name);
-    return (it != music.end()) ? it->second : nullptr;
+    Mix_Music* result = nullptr;
+
+    (it != music.end()) && (result = it->second, true);
+
+    return result;
 }
 
 Mix_Chunk* AssetManager::getSound(const std::string& name) {
     auto it = sounds.find(name);
-    return (it != sounds.end()) ? it->second : nullptr;
+    Mix_Chunk* result = nullptr;
+
+    (it != sounds.end()) && (result = it->second, true);
+
+    return result;
 }
