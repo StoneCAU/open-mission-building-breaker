@@ -18,6 +18,11 @@ public:
     static void blockSound(const std::string& soundName);
     static void clearBlocks();
 
+    static void playBGM(const std::string& bgmName, bool loop = true);
+    static void stopBGM();
+    static void setBGMVolume(float volume);
+    static bool isBGMPlaying();
+
     static void nextFrame();
     static void setEnabled(bool enabled);
     static void setVolume(float volume);
@@ -31,6 +36,10 @@ private:
     static bool soundEnabled;
     static float globalVolume;
     static bool initialized;
+
+    static std::string currentBGM;
+    static bool bgmLoop;
+    static float bgmVolume;
 
     static bool canPlaySound(const std::string& soundName, int cooldownFrames);
     static void playSound(const std::string& soundName);

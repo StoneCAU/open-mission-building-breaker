@@ -11,6 +11,10 @@ bool SoundManager::soundEnabled = true;
 float SoundManager::globalVolume = 1.0f;
 bool SoundManager::initialized = false;
 
+std::string SoundManager::currentBGM = "";
+bool SoundManager::bgmLoop = true;
+float SoundManager::bgmVolume = 0.5f;
+
 void SoundManager::initialize(AssetManager* a) {
     assets = a;
     initialized = true;
@@ -20,6 +24,7 @@ void SoundManager::shutdown() {
     playedThisFrame.clear();
     lastPlayFrame.clear();
     blockedSounds.clear();
+    stopBGM();
     assets = nullptr;
     initialized = false;
 }
@@ -55,39 +60,65 @@ void SoundManager::playWithCooldown(const std::string& soundName, int cooldownFr
 }
 
 void SoundManager::playImmediate(const std::string& soundName) {
-    std::cout << "효과음 재생 시도: " << soundName << std::endl;
+    if (!initialized || !soundEnabled) return;
 
-    if (!initialized) {
-        std::cout << "SoundManager 초기화 안됨!" << std::endl;
-        return;
-    }
-
-    if (!soundEnabled) {
-        std::cout << "사운드 비활성화됨!" << std::endl;
-        return;
-    }
-
-    if (blockedSounds.find(soundName) != blockedSounds.end()) {
-        std::cout << "차단된 효과음: " << soundName << std::endl;
-        return;
-    }
+    if (blockedSounds.find(soundName) != blockedSounds.end()) return;
 
     playSound(soundName);
 }
 
 void SoundManager::blockSound(const std::string& soundName) {
     blockedSounds.insert(soundName);
-    std::cout << "효과음 차단: " << soundName << std::endl;
 }
 
 void SoundManager::clearBlocks() {
     blockedSounds.clear();
 }
 
+void SoundManager::playBGM(const std::string& bgmName, bool loop) {
+    if (!initialized || !assets) return;
+
+    if (currentBGM == bgmName && Mix_PlayingMusic()) {
+        return;
+    }
+
+    Mix_HaltMusic();
+
+    Mix_Music* music = assets->getMusic(bgmName);
+    if (!music) {
+        std::cout << "BGM 로딩 실패: " << bgmName << std::endl;
+        return;
+    }
+
+    currentBGM = bgmName;
+    bgmLoop = loop;
+    Mix_PlayMusic(music, loop ? -1 : 0);
+    Mix_VolumeMusic(static_cast<int>(128 * bgmVolume));
+    std::cout << "BGM 재생: " << bgmName << std::endl;
+}
+
+void SoundManager::stopBGM() {
+    Mix_HaltMusic();
+    currentBGM = "";
+}
+
+void SoundManager::setBGMVolume(float volume) {
+    bgmVolume = volume;
+    Mix_VolumeMusic(static_cast<int>(128 * bgmVolume));
+}
+
+bool SoundManager::isBGMPlaying() {
+    return Mix_PlayingMusic() != 0;
+}
+
 void SoundManager::nextFrame() {
     playedThisFrame.clear();
     clearBlocks();
     currentFrame++;
+
+    if (bgmLoop && !Mix_PlayingMusic() && !currentBGM.empty()) {
+        playBGM(currentBGM, true);
+    }
 }
 
 void SoundManager::setEnabled(bool enabled) {
@@ -105,17 +136,10 @@ bool SoundManager::canPlaySound(const std::string& soundName, int cooldownFrames
 }
 
 void SoundManager::playSound(const std::string& soundName) {
-    if (!assets) {
-        std::cout << "AssetManager가 null!" << std::endl;
-        return;
-    }
+    if (!assets) return;
 
     Mix_Chunk* sound = assets->getSound(soundName);
-    if (!sound) {
-        std::cout << "효과음 로딩 실패: " << soundName << std::endl;
-        return;
-    }
+    if (!sound) return;
 
-    std::cout << "효과음 재생 성공: " << soundName << std::endl;
     Mix_PlayChannel(-1, sound, 0);
 }

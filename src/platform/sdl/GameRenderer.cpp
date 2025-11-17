@@ -19,8 +19,7 @@ GameRenderer::GameRenderer(SDL_Renderer* r, AssetManager* a)
 GameRenderer::~GameRenderer() = default;
 
 void GameRenderer::render(const GameSession& session) {
-    static bool gameMusicStarted = false;
-    gameMusicStarted || (Mix_PlayMusic(assets->getMusic("game"), -1), gameMusicStarted = true);
+    SoundManager::playBGM("game");
 
     renderBackground();
     renderGameArea(session);

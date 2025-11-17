@@ -7,8 +7,7 @@ GameOverRenderer::GameOverRenderer(SDL_Renderer* r, AssetManager* a)
     : renderer(r), assets(a) {}
 
 void GameOverRenderer::render(const GameOverDisplayData& data) {
-    static bool gameoverMusicStarted = false;
-    gameoverMusicStarted || (Mix_PlayMusic(assets->getMusic("gameover"), 0), gameoverMusicStarted = true);
+    SoundManager::playBGM("gameover");
 
     SDL_Texture* bgTexture = assets->getTexture("game_over_bg");
 
