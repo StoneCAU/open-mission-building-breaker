@@ -1,4 +1,5 @@
 #pragma once
+#include "InputKey.h"
 
 class GameSession;
 struct GameOverDisplayData;
@@ -13,4 +14,7 @@ public:
     virtual void clearScreen() = 0;
     virtual void clearScreenFull() = 0;
     virtual void flushOutput() = 0;
+
+    virtual void handleMenuInput(InputKey key) = 0;
+    virtual void handleGameOverInput(InputKey key) = 0;
 };
