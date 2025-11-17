@@ -24,6 +24,7 @@ void GameSession::reset() {
     messageQueue.clear();
     player.reset();
     buildingManager.initBuildings();
+    ultimateUsedThisFrame = false;
 }
 
 void GameSession::handleInput(InputKey key) {
@@ -43,6 +44,7 @@ void GameSession::executeUltimate() {
     stats.addScore(destroyedCount * GameConfig::SCORE_PER_ATTACK_HIT);
 
     messageQueue.push(MessageType::ULTIMATE_ACTIVATED, destroyedCount);
+    ultimateUsedThisFrame = true;
 }
 
 void GameSession::update(IInputHandler* inputHandler) {
@@ -57,7 +59,7 @@ void GameSession::update(IInputHandler* inputHandler) {
 void GameSession::updatePlayerState(IInputHandler* inputHandler) {
     bool wasDamaged = player.isDamaged();
     player.update(inputHandler);
-    
+
     if (!wasDamaged && player.isDamaged()) {
         handlePlayerDamaged();
     }

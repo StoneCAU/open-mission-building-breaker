@@ -18,8 +18,10 @@ public:
     void reset();
     void handleInput(InputKey key);
     void update(IInputHandler* inputHandler);
+    void clearUltimateFlag() { ultimateUsedThisFrame = false; }
 
     bool isGameOver() const;
+    bool justUsedUltimate() const { return ultimateUsedThisFrame; }
 
     const Player& getPlayer() const;
     BuildingManager& getBuildingManager();
@@ -41,6 +43,7 @@ private:
     std::chrono::steady_clock::time_point startTime;
 
     bool hitThisFrame = false;
+    bool ultimateUsedThisFrame = false;
 
     void updatePlayerState(IInputHandler* inputHandler);
     void updateCollisions();
