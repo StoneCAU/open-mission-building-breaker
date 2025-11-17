@@ -17,7 +17,7 @@ AssetManager::~AssetManager() {
 bool AssetManager::loadFonts() {
     TTF_Font* title = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", 16);
     TTF_Font* menu = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", 12);
-    TTF_Font* game = TTF_OpenFont("assets/fonts/PressStart2P-Regular.ttf", 14);
+    TTF_Font* game = TTF_OpenFont("assets/fonts/DungGeunMo.ttf", 20);
 
     if (!title) title = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 16);
     if (!menu) menu = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 12);
