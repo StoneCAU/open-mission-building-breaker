@@ -3,8 +3,6 @@
 #include "MenuRenderer.h"
 #include "GameRenderer.h"
 #include "GameOverRenderer.h"
-#include <iostream>
-
 #include "SoundManager.h"
 
 SDLRenderer::SDLRenderer()
@@ -15,64 +13,64 @@ SDLRenderer::~SDLRenderer() {
 }
 
 bool SDLRenderer::initialize() {
-    if (!initSDL()) return false;
+    bool success = initSDL();
+    success && (success = initAssets(), true);
+    success && (success = initRenderers(), true);
 
+    return success;
+}
+
+bool SDLRenderer::initSDL() {
+    bool success = initSDLSystems();
+    success && (success = initAudio(), true);
+    success && (success = initWindow(), true);
+    success && (success = initRenderer(), true);
+
+    return success;
+}
+
+bool SDLRenderer::initSDLSystems() {
+    return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) >= 0 &&
+           TTF_Init() >= 0;
+}
+
+bool SDLRenderer::initAudio() {
+    return Mix_OpenAudio(AUDIO_FREQUENCY, MIX_DEFAULT_FORMAT, AUDIO_CHANNELS, AUDIO_CHUNK_SIZE) >= 0;
+}
+
+bool SDLRenderer::initWindow() {
+    window = SDL_CreateWindow(WINDOW_TITLE,
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+
+    return window != nullptr;
+}
+
+bool SDLRenderer::initRenderer() {
+    renderer = SDL_CreateRenderer(window, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    return renderer != nullptr;
+}
+
+bool SDLRenderer::initAssets() {
     assetManager = std::make_unique<AssetManager>(renderer);
-    if (!assetManager->loadFonts() || !assetManager->loadTextures()) {
-        return false;
-    }
 
-    // 오디오 로딩 확인
-    if (!assetManager->loadAudio()) {
-        std::cerr << "오디오 로딩 실패!" << std::endl;
-        return false;
-    }
+    bool success = assetManager->loadFonts();
+    success && (success = assetManager->loadTextures(), true);
+    success && (success = assetManager->loadAudio(), true);
 
-    SoundManager::initialize(assetManager.get());
+    success && (SoundManager::initialize(assetManager.get()), true);
+
+    return success;
+}
+
+bool SDLRenderer::initRenderers() {
     menuRenderer = std::make_unique<MenuRenderer>(renderer, assetManager.get());
     gameRenderer = std::make_unique<GameRenderer>(renderer, assetManager.get());
     gameOverRenderer = std::make_unique<GameOverRenderer>(renderer, assetManager.get());
 
-    std::cout << "SDL2 레트로 렌더러 초기화 완료!" << std::endl;
-    return true;
-}
-
-bool SDLRenderer::initSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        std::cerr << "SDL 초기화 실패: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    if (TTF_Init() < 0) {
-        std::cerr << "TTF 초기화 실패: " << TTF_GetError() << std::endl;
-        return false;
-    }
-
-    // SDL_mixer 초기화 (여기가 핵심!)
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        std::cerr << "SDL_mixer 초기화 실패: " << Mix_GetError() << std::endl;
-        return false;
-    }
-    std::cout << "SDL_mixer 초기화 성공!" << std::endl;
-
-    window = SDL_CreateWindow("Building Breaker - Pixel Art Edition",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-
-    if (!window) {
-        std::cerr << "윈도우 생성 실패: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    renderer = SDL_CreateRenderer(window, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-    if (!renderer) {
-        std::cerr << "렌더러 생성 실패: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    return true;
+    return menuRenderer && gameRenderer && gameOverRenderer;
 }
 
 void SDLRenderer::renderMenu(int highScore) {
@@ -88,7 +86,8 @@ void SDLRenderer::renderGameOver(const GameOverDisplayData& data) {
 }
 
 void SDLRenderer::clearScreen() {
-    SDL_SetRenderDrawColor(renderer, 25, 25, 40, 255);
+    SDL_SetRenderDrawColor(renderer, CLEAR_COLOR.r, CLEAR_COLOR.g,
+                           CLEAR_COLOR.b, CLEAR_COLOR.a);
     SDL_RenderClear(renderer);
 }
 
@@ -101,21 +100,24 @@ void SDLRenderer::flushOutput() {
 }
 
 void SDLRenderer::shutdown() {
+    cleanupRenderers();
+    cleanupSDLResources();
+    cleanupSDLSystems();
+}
+
+void SDLRenderer::cleanupRenderers() {
     gameOverRenderer.reset();
     gameRenderer.reset();
     menuRenderer.reset();
     assetManager.reset();
+}
 
-    if (renderer) {
-        SDL_DestroyRenderer(renderer);
-        renderer = nullptr;
-    }
+void SDLRenderer::cleanupSDLResources() {
+    renderer && (SDL_DestroyRenderer(renderer), renderer = nullptr, true);
+    window && (SDL_DestroyWindow(window), window = nullptr, true);
+}
 
-    if (window) {
-        SDL_DestroyWindow(window);
-        window = nullptr;
-    }
-
+void SDLRenderer::cleanupSDLSystems() {
     Mix_Quit();
     TTF_Quit();
     SDL_Quit();
