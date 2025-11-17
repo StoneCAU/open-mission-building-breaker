@@ -156,27 +156,53 @@ void GameRenderer::renderPlayer(const GameSession& session) {
     int screenX = gameToScreenX(player.getX()) - 8;
     int screenY = gameToScreenY(player.getY() + 1) - 16;
 
-    // 프레임 카운터 (static으로 유지)
+    // 이동 상태를 직접 추적
+    static bool lastMovingLeft = false;
+    static bool lastMovingRight = false;
+    static int idleFrames = 0;
+    static bool facingLeft = false; // 방향 추적 추가
+
+    bool currentLeft = player.isMovingLeft();
+    bool currentRight = player.isMovingRight();
+
+    // 방향 업데이트
+    if (currentLeft) facingLeft = true;
+    if (currentRight) facingLeft = false;
+
+    // 상태가 변하지 않았다면 idle 카운터 증가
+    if (currentLeft == lastMovingLeft && currentRight == lastMovingRight) {
+        idleFrames++;
+    } else {
+        idleFrames = 0;
+    }
+
+    // 5프레임 이상 같은 상태면 정지 상태로 간주
+    bool actuallyMoving = (currentLeft || currentRight) && (idleFrames < 5);
+
+    lastMovingLeft = currentLeft;
+    lastMovingRight = currentRight;
+
+    // 프레임 카운터 관리
     static int frameCounter = 0;
-    frameCounter++;
+    if (actuallyMoving) {
+        frameCounter++;
+    } else {
+        frameCounter = 0;
+    }
 
     std::vector<std::pair<std::function<bool()>, std::string>> stateCheckers = {
         {[&]() { return player.isDamaged(); }, "player_hit"},
         {[&]() { return player.getAction() == PlayerActionType::DEFEND; },
          [&]() {
-             int frame = (frameCounter / 30) % 2 + 1; // 30프레임마다 전환
+             int frame = (frameCounter / 30) % 2 + 1;
              return "player_defence_" + std::to_string(frame);
         }()},
-       {[&]() { return player.isMovingLeft() || player.isMovingRight(); },
+       {[&]() { return actuallyMoving; },
         [&]() {
-            int frame = (frameCounter / 15) % 3 + 1; // 15프레임마다 전환 (더 빠름)
+            int frame = (frameCounter / 15) % 3 + 1;
             return "player_move_" + std::to_string(frame);
        }()},
-      {[&]() { return player.getAction() == PlayerActionType::ATTACK; },
-       [&]() {
-           int frame = (frameCounter / 20) % 2 + 1; // 20프레임마다 전환
-           return "player_attack_" + std::to_string(frame);
-      }()}
+      {[&]() { return player.getAction() == PlayerActionType::ATTACK; }, "player_attack"} // 단일 프레임
     };
 
     std::string spriteName = "player_idle";
@@ -185,7 +211,8 @@ void GameRenderer::renderPlayer(const GameSession& session) {
             checker.first() && (spriteName = checker.second, true);
         });
 
-    bool shouldFlip = player.isMovingLeft();
+    // 방향 결정: 이동 중이면 현재 이동 방향, 아니면 마지막 방향
+    bool shouldFlip = actuallyMoving ? currentLeft : facingLeft;
     SDL_Texture* sprite = assets->getTexture(spriteName);
 
     SDL_Rect destRect = {screenX, screenY, 32, 32};
