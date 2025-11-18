@@ -17,14 +17,16 @@ private:
 
     static constexpr int SCORE_FRAME_X = 20;
     static constexpr int SCORE_FRAME_Y = 15;
-    static constexpr int SCORE_FRAME_WIDTH = 160;
-    static constexpr int SCORE_FRAME_HEIGHT = 60;
-    static constexpr int SCORE_TEXT_Y_OFFSET = 20;
-    static constexpr int SCORE_TEXT_RIGHT_MARGIN = 40;
+    static constexpr int SCORE_FRAME_WIDTH = 240;
+    static constexpr int SCORE_FRAME_HEIGHT = 110;
+    static constexpr int SCORE_TEXT_Y_OFFSET = 50;
+    static constexpr int SCORE_TEXT_RIGHT_MARGIN = 60;
 
-    static constexpr int COMBO_MEDAL_X = 200;
+    static constexpr int COMBO_MEDAL_X = 280;
     static constexpr int COMBO_MEDAL_Y = 15;
-    static constexpr int COMBO_MEDAL_SIZE = 60;
+    static constexpr int COMBO_MEDAL_SIZE = 100;
+    static constexpr int COMBO_TEXT_Y_OFFSET = 38;
+    static constexpr int COMBO_TEXT_X_OFFSET = -2;
 
     static constexpr int GAUGE_X = 50;
     static constexpr int GAUGE_Y_FROM_BOTTOM = 40;
@@ -37,10 +39,13 @@ private:
     static constexpr int LIFE_ICON_SIZE = 24;
     static constexpr int MAX_LIVES = 3;
 
-    static constexpr int NUMBER_WIDTH = 12;
-    static constexpr int NUMBER_HEIGHT = 20;
-    static constexpr int NUMBER_IMAGE_WIDTH = 16;
-    static constexpr int COMBO_NUMBER_WIDTH = 14;
+    static constexpr int SCORE_NUMBER_WIDTH = 18;
+    static constexpr int SCORE_NUMBER_HEIGHT = 30;
+    static constexpr int SCORE_NUMBER_SPACING = 15;
+
+    static constexpr int COMBO_NUMBER_WIDTH = 21;
+    static constexpr int COMBO_NUMBER_HEIGHT = 30;
+    static constexpr int COMBO_NUMBER_SPACING = 15;
 
     static constexpr int SCREEN_HEIGHT = 600;
 
@@ -52,7 +57,7 @@ private:
     void renderCombo(int combo);
     void renderSpecialGauge(int gauge);
     void renderLives(int lives);
-    void renderNumberImages(const std::string& numberStr, int startX, int y);
+    void renderNumberImages(const std::string& numberStr, int startX, int y, int numberWidth, int numberHeight, int spacing);
     void renderSingleLifeIcon(int index, int lives, int livesY);
 
     SDL_Rect calculateScoreFrameRect() const;

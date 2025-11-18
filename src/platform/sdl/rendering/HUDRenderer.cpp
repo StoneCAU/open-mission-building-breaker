@@ -21,10 +21,10 @@ void HUDRenderer::renderScore(int score) {
         SDL_RenderCopy(renderer, scoreFrame, nullptr, &frameRect);
 
         std::string scoreStr = std::to_string(score);
-        int scoreWidth = scoreStr.length() * NUMBER_WIDTH;
+        int scoreWidth = scoreStr.length() * SCORE_NUMBER_SPACING;
         int scoreX = (SCORE_FRAME_X + SCORE_FRAME_WIDTH) - scoreWidth - SCORE_TEXT_RIGHT_MARGIN;
         int scoreY = SCORE_FRAME_Y + SCORE_TEXT_Y_OFFSET;
-        renderNumberImages(scoreStr, scoreX, scoreY);
+        renderNumberImages(scoreStr, scoreX, scoreY, SCORE_NUMBER_WIDTH, SCORE_NUMBER_HEIGHT, SCORE_NUMBER_SPACING);
     };
 
     scoreFrame && (renderScoreFrame(), true);
@@ -38,10 +38,10 @@ void HUDRenderer::renderCombo(int combo) {
         SDL_RenderCopy(renderer, comboMedal, nullptr, &medalRect);
 
         std::string comboStr = std::to_string(combo);
-        int comboWidth = comboStr.length() * COMBO_NUMBER_WIDTH;
-        int medalCenterX = COMBO_MEDAL_X + (COMBO_MEDAL_SIZE - comboWidth) / 2;
-        int comboY = COMBO_MEDAL_Y + SCORE_TEXT_Y_OFFSET;
-        renderNumberImages(comboStr, medalCenterX, comboY);
+        int comboWidth = comboStr.length() * COMBO_NUMBER_SPACING;
+        int medalCenterX = COMBO_MEDAL_X + (COMBO_MEDAL_SIZE - comboWidth) / 2 + COMBO_TEXT_X_OFFSET;
+        int comboY = COMBO_MEDAL_Y + COMBO_TEXT_Y_OFFSET;
+        renderNumberImages(comboStr, medalCenterX, comboY, COMBO_NUMBER_WIDTH, COMBO_NUMBER_HEIGHT, COMBO_NUMBER_SPACING);
     };
 
     comboMedal && (renderComboMedal(), true);
@@ -94,15 +94,15 @@ SDL_Texture* HUDRenderer::getLifeTexture(int index, int lives) {
         assets->getTexture(AssetConfig::TEXTURE_LIFE_INACTIVE);
 }
 
-void HUDRenderer::renderNumberImages(const std::string& numberStr, int startX, int y) {
+void HUDRenderer::renderNumberImages(const std::string& numberStr, int startX, int y, int numberWidth, int numberHeight, int spacing) {
     for (int i = 0; i < numberStr.length(); ++i) {
         const auto renderDigit = [&]() {
             int digit = numberStr[i] - DIGIT_MIN;
             SDL_Texture* numberTexture = assets->getTexture("number_" + std::to_string(digit));
 
             const auto renderNumberTexture = [&]() {
-                SDL_Rect numberRect{startX + i * NUMBER_WIDTH, y, NUMBER_IMAGE_WIDTH, NUMBER_HEIGHT};
-                SDL_RenderCopy(renderer, numberTexture, nullptr, &numberRect);
+                SDL_Rect dstRect{startX + i * spacing, y, numberWidth, numberHeight};
+                SDL_RenderCopy(renderer, numberTexture, nullptr, &dstRect);
             };
 
             numberTexture && (renderNumberTexture(), true);
