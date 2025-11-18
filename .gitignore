@@ -1,9 +1,10 @@
-# CMake 빌드 디렉토리
+############################################
+# BUILD & CMAKE
+############################################
 cmake-build-*/
 build/
 out/
 
-# CMake 생성 파일
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
@@ -12,40 +13,48 @@ CTestTestfile.cmake
 _deps/
 .cmake/
 
-# Ninja 빌드 파일
+# Ninja
 build.ninja
 .ninja_*
 *.ninja
 
-# 컴파일된 바이너리 (프로젝트 빌드 결과물만)
+# Compiled objects / binaries
 *.exe
 *.out
 *.app
 *.o
 *.obj
 
-# SDL2 라이브러리는 포함!
+############################################
+# SDL LIBRARIES
+############################################
+
+# SDL2, SDL2_image, SDL2_mixer, SDL2_ttf 전체 포함
+!libs/
+!libs/**
 !libs/**/*.dll
-!libs/**/*.a
 !libs/**/*.lib
+!libs/**/*.a
 !libs/**/*.so
 !libs/**/*.dylib
+!libs/**/*.h
+!libs/**/*.hpp
 
-# 테스트 결과
-Testing/
-test_detail.xml
-*.log
-
-# IDE 설정 (선택적)
+############################################
+# IDE & EDITORS
+############################################
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# 최고 점수 파일
-highscore.txt
-
-# 기타
 .DS_Store
 Thumbs.db
+
+############################################
+# PROJECT FILES
+############################################
+highscore.txt
+*.log
+Testing/
+test_detail.xml
