@@ -28,5 +28,5 @@ namespace GameConfig {
     inline constexpr int BUILDING_SPAWN_COOLDOWN = 80;
 
     // ===== 시스템 =====
-    inline constexpr int FRAME_DELAY_MS = 20;
+    inline constexpr int FRAME_DELAY_MS = 30;
 }
