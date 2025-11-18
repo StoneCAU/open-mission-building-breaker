@@ -44,6 +44,10 @@ void GameSession::executeUltimate() {
     stats.resetGauge();
     stats.addScore(destroyedCount * GameConfig::SCORE_PER_ATTACK_HIT);
 
+    if (destroyedCount > 0) {
+        stats.addCombo();
+    }
+
     messageQueue.push(MessageType::ULTIMATE_ACTIVATED, destroyedCount);
     ultimateUsedThisFrame = true;
 }
