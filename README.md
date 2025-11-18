@@ -11,7 +11,7 @@
 <img width="595" height="469" alt="image" src="https://github.com/user-attachments/assets/40007884-eb37-440b-908c-810e5764608c" />
 
 ### 게임플레이
-![녹음 2025-11-19 015010](https://github.com/user-attachments/assets/bcdae164-696d-4791-ad14-60983f5e330a)
+![게임_플레이](https://github.com/user-attachments/assets/7b31c79e-d9dc-494c-b6fc-72e37600d194)
 
 ### 게임오버
 <img width="596" height="467" alt="image" src="https://github.com/user-attachments/assets/118238df-37be-4a21-8fbb-f138008144f3" />
