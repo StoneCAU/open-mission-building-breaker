@@ -17,17 +17,19 @@ build.ninja
 .ninja_*
 *.ninja
 
-# 컴파일된 바이너리
+# 컴파일된 바이너리 (프로젝트 빌드 결과물만)
 *.exe
 *.out
 *.app
 *.o
 *.obj
-*.so
-*.dylib
-*.dll
-*.a
-*.lib
+
+# SDL2 라이브러리는 포함!
+!libs/**/*.dll
+!libs/**/*.a
+!libs/**/*.lib
+!libs/**/*.so
+!libs/**/*.dylib
 
 # 테스트 결과
 Testing/
@@ -41,7 +43,7 @@ test_detail.xml
 *.swo
 *~
 
-# 최고 점수 파일 (게임 실행 시 생성)
+# 최고 점수 파일
 highscore.txt
 
 # 기타
