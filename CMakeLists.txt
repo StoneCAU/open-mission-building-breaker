@@ -3,16 +3,22 @@ project(open_mission_building_breaker)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# SDL mode on
+# ---------------------------------------------------------
+# SDL mode (ON by default)
+# ---------------------------------------------------------
 option(USE_SDL "Enable SDL2 rendering mode" ON)
 
-# SDL2 paths
+# ---------------------------------------------------------
+# SDL2 directory paths
+# ---------------------------------------------------------
 set(SDL2_DIR         "${CMAKE_SOURCE_DIR}/libs/SDL2")
 set(SDL2_IMAGE_DIR   "${CMAKE_SOURCE_DIR}/libs/SDL2_image")
 set(SDL2_MIXER_DIR   "${CMAKE_SOURCE_DIR}/libs/SDL2_mixer")
 set(SDL2_TTF_DIR     "${CMAKE_SOURCE_DIR}/libs/SDL2_ttf")
 
+# ---------------------------------------------------------
 # Source files
+# ---------------------------------------------------------
 set(SOURCES
         src/main.cpp
 
@@ -53,7 +59,7 @@ set(SOURCES
         src/platform/sdl/rendering/UltimateEffectRenderer.cpp
 )
 
-# headers
+# Header files
 set(HEADERS
         src/platform/sdl/rendering/PlayerAnimationRenderer.h
         src/platform/sdl/rendering/HUDRenderer.h
@@ -65,23 +71,21 @@ set(HEADERS
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-# SDL2 configuration (only when USE_SDL is enabled)
-if(USE_SDL)
+# ---------------------------------------------------------
+# SDL2 configuration
+# ---------------------------------------------------------
+if (USE_SDL)
     add_compile_definitions(USE_SDL)
 
-    # include
+    # Include directories (SDL2 headers live inside include/SDL2/)
     target_include_directories(${PROJECT_NAME} PRIVATE
-            ${SDL2_DIR}/include
             ${SDL2_DIR}/include/SDL2
-            ${SDL2_IMAGE_DIR}/include
             ${SDL2_IMAGE_DIR}/include/SDL2
-            ${SDL2_MIXER_DIR}/include
             ${SDL2_MIXER_DIR}/include/SDL2
-            ${SDL2_TTF_DIR}/include
             ${SDL2_TTF_DIR}/include/SDL2
     )
 
-    # library dirs
+    # Library directories
     target_link_directories(${PROJECT_NAME} PRIVATE
             ${SDL2_DIR}/lib
             ${SDL2_IMAGE_DIR}/lib
@@ -89,12 +93,12 @@ if(USE_SDL)
             ${SDL2_TTF_DIR}/lib
     )
 
-    # MinGW UTF-8
-    if(MINGW)
+    # Ensure MinGW uses UTF-8
+    if (MINGW)
         target_compile_options(${PROJECT_NAME} PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
     endif()
 
-    # link libs
+    # Link SDL libraries
     target_link_libraries(${PROJECT_NAME}
             mingw32
             SDL2main
@@ -104,7 +108,7 @@ if(USE_SDL)
             SDL2_ttf
     )
 
-    # DLL copy + assets copy
+    # Copy DLL files + assets folder
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DIR}/bin/SDL2.dll" $<TARGET_FILE_DIR:${PROJECT_NAME}>
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_IMAGE_DIR}/bin/SDL2_image.dll" $<TARGET_FILE_DIR:${PROJECT_NAME}>
