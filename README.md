@@ -58,6 +58,32 @@
 
 ---
 
+## 🎨 주요 기능
+
+### 게임 시스템
+
+✅ **콤보 시스템**: 연속 공격 성공 시 콤보 증가, 피격 시 리셋  
+✅ **필살기 게이지**: 공격 성공 시 충전, 100% 달성 시 X키로 발동  
+✅ **난이도 증가**: 시간 경과에 따라 건물 낙하 속도 및 HP 상승  
+✅ **최고 점수**: 파일 기반 영구 저장
+
+### 플레이어 액션
+
+- **이동**: ← → 방향키
+- **점프**: ↑ 방향키
+- **공격**: Z키 (건물 최하단 층 파괴)
+- **방어**: ↓ 방향키 (떨어지는 건물 튕겨내기)
+- **필살기**: X키 (게이지 100% 시, 전체 건물 파괴)
+
+### 테마: 사무라이 도장
+
+- 🏯 **일본 전통 건축물**: 기와지붕, 목재 층
+- 🥋 **사무라이 캐릭터**: 10프레임 스프라이트 애니메이션
+- 🎨 **레트로 픽셀 아트**: 800x600 해상도의 고전 게임 감성
+- 🎵 **테마 BGM**: 일본풍 배경음악 및 효과음
+
+---
+
 ## 🎯 오픈미션: 낯선 도구 해커톤
 
 ### 미션 선정
@@ -115,11 +141,9 @@ C++은 PS(Problem Solving) 문제 풀이에서는 자주 사용했지만, **실�
 
 또한, **어릴 적부터 게임을 만들어보고 싶었던 개인적인 동기**도 있었습니다. 플래시 게임부터 RPG 쯔꾸르까지 다양한 시도를 해왔지만, 제대로 된 프로그래밍 언어로 완성도 있는 게임을 만들어본 경험은 없었습니다. 이번 기회에 **동작하는 결과물**을 목표로 진지하게 게임 개발에 도전해보고자 했습니다.
 
----
+### 왜 건물부수기(키루비루)를 리메이크했나?
 
-## 🎮 왜 건물부수기(키루비루)를 리메이크했나?
-
-### 선정 기준
+**선정 기준**
 
 원작 게임을 선택한 이유는 다음과 같습니다:
 
@@ -144,7 +168,7 @@ C++은 PS(Problem Solving) 문제 풀이에서는 자주 사용했지만, **실�
 
 어릴 적 컴퓨터실에서 즐겨 하던 게임을 직접 구현한다는 것은 단순한 과제 이상의 의미가 있었습니다. 당시엔 "어떻게 만들었을까?" 궁금했던 게임을, 이제는 직접 만들 수 있다는 점에서 큰 동기부여가 되었습니다.
 
-### 리메이크 방향
+**리메이크 방향**
 
 원작을 그대로 재현하기보다는, **현대적인 해석**과 **기술적 제약을 고려한 조정**을 가했습니다:
 
@@ -177,33 +201,8 @@ C++은 PS(Problem Solving) 문제 풀이에서는 자주 사용했지만, **실�
 
 ---
 
-## 🎨 주요 기능
-
-### 게임 시스템
-
-✅ **콤보 시스템**: 연속 공격 성공 시 콤보 증가, 피격 시 리셋  
-✅ **필살기 게이지**: 공격 성공 시 충전, 100% 달성 시 X키로 발동  
-✅ **난이도 증가**: 시간 경과에 따라 건물 낙하 속도 및 HP 상승  
-✅ **최고 점수**: 파일 기반 영구 저장
-
-### 플레이어 액션
-
-- **이동**: ← → 방향키
-- **점프**: ↑ 방향키
-- **공격**: Z키 (건물 최하단 층 파괴)
-- **방어**: ↓ 방향키 (떨어지는 건물 튕겨내기)
-- **필살기**: X키 (게이지 100% 시, 전체 건물 파괴)
-
-### 테마: 사무라이 도장
-
-- 🏯 **일본 전통 건축물**: 기와지붕, 목재 층
-- 🥋 **사무라이 캐릭터**: 10프레임 스프라이트 애니메이션
-- 🎨 **레트로 픽셀 아트**: 800x600 해상도의 고전 게임 감성
-- 🎵 **테마 BGM**: 일본풍 배경음악 및 효과음
-
----
-
 ## 📂 프로젝트 구조
+
 ```
 src/
 ├── main.cpp
@@ -235,56 +234,143 @@ src/
 │   ├── InputKey.h
 │   └── IRenderer.h
 └── platform/
-    ├── console/               # 콘솔 구현체
-    │   ├── ConsoleRenderer.cpp
-    │   └── ConsoleInputHandler.cpp
-    └── sdl/                   # SDL2 구현체
-        ├── base/
-        │   ├── SDLRenderer.cpp
-        │   └── SDLInputHandler.cpp
-        ├── rendering/
-        │   ├── BuildingRenderer.cpp
-        │   ├── GameOverRenderer.cpp
-        │   ├── GameRenderer.cpp
-        │   ├── HUDRenderer.cpp
-        │   ├── MenuRenderer.cpp
-        │   ├── PlayerAnimationRenderer.cpp
-        │   └── UltimateEffectRenderer.cpp
-        └── assets/
-            ├── AssetConfig.h
-            ├── AssetManager.cpp
-            └── SoundManager.cpp
+├── console/               # 콘솔 구현체
+│   ├── ConsoleRenderer.cpp
+│   └── ConsoleInputHandler.cpp
+└── sdl/                   # SDL2 구현체
+├── base/
+│   ├── SDLRenderer.cpp
+│   └── SDLInputHandler.cpp
+├── rendering/
+│   ├── BuildingRenderer.cpp
+│   ├── GameOverRenderer.cpp
+│   ├── GameRenderer.cpp
+│   ├── HUDRenderer.cpp
+│   ├── MenuRenderer.cpp
+│   ├── PlayerAnimationRenderer.cpp
+│   └── UltimateEffectRenderer.cpp
+└── assets/
+├── AssetConfig.h
+├── AssetManager.cpp
+└── SoundManager.cpp
 ```
 
 ---
 
 ## 🚀 실행 방법
 
-### 요구 사항
-
-- Windows 10 이상
+### 📌 공통 요구 사항
 - CMake 3.20+
-- MinGW-w64 또는 MSVC 2019+
+- C++17 지원 컴파일러
+
+---
+
+## 🎮 빠른 실행 (Windows 전용)
+
+빌드 없이 바로 실행하고 싶다면 사전 빌드된 실행 파일을 다운로드하세요:
+
+**[📥 Windows 실행 파일 다운로드 (Google Drive)](https://drive.google.com/file/d/1EWaQFP0YEofXgY05gvCaGDU-92jE7qH6/view?usp=sharing)**
+
+1. 압축 파일 다운로드 및 압축 해제
+2. `open_mission_building_breaker.exe` 실행
+
+> ⚠️ **주의**: Windows Defender에서 경고가 나올 수 있습니다. "추가 정보" → "실행"을 클릭하세요.
+
+---
+
+## 🪟 Windows 빌드 & 실행
+
+### 요구 사항
+- Windows 10 이상
+- MinGW-w64 (GCC) 또는 MSVC 2019+
+- SDL2 개발 라이브러리 (`libs/` 폴더에 포함)
 
 ### 빌드
+
 ```bash
 # 1. 저장소 클론
-git clone https://github.com/StoneCAU/open-mission-building-breaker.git
+git clone https://github.com/seokwoo-jung/building-breaker.git
 cd building-breaker
 
-# 2. SDL2 버전 빌드
+# 2. 빌드 디렉토리 생성
 mkdir build && cd build
+
+# 3. SDL2 그래픽 버전 빌드
 cmake .. -DUSE_SDL=ON
 cmake --build . --config Release
 
-# 3. 실행
-./open_mission_building_breaker.exe
+# 4. 실행
+.\Release\open_mission_building_breaker.exe
 ```
 
 ### 콘솔 버전
+
 ```bash
 cmake .. -DUSE_SDL=OFF
 cmake --build .
+.\Debug\open_mission_building_breaker.exe
+```
+
+---
+
+## 🍎 macOS 빌드 & 실행
+
+### 요구 사항
+- macOS 12 Monterey 이상 (Intel / Apple Silicon)
+- Xcode Command Line Tools
+- SDL2 설치 (Homebrew 권장)
+
+### SDL2 설치
+
+```bash
+brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
+```
+
+### 빌드
+
+```bash
+# 1. 저장소 클론
+git clone https://github.com/seokwoo-jung/building-breaker.git
+cd building-breaker
+
+# 2. 빌드 디렉토리 생성
+mkdir build && cd build
+
+# 3. SDL2 그래픽 버전 빌드
+cmake .. -DUSE_SDL=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
+
+### 실행
+
+```bash
+./open_mission_building_breaker
+```
+
+### 콘솔 버전
+
+```bash
+cmake .. -DUSE_SDL=OFF
+cmake --build .
+./open_mission_building_breaker
+```
+
+### SDL2 경로 인식 실패 시 (Homebrew 경로 수동 지정)
+
+**Apple Silicon (M1/M2/M3):**
+
+```bash
+cmake .. \
+  -DUSE_SDL=ON \
+  -DSDL2_DIR=/opt/homebrew/opt/sdl2/lib/cmake/SDL2
+```
+
+**Intel Mac:**
+
+```bash
+cmake .. \
+  -DUSE_SDL=ON \
+  -DSDL2_DIR=/usr/local/opt/sdl2/lib/cmake/SDL2
 ```
 
 ---
