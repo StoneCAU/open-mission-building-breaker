@@ -79,9 +79,16 @@ if (USE_SDL)
 
     # Include directories (SDL2 headers live inside include/SDL2/)
     target_include_directories(${PROJECT_NAME} PRIVATE
+            ${SDL2_DIR}/include
             ${SDL2_DIR}/include/SDL2
+
+            ${SDL2_IMAGE_DIR}/include
             ${SDL2_IMAGE_DIR}/include/SDL2
+
+            ${SDL2_MIXER_DIR}/include
             ${SDL2_MIXER_DIR}/include/SDL2
+
+            ${SDL2_TTF_DIR}/include
             ${SDL2_TTF_DIR}/include/SDL2
     )
 
