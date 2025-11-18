@@ -330,8 +330,8 @@ brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
 
 ```bash
 # 1. 저장소 클론
-git clone https://github.com/seokwoo-jung/building-breaker.git
-cd building-breaker
+git clone https://github.com/StoneCAU/open-mission-building-breaker.git
+cd open-mission-building-breaker
 
 # 2. 빌드 디렉토리 생성
 mkdir build && cd build
