@@ -17,7 +17,7 @@ set(SDL2_MIXER_DIR   "${CMAKE_SOURCE_DIR}/libs/SDL2_mixer")
 set(SDL2_TTF_DIR     "${CMAKE_SOURCE_DIR}/libs/SDL2_ttf")
 
 # ---------------------------------------------------------
-# Source files
+# Common sources
 # ---------------------------------------------------------
 set(SOURCES
         src/main.cpp
@@ -40,26 +40,42 @@ set(SOURCES
         src/core/building/BuildingManager.cpp
         src/core/building/Floor.cpp
 
-        # Platform - Console
-        src/platform/console/ConsoleRenderer.cpp
-        src/platform/console/ConsoleInputHandler.cpp
+        # UI message (공통)
         src/core/ui/UIMessage.cpp
-
-        # Platform - SDL
-        src/platform/sdl/base/SDLRenderer.cpp
-        src/platform/sdl/base/SDLInputHandler.cpp
-        src/platform/sdl/assets/AssetManager.cpp
-        src/platform/sdl/rendering/MenuRenderer.cpp
-        src/platform/sdl/rendering/GameRenderer.cpp
-        src/platform/sdl/rendering/GameOverRenderer.cpp
-        src/platform/sdl/rendering/PlayerAnimationRenderer.cpp
-        src/platform/sdl/rendering/HUDRenderer.cpp
-        src/platform/sdl/rendering/BuildingRenderer.cpp
-        src/platform/sdl/assets/SoundManager.cpp
-        src/platform/sdl/rendering/UltimateEffectRenderer.cpp
 )
 
-# Header files
+# ---------------------------------------------------------
+# Platform-dependent sources
+# ---------------------------------------------------------
+if (USE_SDL)
+    message(STATUS "Building with SDL2")
+
+    list(APPEND SOURCES
+            src/platform/sdl/base/SDLRenderer.cpp
+            src/platform/sdl/base/SDLInputHandler.cpp
+            src/platform/sdl/assets/AssetManager.cpp
+            src/platform/sdl/rendering/MenuRenderer.cpp
+            src/platform/sdl/rendering/GameRenderer.cpp
+            src/platform/sdl/rendering/GameOverRenderer.cpp
+            src/platform/sdl/rendering/PlayerAnimationRenderer.cpp
+            src/platform/sdl/rendering/HUDRenderer.cpp
+            src/platform/sdl/rendering/BuildingRenderer.cpp
+            src/platform/sdl/assets/SoundManager.cpp
+            src/platform/sdl/rendering/UltimateEffectRenderer.cpp
+    )
+
+else()
+    message(STATUS "Building with CONSOLE MODE")
+
+    list(APPEND SOURCES
+            src/platform/console/ConsoleRenderer.cpp
+            src/platform/console/ConsoleInputHandler.cpp
+    )
+endif()
+
+# ---------------------------------------------------------
+# Header files (not required but included for IDE)
+# ---------------------------------------------------------
 set(HEADERS
         src/platform/sdl/rendering/PlayerAnimationRenderer.h
         src/platform/sdl/rendering/HUDRenderer.h
@@ -72,12 +88,11 @@ set(HEADERS
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 # ---------------------------------------------------------
-# SDL2 configuration
+# SDL2 configuration (ONLY when USE_SDL = ON)
 # ---------------------------------------------------------
 if (USE_SDL)
     add_compile_definitions(USE_SDL)
 
-    # Include directories (SDL2 headers live inside include/SDL2/)
     target_include_directories(${PROJECT_NAME} PRIVATE
             ${SDL2_DIR}/include
             ${SDL2_DIR}/include/SDL2
@@ -92,7 +107,6 @@ if (USE_SDL)
             ${SDL2_TTF_DIR}/include/SDL2
     )
 
-    # Library directories
     target_link_directories(${PROJECT_NAME} PRIVATE
             ${SDL2_DIR}/lib
             ${SDL2_IMAGE_DIR}/lib
@@ -100,12 +114,6 @@ if (USE_SDL)
             ${SDL2_TTF_DIR}/lib
     )
 
-    # Ensure MinGW uses UTF-8
-    if (MINGW)
-        target_compile_options(${PROJECT_NAME} PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-    endif()
-
-    # Link SDL libraries
     target_link_libraries(${PROJECT_NAME}
             mingw32
             SDL2main
@@ -115,7 +123,6 @@ if (USE_SDL)
             SDL2_ttf
     )
 
-    # Copy DLL files + assets folder
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DIR}/bin/SDL2.dll" $<TARGET_FILE_DIR:${PROJECT_NAME}>
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_IMAGE_DIR}/bin/SDL2_image.dll" $<TARGET_FILE_DIR:${PROJECT_NAME}>
