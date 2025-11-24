@@ -48,7 +48,7 @@ private:
 
     static constexpr const char* TEXT_HIGH_SCORE = "HIGH SCORE";
     static constexpr const char* TEXT_SCORE_SUFFIX = " PTS";
-    static constexpr const char* TEXT_START = "PRESS START";
+    static constexpr const char* TEXT_START = "ENTER - START";
     static constexpr const char* TEXT_QUIT = "Q - QUIT";
     static constexpr const char* TEXT_CREDIT1 = "WOOWA TECH COURSE 8TH - OPEN MISSION";
     static constexpr const char* TEXT_CREDIT2 = "MADE BY HONG SEOKWOO";
