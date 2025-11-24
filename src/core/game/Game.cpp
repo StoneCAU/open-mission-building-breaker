@@ -1,9 +1,13 @@
 #include "Game.h"
-#include <windows.h>
 #include "GameConfig.h"
 
 #ifdef USE_SDL
     #include "../../platform/sdl/base/SDLInputHandler.h"
+    #include <SDL2/SDL.h>
+#endif
+
+#ifdef _WIN32
+    #include <windows.h>
 #endif
 
 Game::Game(std::unique_ptr<IRenderer> r, std::unique_ptr<IInputHandler> i)
@@ -53,7 +57,12 @@ void Game::processGameFrame() {
     handleFrameInput();
     updateFrameState();
     renderFrame();
+
+#ifdef USE_SDL
+    SDL_Delay(GameConfig::FRAME_DELAY_MS);
+#elif defined(_WIN32)
     Sleep(GameConfig::FRAME_DELAY_MS);
+#endif
 }
 
 void Game::handleFrameInput() {
@@ -114,7 +123,6 @@ void Game::handleGameOverInput() {
 void Game::onGameOver() {
     state = GameState::GAME_OVER;
 }
-
 
 bool Game::pollSDLEvents() {
 #ifdef USE_SDL
