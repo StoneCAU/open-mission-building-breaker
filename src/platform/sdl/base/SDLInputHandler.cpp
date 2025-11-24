@@ -1,7 +1,6 @@
 #include "SDLInputHandler.h"
-#include <windows.h>
-
 #include "../../../interfaces/InputKey.h"
+#include "../../../interfaces/GameKeyCode.h"
 
 SDLInputHandler::SDLInputHandler()
     : quitRequested(false) {
@@ -100,8 +99,8 @@ bool SDLInputHandler::isKeyReleased(int vkCode) {
 SDL_Scancode SDLInputHandler::mapVirtualKeyToScancode(int vkCode) const {
     SDL_Scancode result = SDL_SCANCODE_UNKNOWN;
 
-    (vkCode == VK_UP) && (result = KEY_UP, true);
-    (vkCode == VK_DOWN) && (result = KEY_DOWN, true);
+    (vkCode == GAME_KEY_UP) && (result = KEY_UP, true);
+    (vkCode == GAME_KEY_DOWN) && (result = KEY_DOWN, true);
 
     return result;
 }
