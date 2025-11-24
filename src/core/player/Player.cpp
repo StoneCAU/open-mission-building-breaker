@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "../building/Building.h"
 #include "../game/GameConfig.h"
-#include <windows.h>
+#include "../../interfaces/GameKeyCode.h"
 
 Player::Player()
     : x(START_X),
@@ -72,8 +72,8 @@ void Player::followAttachedBuilding(Building* building) {
 }
 
 void Player::updateComponents(IInputHandler* inputHandler) {
-    bool jumpKeyReleased = inputHandler->isKeyReleased(VK_UP);
-    bool defendKeyReleased = inputHandler->isKeyReleased(VK_DOWN);
+    bool jumpKeyReleased = inputHandler->isKeyReleased(GAME_KEY_UP);
+    bool defendKeyReleased = inputHandler->isKeyReleased(GAME_KEY_DOWN);
 
     action.update(defendKeyReleased);
 
