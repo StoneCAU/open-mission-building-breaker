@@ -83,6 +83,7 @@ set(HEADERS
         src/platform/sdl/rendering/UltimateEffectRenderer.h
         src/platform/sdl/assets/SoundManager.h
         src/platform/sdl/assets/AssetConfig.h
+        src/interfaces/GameKeyCode.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
